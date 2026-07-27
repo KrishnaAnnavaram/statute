@@ -1,0 +1,670 @@
+{
+  "meta": {
+    "generated_at": "2026-07-20T18:10:56.111524+00:00",
+    "source_dir": "E:\\Virtusa Projects\\plsql_to_brd\\tests\\fixtures\\sample_plsql",
+    "agent_version": "1_inventory@1.0",
+    "tool": "00_inventory.py",
+    "total_files_scanned": 7
+  },
+  "stats": {
+    "by_type": {
+      "DML_SEED": 2,
+      "GRANT": 1,
+      "INDEX": 1,
+      "MIGRATION": 1,
+      "PACKAGE_BODY": 2,
+      "PACKAGE_SPEC": 1,
+      "SEQUENCE": 1,
+      "SQLPLUS_SCRIPT": 1,
+      "SYNONYM": 1,
+      "TABLE": 1,
+      "TRIGGER": 1,
+      "VIEW": 2
+    },
+    "total_objects": 15,
+    "total_files": 7,
+    "total_nodes": 17,
+    "total_edges": 17,
+    "edges_by_type": {
+      "CALLS": 2,
+      "DEPENDS_ON": 2,
+      "DYNAMIC_REF": 1,
+      "IMPLEMENTS_SPEC": 1,
+      "INCLUDES": 4,
+      "READS": 3,
+      "TRIGGERS_ON": 1,
+      "WRITES": 3
+    },
+    "issues_by_severity": {
+      "error": 1,
+      "info": 1,
+      "warning": 4
+    },
+    "incremental": {
+      "enabled": false,
+      "new": 7,
+      "changed": 0,
+      "unchanged": 0,
+      "deleted": 0
+    }
+  },
+  "file_registry": [
+    {
+      "path": "V002__add_status_column.sql",
+      "abs_path": "E:\\Virtusa Projects\\plsql_to_brd\\tests\\fixtures\\sample_plsql\\V002__add_status_column.sql",
+      "size_bytes": 184,
+      "sha256": "c3778b5bad35eda84139a13aec0c7bb994ecf73c991a1f46912035fb03347e79",
+      "last_modified": "2026-07-20T18:06:57.506923+00:00",
+      "byte_span": [
+        0,
+        184
+      ],
+      "status": "ok",
+      "line_span": [
+        1,
+        4
+      ],
+      "encoding_used": "utf-8",
+      "warnings": [],
+      "file_id": "MIG-.V002__ADD_STATUS_COLUMN",
+      "object_ids": [
+        "MIG-.V002__ADD_STATUS_COLUMN"
+      ],
+      "incremental_status": "new"
+    },
+    {
+      "path": "05_legacy_calc.sql",
+      "abs_path": "E:\\Virtusa Projects\\plsql_to_brd\\tests\\fixtures\\sample_plsql\\05_legacy_calc.sql",
+      "size_bytes": 89,
+      "sha256": "d0c9386cbce24ebf9e38454769ba250493d79d980d09c0fb4ff2ec8c33f7eabb",
+      "last_modified": "2026-07-20T18:06:53.845917+00:00",
+      "byte_span": [
+        0,
+        89
+      ],
+      "status": "ok",
+      "line_span": [
+        1,
+        6
+      ],
+      "encoding_used": "utf-8",
+      "warnings": [],
+      "file_id": "PKGB-APP.LEGACY_CALC",
+      "object_ids": [
+        "PKGB-APP.LEGACY_CALC"
+      ],
+      "incremental_status": "new"
+    },
+    {
+      "path": "02_account_mgmt.sql",
+      "abs_path": "E:\\Virtusa Projects\\plsql_to_brd\\tests\\fixtures\\sample_plsql\\02_account_mgmt.sql",
+      "size_bytes": 1205,
+      "sha256": "c140e9b93cebb85377e32d879a21188298743d4365d73265d2f5637388aa0950",
+      "last_modified": "2026-07-20T18:05:51.419758+00:00",
+      "byte_span": [
+        0,
+        1205
+      ],
+      "status": "ok",
+      "line_span": [
+        1,
+        42
+      ],
+      "encoding_used": "utf-8",
+      "warnings": [],
+      "file_id": "PKGS-APP.ACCOUNT_MGMT",
+      "object_ids": [
+        "PKGB-APP.ACCOUNT_MGMT",
+        "PKGS-APP.ACCOUNT_MGMT",
+        "TRG-APP.ACCOUNTS_BIU"
+      ],
+      "incremental_status": "new"
+    },
+    {
+      "path": "03_seed.sql",
+      "abs_path": "E:\\Virtusa Projects\\plsql_to_brd\\tests\\fixtures\\sample_plsql\\03_seed.sql",
+      "size_bytes": 219,
+      "sha256": "7efbd5d77a3d8b80ac7212d34480b1d724321952625326524deda493b34c508a",
+      "last_modified": "2026-07-20T18:06:16.791561+00:00",
+      "byte_span": [
+        0,
+        219
+      ],
+      "status": "ok",
+      "line_span": [
+        1,
+        6
+      ],
+      "encoding_used": "utf-8",
+      "warnings": [],
+      "file_id": "SEED-APP.ACCOUNTS",
+      "object_ids": [
+        "SEED-APP.ACCOUNTS",
+        "SEED-APP.ACCOUNTS_2"
+      ],
+      "incremental_status": "new"
+    },
+    {
+      "path": "00_run_all.sql",
+      "abs_path": "E:\\Virtusa Projects\\plsql_to_brd\\tests\\fixtures\\sample_plsql\\00_run_all.sql",
+      "size_bytes": 173,
+      "sha256": "34b2c35bae8dd5185124f3e13828ab9ead48fd29fce667a2a57ada0ea26a9050",
+      "last_modified": "2026-07-20T18:06:23.724949+00:00",
+      "byte_span": [
+        0,
+        173
+      ],
+      "status": "ok",
+      "line_span": [
+        1,
+        9
+      ],
+      "encoding_used": "utf-8",
+      "warnings": [],
+      "file_id": "SPS-.00_RUN_ALL",
+      "object_ids": [
+        "SPS-.00_RUN_ALL"
+      ],
+      "incremental_status": "new"
+    },
+    {
+      "path": "01_schema.sql",
+      "abs_path": "E:\\Virtusa Projects\\plsql_to_brd\\tests\\fixtures\\sample_plsql\\01_schema.sql",
+      "size_bytes": 570,
+      "sha256": "bc3fa37236e1a1142f720ca616776ad4a68fa5ac4fbfd9731fb0db4b366a2094",
+      "last_modified": "2026-07-20T18:05:02.801014+00:00",
+      "byte_span": [
+        0,
+        570
+      ],
+      "status": "ok",
+      "line_span": [
+        1,
+        20
+      ],
+      "encoding_used": "utf-8",
+      "warnings": [],
+      "file_id": "TBL-APP.ACCOUNTS",
+      "object_ids": [
+        "GRT-APP.ACCOUNTS",
+        "IDX-APP.ACCOUNTS_OWNER_IDX",
+        "SEQ-APP.ACCOUNT_ID_SEQ",
+        "SYN-.ACCOUNTS_SYN",
+        "TBL-APP.ACCOUNTS",
+        "VIEW-APP.ACTIVE_ACCOUNTS"
+      ],
+      "incremental_status": "new"
+    },
+    {
+      "path": "04_reporting.sql",
+      "abs_path": "E:\\Virtusa Projects\\plsql_to_brd\\tests\\fixtures\\sample_plsql\\04_reporting.sql",
+      "size_bytes": 136,
+      "sha256": "44ae58d60325e26e0ad9e672185aa2fabb097f94fd6be5146976e1d4d09b902a",
+      "last_modified": "2026-07-20T18:06:20.019963+00:00",
+      "byte_span": [
+        0,
+        136
+      ],
+      "status": "ok",
+      "line_span": [
+        1,
+        5
+      ],
+      "encoding_used": "utf-8",
+      "warnings": [],
+      "file_id": "VIEW-APP.REMOTE_POSITIONS",
+      "object_ids": [
+        "VIEW-APP.REMOTE_POSITIONS"
+      ],
+      "incremental_status": "new"
+    }
+  ],
+  "object_registry": [
+    {
+      "type": "GRANT",
+      "owner": "APP",
+      "name": "ACCOUNTS",
+      "start_line": 19,
+      "terminator_line": 19,
+      "wrapped": false,
+      "nameless": false,
+      "object_id": "GRT-APP.ACCOUNTS"
+    },
+    {
+      "type": "INDEX",
+      "owner": "APP",
+      "name": "ACCOUNTS_OWNER_IDX",
+      "start_line": 10,
+      "terminator_line": 10,
+      "wrapped": false,
+      "nameless": false,
+      "indexes_table": {
+        "owner": "APP",
+        "name": "ACCOUNTS"
+      },
+      "object_id": "IDX-APP.ACCOUNTS_OWNER_IDX"
+    },
+    {
+      "type": "MIGRATION",
+      "owner": "",
+      "name": "V002__ADD_STATUS_COLUMN",
+      "start_line": 1,
+      "terminator_line": 4,
+      "wrapped": false,
+      "nameless": true,
+      "object_id": "MIG-.V002__ADD_STATUS_COLUMN"
+    },
+    {
+      "type": "PACKAGE_BODY",
+      "owner": "APP",
+      "name": "ACCOUNT_MGMT",
+      "start_line": 8,
+      "terminator_line": 33,
+      "wrapped": false,
+      "nameless": false,
+      "object_id": "PKGB-APP.ACCOUNT_MGMT"
+    },
+    {
+      "type": "PACKAGE_BODY",
+      "owner": "APP",
+      "name": "LEGACY_CALC",
+      "start_line": 1,
+      "terminator_line": 5,
+      "wrapped": true,
+      "nameless": false,
+      "object_id": "PKGB-APP.LEGACY_CALC"
+    },
+    {
+      "type": "PACKAGE_SPEC",
+      "owner": "APP",
+      "name": "ACCOUNT_MGMT",
+      "start_line": 1,
+      "terminator_line": 6,
+      "wrapped": false,
+      "nameless": false,
+      "object_id": "PKGS-APP.ACCOUNT_MGMT"
+    },
+    {
+      "type": "DML_SEED",
+      "owner": "APP",
+      "name": "ACCOUNTS",
+      "start_line": 1,
+      "terminator_line": 2,
+      "wrapped": false,
+      "nameless": false,
+      "object_id": "SEED-APP.ACCOUNTS"
+    },
+    {
+      "type": "DML_SEED",
+      "owner": "APP",
+      "name": "ACCOUNTS",
+      "start_line": 4,
+      "terminator_line": 5,
+      "wrapped": false,
+      "nameless": false,
+      "object_id": "SEED-APP.ACCOUNTS_2"
+    },
+    {
+      "type": "SEQUENCE",
+      "owner": "APP",
+      "name": "ACCOUNT_ID_SEQ",
+      "start_line": 8,
+      "terminator_line": 8,
+      "wrapped": false,
+      "nameless": false,
+      "object_id": "SEQ-APP.ACCOUNT_ID_SEQ"
+    },
+    {
+      "type": "SQLPLUS_SCRIPT",
+      "owner": "",
+      "name": "00_RUN_ALL",
+      "start_line": 1,
+      "terminator_line": 9,
+      "wrapped": false,
+      "nameless": true,
+      "object_id": "SPS-.00_RUN_ALL"
+    },
+    {
+      "type": "SYNONYM",
+      "owner": "",
+      "name": "ACCOUNTS_SYN",
+      "start_line": 17,
+      "terminator_line": 17,
+      "wrapped": false,
+      "nameless": false,
+      "synonym_for": "APP.ACCOUNTS",
+      "object_id": "SYN-.ACCOUNTS_SYN"
+    },
+    {
+      "type": "TABLE",
+      "owner": "APP",
+      "name": "ACCOUNTS",
+      "start_line": 2,
+      "terminator_line": 6,
+      "wrapped": false,
+      "nameless": false,
+      "object_id": "TBL-APP.ACCOUNTS"
+    },
+    {
+      "type": "TRIGGER",
+      "owner": "APP",
+      "name": "ACCOUNTS_BIU",
+      "start_line": 35,
+      "terminator_line": 41,
+      "wrapped": false,
+      "nameless": false,
+      "triggers_on": {
+        "owner": "APP",
+        "name": "ACCOUNTS"
+      },
+      "object_id": "TRG-APP.ACCOUNTS_BIU"
+    },
+    {
+      "type": "VIEW",
+      "owner": "APP",
+      "name": "ACTIVE_ACCOUNTS",
+      "start_line": 12,
+      "terminator_line": 15,
+      "wrapped": false,
+      "nameless": false,
+      "object_id": "VIEW-APP.ACTIVE_ACCOUNTS"
+    },
+    {
+      "type": "VIEW",
+      "owner": "APP",
+      "name": "REMOTE_POSITIONS",
+      "start_line": 1,
+      "terminator_line": 4,
+      "wrapped": false,
+      "nameless": false,
+      "object_id": "VIEW-APP.REMOTE_POSITIONS"
+    }
+  ],
+  "dependency_graph": {
+    "nodes": [
+      {
+        "id": "DBLINK-FINANCE_LINK",
+        "type": "DBLINK",
+        "origin": "EXTERNAL"
+      },
+      {
+        "id": "EXTERNAL-DBMS_OUTPUT",
+        "type": "EXTERNAL_PACKAGE",
+        "origin": "EXTERNAL"
+      },
+      {
+        "id": "GRT-APP.ACCOUNTS",
+        "type": "GRANT",
+        "origin": "REPO",
+        "path": "01_schema.sql"
+      },
+      {
+        "id": "IDX-APP.ACCOUNTS_OWNER_IDX",
+        "type": "INDEX",
+        "origin": "REPO",
+        "path": "01_schema.sql"
+      },
+      {
+        "id": "MIG-.V002__ADD_STATUS_COLUMN",
+        "type": "MIGRATION",
+        "origin": "REPO",
+        "path": "V002__add_status_column.sql"
+      },
+      {
+        "id": "PKGB-APP.ACCOUNT_MGMT",
+        "type": "PACKAGE_BODY",
+        "origin": "REPO",
+        "path": "02_account_mgmt.sql"
+      },
+      {
+        "id": "PKGB-APP.LEGACY_CALC",
+        "type": "PACKAGE_BODY",
+        "origin": "REPO",
+        "path": "05_legacy_calc.sql"
+      },
+      {
+        "id": "PKGS-APP.ACCOUNT_MGMT",
+        "type": "PACKAGE_SPEC",
+        "origin": "REPO",
+        "path": "02_account_mgmt.sql"
+      },
+      {
+        "id": "SEED-APP.ACCOUNTS",
+        "type": "DML_SEED",
+        "origin": "REPO",
+        "path": "03_seed.sql"
+      },
+      {
+        "id": "SEED-APP.ACCOUNTS_2",
+        "type": "DML_SEED",
+        "origin": "REPO",
+        "path": "03_seed.sql"
+      },
+      {
+        "id": "SEQ-APP.ACCOUNT_ID_SEQ",
+        "type": "SEQUENCE",
+        "origin": "REPO",
+        "path": "01_schema.sql"
+      },
+      {
+        "id": "SPS-.00_RUN_ALL",
+        "type": "SQLPLUS_SCRIPT",
+        "origin": "REPO",
+        "path": "00_run_all.sql"
+      },
+      {
+        "id": "SYN-.ACCOUNTS_SYN",
+        "type": "SYNONYM",
+        "origin": "REPO",
+        "path": "01_schema.sql"
+      },
+      {
+        "id": "TBL-APP.ACCOUNTS",
+        "type": "TABLE",
+        "origin": "REPO",
+        "path": "01_schema.sql"
+      },
+      {
+        "id": "TRG-APP.ACCOUNTS_BIU",
+        "type": "TRIGGER",
+        "origin": "REPO",
+        "path": "02_account_mgmt.sql"
+      },
+      {
+        "id": "VIEW-APP.ACTIVE_ACCOUNTS",
+        "type": "VIEW",
+        "origin": "REPO",
+        "path": "01_schema.sql"
+      },
+      {
+        "id": "VIEW-APP.REMOTE_POSITIONS",
+        "type": "VIEW",
+        "origin": "REPO",
+        "path": "04_reporting.sql"
+      }
+    ],
+    "edges": [
+      {
+        "from": "PKGB-APP.ACCOUNT_MGMT",
+        "to": null,
+        "type": "CALLS",
+        "resolved": false,
+        "confirmed": true,
+        "source_line_hint": 15,
+        "detail": "AUDIT_LOG_PKG.RECORD_TXN"
+      },
+      {
+        "from": "PKGB-APP.ACCOUNT_MGMT",
+        "to": "EXTERNAL-DBMS_OUTPUT",
+        "type": "CALLS",
+        "resolved": true,
+        "confirmed": true,
+        "source_line_hint": 14
+      },
+      {
+        "from": "IDX-APP.ACCOUNTS_OWNER_IDX",
+        "to": "TBL-APP.ACCOUNTS",
+        "type": "DEPENDS_ON",
+        "resolved": true,
+        "confirmed": true,
+        "source_line_hint": 10
+      },
+      {
+        "from": "PKGB-APP.ACCOUNT_MGMT",
+        "to": "TBL-APP.ACCOUNTS",
+        "type": "DEPENDS_ON",
+        "resolved": true,
+        "confirmed": true,
+        "source_line_hint": 11
+      },
+      {
+        "from": "PKGB-APP.ACCOUNT_MGMT",
+        "to": null,
+        "type": "DYNAMIC_REF",
+        "resolved": false,
+        "confirmed": false,
+        "source_line_hint": 28
+      },
+      {
+        "from": "PKGB-APP.ACCOUNT_MGMT",
+        "to": "PKGS-APP.ACCOUNT_MGMT",
+        "type": "IMPLEMENTS_SPEC",
+        "resolved": true,
+        "confirmed": true,
+        "source_line_hint": 8
+      },
+      {
+        "from": "SPS-.00_RUN_ALL",
+        "to": "PKGS-APP.ACCOUNT_MGMT",
+        "type": "INCLUDES",
+        "resolved": true,
+        "confirmed": true,
+        "source_line_hint": 5
+      },
+      {
+        "from": "SPS-.00_RUN_ALL",
+        "to": "SEED-APP.ACCOUNTS",
+        "type": "INCLUDES",
+        "resolved": true,
+        "confirmed": true,
+        "source_line_hint": 6
+      },
+      {
+        "from": "SPS-.00_RUN_ALL",
+        "to": "TBL-APP.ACCOUNTS",
+        "type": "INCLUDES",
+        "resolved": true,
+        "confirmed": true,
+        "source_line_hint": 4
+      },
+      {
+        "from": "SPS-.00_RUN_ALL",
+        "to": "VIEW-APP.REMOTE_POSITIONS",
+        "type": "INCLUDES",
+        "resolved": true,
+        "confirmed": true,
+        "source_line_hint": 7
+      },
+      {
+        "from": "VIEW-APP.ACTIVE_ACCOUNTS",
+        "to": "TBL-APP.ACCOUNTS",
+        "type": "READS",
+        "resolved": true,
+        "confirmed": true,
+        "source_line_hint": 14
+      },
+      {
+        "from": "VIEW-APP.REMOTE_POSITIONS",
+        "to": "DBLINK-FINANCE_LINK",
+        "type": "READS",
+        "resolved": true,
+        "confirmed": true,
+        "source_line_hint": 3
+      },
+      {
+        "from": "VIEW-APP.REMOTE_POSITIONS",
+        "to": "TBL-APP.ACCOUNTS",
+        "type": "READS",
+        "resolved": true,
+        "confirmed": true,
+        "source_line_hint": 3
+      },
+      {
+        "from": "TRG-APP.ACCOUNTS_BIU",
+        "to": "TBL-APP.ACCOUNTS",
+        "type": "TRIGGERS_ON",
+        "resolved": true,
+        "confirmed": true,
+        "source_line_hint": 35
+      },
+      {
+        "from": "PKGB-APP.ACCOUNT_MGMT",
+        "to": "TBL-APP.ACCOUNTS",
+        "type": "WRITES",
+        "resolved": true,
+        "confirmed": true,
+        "source_line_hint": 13
+      },
+      {
+        "from": "SEED-APP.ACCOUNTS",
+        "to": "TBL-APP.ACCOUNTS",
+        "type": "WRITES",
+        "resolved": true,
+        "confirmed": true,
+        "source_line_hint": 1
+      },
+      {
+        "from": "SEED-APP.ACCOUNTS_2",
+        "to": "TBL-APP.ACCOUNTS",
+        "type": "WRITES",
+        "resolved": true,
+        "confirmed": true,
+        "source_line_hint": 4
+      }
+    ]
+  },
+  "issues": [
+    {
+      "severity": "error",
+      "type": "duplicate_id",
+      "file": "03_seed.sql",
+      "object_id": "SEED-APP.ACCOUNTS_2",
+      "message": "Object id 'SEED-APP.ACCOUNTS' already assigned elsewhere; this occurrence renamed to 'SEED-APP.ACCOUNTS_2'."
+    },
+    {
+      "severity": "info",
+      "type": "dynamic_ref",
+      "file": "02_account_mgmt.sql",
+      "line": 28,
+      "message": "EXECUTE IMMEDIATE detected - target cannot be resolved statically."
+    },
+    {
+      "severity": "warning",
+      "type": "unassigned_id",
+      "file": "00_run_all.sql",
+      "object_id": "SPS-.00_RUN_ALL",
+      "message": "SQLPLUS_SCRIPT at line 1 has no declared object name; filename-derived id used."
+    },
+    {
+      "severity": "warning",
+      "type": "unassigned_id",
+      "file": "V002__add_status_column.sql",
+      "object_id": "MIG-.V002__ADD_STATUS_COLUMN",
+      "message": "MIGRATION at line 1 has no declared object name; filename-derived id used."
+    },
+    {
+      "severity": "warning",
+      "type": "unresolved_reference",
+      "file": "02_account_mgmt.sql",
+      "line": 15,
+      "message": "CALL target 'AUDIT_LOG_PKG.RECORD_TXN' not found among scanned packages."
+    },
+    {
+      "severity": "warning",
+      "type": "unresolved_reference",
+      "file": "05_legacy_calc.sql",
+      "object_id": "PKGB-APP.LEGACY_CALC",
+      "message": "PACKAGE_BODY 'LEGACY_CALC' has no matching PACKAGE_SPEC in this repository."
+    }
+  ]
+}

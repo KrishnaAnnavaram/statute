@@ -2,7 +2,7 @@
 """
 Stage 2: PARSER (deterministic, no LLM)
 ----------------------------------------
-Reads the latest (or a pinned) inventory run produced by 00_inventory.py,
+Reads the latest (or a pinned) inventory run produced by 01_inventory.py,
 and for every file routed as parse-worthy, performs full structural
 extraction of PL/SQL objects: packages (spec + body + members), standalone
 procedures/functions, and triggers.
@@ -47,7 +47,7 @@ import sqlglot  # noqa: E402
 
 
 # ---------------------------------------------------------------------------
-# Run versioning (same convention as 00_inventory.py)
+# Run versioning (same convention as 01_inventory.py)
 # ---------------------------------------------------------------------------
 
 def generate_run_version() -> str:

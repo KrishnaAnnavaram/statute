@@ -29,7 +29,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 FIXTURE_DIR = ROOT / "tests" / "fixtures" / "sample_plsql"
-INVENTORY_SCRIPT = ROOT / ".claude" / "scripts" / "00_inventory.py"
+INVENTORY_SCRIPT = ROOT / ".claude" / "scripts" / "01_inventory.py"
 PARSER_SCRIPT = ROOT / ".claude" / "scripts" / "02_parser.py"
 
 sys.path.insert(0, str(ROOT / ".claude" / "scripts"))
@@ -51,7 +51,7 @@ def run_pipeline(sql_dir: Path, work_dir: Path) -> dict:
         capture_output=True, text=True,
     )
     if result.returncode != 0:
-        raise RuntimeError(f"00_inventory.py failed:\n{result.stdout}\n{result.stderr}")
+        raise RuntimeError(f"01_inventory.py failed:\n{result.stdout}\n{result.stderr}")
     # 02_parser.py resolves via latest.json — build one manually since
     # --output on the inventory script bypasses run versioning.
     latest = {"run_version": "run", "path": "run/inventory-artifact.json", "updated_at": "test"}

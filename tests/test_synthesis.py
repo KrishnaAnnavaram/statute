@@ -17,7 +17,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 SCRIPTS = ROOT / ".claude" / "scripts"
 STAGES = [
-    (SCRIPTS / "00_inventory.py", "inventory", "inventory-artifact.json", []),
+    (SCRIPTS / "01_inventory.py", "inventory", "inventory-artifact.json", []),
     (SCRIPTS / "02_parser.py", "parser", "parser_artifact.json", ["--inventory-root"]),
     (SCRIPTS / "03_data.py", "data", "data_artifact.json", ["--inventory-root", "--parser-root"]),
     (SCRIPTS / "04_logic.py", "logic", "logic_artifact.json", ["--parser-root", "--inventory-root"]),

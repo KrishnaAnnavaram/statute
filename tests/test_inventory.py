@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Golden-file regression test for 00_inventory.py.
+Golden-file regression test for 01_inventory.py.
 
 Runs the inventory tool against tests/fixtures/sample_plsql/ and asserts
 the result is byte-identical to tests/fixtures/expected-inventory-artifact.json,
@@ -24,7 +24,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 FIXTURE_DIR = ROOT / "tests" / "fixtures" / "sample_plsql"
 GOLDEN_PATH = ROOT / "tests" / "fixtures" / "expected-inventory-artifact.json"
-SCRIPT_PATH = ROOT / ".claude" / "scripts" / "00_inventory.py"
+SCRIPT_PATH = ROOT / ".claude" / "scripts" / "01_inventory.py"
 
 
 def normalize(artifact: dict) -> dict:
@@ -41,7 +41,7 @@ def main() -> int:
             capture_output=True, text=True,
         )
         if result.returncode != 0:
-            print("FAIL: 00_inventory.py exited non-zero")
+            print("FAIL: 01_inventory.py exited non-zero")
             print(result.stdout)
             print(result.stderr)
             return 1

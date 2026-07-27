@@ -13,7 +13,7 @@ Output: output/inventory/<run_version>/inventory-artifact.json (new timestamped
         instead (no versioning; used by the test suite).
 
 Usage:
-    python .claude/scripts/00_inventory.py <sql_dir> [--output <path> | --output-root <dir>]
+    python .claude/scripts/01_inventory.py <sql_dir> [--output <path> | --output-root <dir>]
                           [--exclude <pattern> ...]
                           [--encoding <enc>] [--no-content-hints] [--verbose]
     (run from the repo root — output paths are relative to the current
@@ -22,7 +22,7 @@ Usage:
 Claude Code invocation:
     When a user provides a directory of .sql files and asks to begin the
     SQL → BRD pipeline, run this script first. Its output is the required
-    input for 01_parse.py.
+    input for 02_parser.py.
 """
 
 import argparse
@@ -41,7 +41,7 @@ from pathlib import Path
 # Lightweight regex scan of raw file text to detect what flavours of SQL
 # are present. This is NOT a parser — it does not understand nesting or
 # semantics. It only answers: "does this file contain X at all?"
-# The real parser (01_parse.py) does the structural work.
+# The real parser (02_parser.py) does the structural work.
 # ---------------------------------------------------------------------------
 
 # Each entry: (hint_key, compiled_regex)
@@ -531,10 +531,10 @@ def main() -> None:
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  python .claude/scripts/00_inventory.py ./sql_codebase
-  python .claude/scripts/00_inventory.py ./sql_codebase --output-root output/inventory --verbose
-  python .claude/scripts/00_inventory.py ./sql_codebase --output checkpoints/inventory-artifact.json --verbose
-  python .claude/scripts/00_inventory.py ./sql_codebase --exclude "*_backup*" "legacy/*" --no-content-hints
+  python .claude/scripts/01_inventory.py ./sql_codebase
+  python .claude/scripts/01_inventory.py ./sql_codebase --output-root output/inventory --verbose
+  python .claude/scripts/01_inventory.py ./sql_codebase --output checkpoints/inventory-artifact.json --verbose
+  python .claude/scripts/01_inventory.py ./sql_codebase --exclude "*_backup*" "legacy/*" --no-content-hints
         """,
     )
     parser.add_argument(
@@ -646,7 +646,7 @@ Examples:
     }
 
     manifest = {
-        "pipeline_stage":   "00_inventory",
+        "pipeline_stage":   "01_inventory",
         "schema_version":   "2.0",
         "generated_at":     run_ts,
         "source_dir":       str(sql_dir),
@@ -664,7 +664,7 @@ Examples:
 
     if versioned_run:
         run_meta = {
-            "stage":        "00_inventory",
+            "stage":        "01_inventory",
             "run_version":  run_version,
             "generated_at": run_ts,
             "status":       "success",
@@ -696,7 +696,7 @@ Examples:
     warn = len(summary["files_with_warnings"])
     bad  = summary["total_files_unreadable"] + summary["total_files_empty"]
 
-    print(f"[00_inventory] Complete.")
+    print(f"[01_inventory] Complete.")
     print(f"  Source dir : {sql_dir}")
     print(f"  Output     : {output_path}")
     print(f"  Files found: {summary['total_files_found']} total, "
@@ -712,7 +712,13 @@ Examples:
     if versioned_run:
         print(f"  Run version: {run_version}")
         print(f"  Latest ptr : {latest_path}")
-    print(f"\n  Next step  : python 01_parse.py {output_path}")
+    if versioned_run:
+        print(f"\n  Next step  : python .claude/scripts/02_parser.py "
+              f"--inventory-root {args.output_root} --inventory-run {run_version}")
+    else:
+        print(f"\n  Next step  : python .claude/scripts/02_parser.py "
+              f"(requires --output-root; 02_parser.py reads versioned runs, "
+              f"not the --output path {output_path})")
 
 
 if __name__ == "__main__":

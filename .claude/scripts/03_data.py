@@ -79,7 +79,7 @@ DESIGN_REFERENCES = [
 
 
 # ---------------------------------------------------------------------------
-# Run versioning (same convention as 00_inventory.py / 02_parser.py)
+# Run versioning (same convention as 01_inventory.py / 02_parser.py)
 # ---------------------------------------------------------------------------
 
 def generate_run_version() -> str:

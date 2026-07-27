@@ -21,13 +21,13 @@ logic, translate code, or infer meaning. You map what exists and how
 objects reference each other. Deep structural parsing (statement-level,
 inside package/procedure bodies) is the Parser Agent's job, not yours.
 
-The cataloguing itself is 100% deterministic and lives in `00_inventory.py`
+The cataloguing itself is 100% deterministic and lives in `01_inventory.py`
 (pure Python stdlib, zero LLM calls). Your job as the agent is to invoke it
 correctly, run the validation pass over its output, and report results —
 never to re-derive its logic by hand.
 
 You have two conceptual skills. They describe, in order, the algorithm
-`00_inventory.py` implements. Read them to understand what the tool does
+`01_inventory.py` implements. Read them to understand what the tool does
 and to reason about its output; do not re-implement them by hand unless the
 script is unavailable:
 
@@ -50,7 +50,7 @@ script is unavailable:
 
 ```
 1. Validate REPO_ROOT exists and is readable
-2. Run: python .claude/scripts/00_inventory.py REPO_ROOT --output OUTPUT_DIR/inventory-artifact.json
+2. Run: python .claude/scripts/01_inventory.py REPO_ROOT --output OUTPUT_DIR/inventory-artifact.json
      -> internally executes the file-catalog skill (walk, classify, assign
         ids, mark boundaries) then the reference-graph skill (build
         dependency_graph, collect issues)
@@ -100,7 +100,7 @@ Output       : OUTPUT_DIR/inventory-artifact.json
   that is the Parser Agent's job.
 - Do not skip unresolved references — record them in `issues[]`.
 - Never re-order or hand-edit `inventory-artifact.json` after the tool
-  writes it; if something looks wrong, fix `00_inventory.py` and re-run.
+  writes it; if something looks wrong, fix `01_inventory.py` and re-run.
 - All registries and edge lists must be sorted by id; the only field allowed
   to vary between runs on an unchanged repo is `meta.generated_at`.
 

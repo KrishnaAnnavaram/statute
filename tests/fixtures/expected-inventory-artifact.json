@@ -3,7 +3,7 @@
     "generated_at": "2026-07-20T18:10:56.111524+00:00",
     "source_dir": "E:\\Virtusa Projects\\plsql_to_brd\\tests\\fixtures\\sample_plsql",
     "agent_version": "1_inventory@1.0",
-    "tool": "00_inventory.py",
+    "tool": "01_inventory.py",
     "total_files_scanned": 7
   },
   "stats": {

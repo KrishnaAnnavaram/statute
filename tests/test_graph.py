@@ -43,7 +43,7 @@ def run_step(script, out_dir, extra_args):
 def main() -> int:
     with tempfile.TemporaryDirectory() as tmp:
         work = Path(tmp)
-        subprocess.run([sys.executable, str(SCRIPTS / "00_inventory.py"), str(ROOT / "src"),
+        subprocess.run([sys.executable, str(SCRIPTS / "01_inventory.py"), str(ROOT / "src"),
                          "--output", str(work / "inventory" / "run" / "inventory-artifact.json")],
                         capture_output=True, text=True, check=True)
         (work / "inventory" / "latest.json").write_text(json.dumps(

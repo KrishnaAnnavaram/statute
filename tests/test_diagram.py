@@ -22,7 +22,7 @@ import tempfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-INVENTORY_SCRIPT = ROOT / ".claude" / "scripts" / "00_inventory.py"
+INVENTORY_SCRIPT = ROOT / ".claude" / "scripts" / "01_inventory.py"
 PARSER_SCRIPT = ROOT / ".claude" / "scripts" / "02_parser.py"
 DIAGRAM_SCRIPT = ROOT / ".claude" / "scripts" / "06_diagram.py"
 

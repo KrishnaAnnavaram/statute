@@ -30,7 +30,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 FIXTURE_DIR = ROOT / "tests" / "fixtures" / "sample_plsql"
-INVENTORY_SCRIPT = ROOT / ".claude" / "scripts" / "00_inventory.py"
+INVENTORY_SCRIPT = ROOT / ".claude" / "scripts" / "01_inventory.py"
 PARSER_SCRIPT = ROOT / ".claude" / "scripts" / "02_parser.py"
 DATA_SCRIPT = ROOT / ".claude" / "scripts" / "03_data.py"
 
@@ -53,7 +53,7 @@ def run_full_pipeline(sql_dir: Path, work_dir: Path) -> dict:
         capture_output=True, text=True,
     )
     if r.returncode != 0:
-        raise RuntimeError(f"00_inventory.py failed:\n{r.stdout}\n{r.stderr}")
+        raise RuntimeError(f"01_inventory.py failed:\n{r.stdout}\n{r.stderr}")
     (inv_dir / "latest.json").write_text(json.dumps(
         {"run_version": "run", "path": "run/inventory-artifact.json", "updated_at": "test"}))
 

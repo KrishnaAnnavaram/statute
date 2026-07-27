@@ -6,7 +6,7 @@ description: >
   assigns owner-qualified path-independent ids, and marks coarse line
   boundaries for each object. Produces the raw file_registry and
   object_registry that the Inventory Agent assembles into the final
-  artifact. Implemented deterministically by 00_inventory.py; used
+  artifact. Implemented deterministically by 01_inventory.py; used
   exclusively by the Inventory Agent (1_inventory_plsql).
 ---
 

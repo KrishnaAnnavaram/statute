@@ -30,7 +30,7 @@ reading or interpreting PL/SQL source yourself.
 extraction is 100% deterministic: a real ANTLR4 parse tree (Oracle PL/SQL
 grammar, `antlr/grammars-v4`) for procedural structure, plus sqlglot
 (`dialect="oracle"`) for individual DML statement breakdown. This mirrors
-the Inventory Agent's relationship to `00_inventory.py` — you are a thin
+the Inventory Agent's relationship to `01_inventory.py` — you are a thin
 wrapper over `.claude/scripts/02_parser.py`, not a reasoning step.
 
 ---

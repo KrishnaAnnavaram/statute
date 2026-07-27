@@ -7,7 +7,7 @@ description: >
   dependencies, and dynamic SQL — and builds a directed dependency graph
   (nodes + typed edges). Collects all issues. Produces the final
   inventory-artifact.json schema sections: stats, dependency_graph, and
-  issues. Implemented deterministically by 00_inventory.py; used
+  issues. Implemented deterministically by 01_inventory.py; used
   exclusively by the Inventory Agent (1_inventory_plsql).
 ---
 
@@ -109,7 +109,7 @@ This skill produces the following sections of `inventory-artifact.json`
     "generated_at": "2026-07-20T18:09:30+00:00",
     "source_dir": "/absolute/path/to/repo",
     "agent_version": "1_inventory@1.0",
-    "tool": "00_inventory.py",
+    "tool": "01_inventory.py",
     "total_files_scanned": 7
   },
   "stats": {

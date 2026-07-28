@@ -100,6 +100,17 @@ def detect_gaps(inventory, parser_artifact, data_artifact, logic_artifact, rules
         elif i["type"] == "unknown_column_reference":
             add("UNKNOWN_COLUMN_REFERENCE", "medium", f"Unknown column in {i.get('object_id', '?')}",
                 i["message"], "data_artifact")
+        elif i["type"] == "constraint_not_enforced":
+            # High severity: the schema documents a rule the database is not
+            # actually applying. Anyone reading the BRD would otherwise assume
+            # this invariant holds for the data. It does not.
+            add("CONSTRAINT_NOT_ENFORCED", "high",
+                f"Constraint '{i.get('constraint')}' on {i.get('table')} is DISABLED",
+                i["message"], "data_artifact")
+        elif i["type"] == "constraint_not_validated":
+            add("CONSTRAINT_NOT_VALIDATED", "medium",
+                f"Constraint '{i.get('constraint')}' on {i.get('table')} is ENABLE NOVALIDATE",
+                i["message"], "data_artifact")
 
     for table_name, table in data_artifact.get("tables", {}).items():
         for col in table["columns"]:
@@ -144,10 +155,24 @@ def _iter_logic_records(logic_artifact):
 def to_ears_statement(rule: dict) -> str:
     kind = rule["source"]["kind"]
     cond = rule.get("condition_text", "")
+
+    # A DISABLED constraint must never be written as an unconditional SHALL —
+    # that would state a guarantee the database is not providing.
+    if rule.get("is_enforced") is False:
+        return (f"The system is INTENDED to ensure: {cond} — but this constraint is currently "
+                "DISABLED and is NOT being enforced.")
+
     if kind == "ddl_check_constraint":
         return f"The system SHALL always ensure: {cond}."
+    if kind == "ddl_virtual_column":
+        return f"The system SHALL always derive this value as: {cond}."
+    if kind in ("ddl_unique_constraint", "ddl_unique_index"):
+        return f"The system SHALL reject any row that duplicates an existing {cond}."
+    if kind == "ddl_view_filter":
+        return f"The system SHALL expose only records where {cond}."
     if kind == "named_exception":
-        return f"IF the condition '{cond}' occurs, THEN the system SHALL detect it and invoke the associated error handling."
+        return (f"IF the condition '{cond}' occurs, THEN the system SHALL detect it and invoke the "
+                "associated error handling.")
     return f"IF {cond}, THEN the system SHALL apply the processing described below."
 
 
@@ -158,6 +183,31 @@ CONFIDENCE_MARK = {"confirmed": "✓ Confirmed", "high": "✓ High",
 # ---------------------------------------------------------------------------
 # BRD assembly
 # ---------------------------------------------------------------------------
+
+def format_rule_source(src: dict) -> str:
+    """
+    Render a rule's provenance for the BRD.
+
+    Rules arrive from several distinct origins — procedural code (which has an
+    object_id and a line), and four kinds of DDL construct (which do not).
+    Assuming object_id/line exist crashes on every DDL-sourced rule, so each
+    kind is formatted explicitly and there is an honest fallback for any kind
+    added later.
+    """
+    kind = src.get("kind", "")
+    table, view = src.get("table"), src.get("view")
+    if kind == "ddl_check_constraint":
+        return f"DDL constraint `{src.get('constraint_name')}` on table `{table}`"
+    if kind == "ddl_virtual_column":
+        return f"Computed column `{table}.{src.get('column')}` defined in the schema"
+    if kind in ("ddl_unique_constraint", "ddl_unique_index"):
+        return f"Uniqueness rule `{src.get('constraint_name')}` on table `{table}`"
+    if kind == "ddl_view_filter":
+        return f"Filter predicate of view `{view}`"
+    if src.get("object_id") and src.get("line"):
+        return f"`{src['object_id']}`, line {src['line']}"
+    return f"{kind or 'unknown source'}"
+
 
 def complexity_label(score: int) -> str:
     if score <= 3:
@@ -271,11 +321,11 @@ def write_brd(system_name, inventory, parser_artifact, data_artifact, logic_arti
             L.append(f"**Category:** {rule['category'].replace('_', ' ').title()} | **Confidence:** {mark}\n")
             L.append(f"{rule['description']}\n")
             L.append(f"**Formal statement:** {to_ears_statement(rule)}\n")
-            src = rule["source"]
-            if src["kind"] == "ddl_check_constraint":
-                L.append(f"**Source:** DDL constraint `{src['constraint_name']}` on table `{src['table']}`\n")
-            else:
-                L.append(f"**Source:** `{src['object_id']}`, line {src['line']}\n")
+            L.append(f"**Source:** {format_rule_source(rule['source'])}\n")
+            if rule.get("is_enforced") is False:
+                L.append("> ⚠ **Not enforced by the database.** This rule is declared in the schema but "
+                         "the constraint is DISABLED, so existing and new data may violate it. Treat it "
+                         "as documented intent, not a guarantee.\n")
             if rule.get("requires_sme_review"):
                 L.append(f"> ⚠ **SME review required.** This rule's confidence is `{rule['confidence']}` "
                           "and its business purpose is not fully certain from static analysis alone.\n")

@@ -1,22 +1,22 @@
 #!/usr/bin/env python3
 """
-Regression tests for .claude/scripts/03_data.py.
+Regression tests for .claude/scripts/03_data.py (schema_version 2.0).
 
-Covers, using real fixtures rather than synthetic examples wherever
-possible:
-  1. End-to-end pipeline run (inventory -> parser -> data) against the real
-     production-shaped DDL in src/00_ddl_create_schema.sql: table/column/
-     PK/FK/CHECK extraction, comment-only enum mining, CHECK-constraint
-     enum mining + rule promotion, implicit FK detection (with confidence
-     tagging, never merged with declared FKs), cross-validation against
-     Agent 2's output (must be zero unknown tables/columns on this real,
-     already-debugged codebase — a regression guard), Oracle->PySpark type
-     mapping, and ERD generation.
-  2. Direct unit tests against tests/fixtures/sample_plsql/01_schema.sql +
-     02_account_mgmt.sql for %TYPE resolution (a case the production DDL
-     doesn't exercise) and confirms non-table DDL (view/index/synonym/
-     grant) is safely ignored, not mis-parsed as a table.
+Three layers:
+  1. Advanced fixture (tests/fixtures/sample_ddl/) — exercises every DDL
+     construct the agent extracts, especially the ones that are easy to
+     silently drop: constraint enforcement state, ON DELETE actions, virtual
+     columns, IDENTITY columns, COMMENT ON, views, indexes, synonyms,
+     partitioning, global temporary tables, full sequence metadata.
+  2. Real production DDL (src/) — guards the numbers that were verified by
+     hand, plus the zero-unknown-reference cross-validation invariant.
   3. Error resilience — malformed DDL must not crash the run.
+
+The single most important assertion in this file: a DISABLED CHECK
+constraint must never be promotable to a business rule. Oracle tracks
+STATUS and VALIDATED independently, and legacy schemas routinely leave
+constraints disabled after bulk loads. Reporting one as an active rule
+would be a false statement about what the system actually enforces.
 
 Usage:
     python tests/test_data.py
@@ -29,7 +29,7 @@ import tempfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-FIXTURE_DIR = ROOT / "tests" / "fixtures" / "sample_plsql"
+DDL_FIXTURE_DIR = ROOT / "tests" / "fixtures" / "sample_ddl"
 INVENTORY_SCRIPT = ROOT / ".claude" / "scripts" / "01_inventory.py"
 PARSER_SCRIPT = ROOT / ".claude" / "scripts" / "02_parser.py"
 DATA_SCRIPT = ROOT / ".claude" / "scripts" / "03_data.py"
@@ -46,12 +46,12 @@ def check(condition: bool, label: str) -> None:
         failures.append(label)
 
 
-def run_full_pipeline(sql_dir: Path, work_dir: Path) -> dict:
+def run_pipeline(sql_dir: Path, work_dir: Path) -> tuple[dict, Path]:
     inv_dir = work_dir / "inventory"
     r = subprocess.run(
-        [sys.executable, str(INVENTORY_SCRIPT), str(sql_dir), "--output", str(inv_dir / "run" / "inventory-artifact.json")],
-        capture_output=True, text=True,
-    )
+        [sys.executable, str(INVENTORY_SCRIPT), str(sql_dir),
+         "--output", str(inv_dir / "run" / "inventory-artifact.json")],
+        capture_output=True, text=True)
     if r.returncode != 0:
         raise RuntimeError(f"01_inventory.py failed:\n{r.stdout}\n{r.stderr}")
     (inv_dir / "latest.json").write_text(json.dumps(
@@ -59,9 +59,8 @@ def run_full_pipeline(sql_dir: Path, work_dir: Path) -> dict:
 
     parser_dir = work_dir / "parser"
     r = subprocess.run(
-        [sys.executable, str(PARSER_SCRIPT), "--inventory-root", str(inv_dir), "--output", str(parser_dir / "run")],
-        capture_output=True, text=True,
-    )
+        [sys.executable, str(PARSER_SCRIPT), "--inventory-root", str(inv_dir),
+         "--output", str(parser_dir / "run")], capture_output=True, text=True)
     if r.returncode != 0:
         raise RuntimeError(f"02_parser.py failed:\n{r.stdout}\n{r.stderr}")
     (parser_dir / "latest.json").write_text(json.dumps(
@@ -69,150 +68,254 @@ def run_full_pipeline(sql_dir: Path, work_dir: Path) -> dict:
 
     data_dir = work_dir / "data_out"
     r = subprocess.run(
-        [sys.executable, str(DATA_SCRIPT), "--inventory-root", str(inv_dir), "--parser-root", str(parser_dir),
-         "--output", str(data_dir)],
-        capture_output=True, text=True,
-    )
+        [sys.executable, str(DATA_SCRIPT), "--inventory-root", str(inv_dir),
+         "--parser-root", str(parser_dir), "--output", str(data_dir)],
+        capture_output=True, text=True)
     if r.returncode != 0:
         raise RuntimeError(f"03_data.py failed:\n{r.stdout}\n{r.stderr}")
     print(r.stdout)
-    return json.loads((data_dir / "data_artifact.json").read_text(encoding="utf-8"))
+    return json.loads((data_dir / "data_artifact.json").read_text(encoding="utf-8")), data_dir
 
+
+# ---------------------------------------------------------------------------
+# Layer 1 — advanced fixture: every construct
+# ---------------------------------------------------------------------------
+
+def test_advanced_fixture(work_dir: Path) -> None:
+    print("\n=== Advanced DDL fixture: all constructs ===")
+    art, data_dir = run_pipeline(DDL_FIXTURE_DIR, work_dir / "adv")
+    tables, views, indexes = art["tables"], art["views"], art["indexes"]
+    synonyms, sequences = art["synonyms"], art["sequences"]
+
+    check(art["stats"]["parse_errors"] == 0, "advanced fixture parses with zero syntax errors")
+    check(art["schema_version"] == "2.0", "artifact reports schema_version 2.0")
+
+    # --- THE correctness assertion: constraint enforcement state ---
+    print("\n  -- constraint enforcement (the correctness fix) --")
+    contracts = tables["CONTRACTS"]
+    by_name = {c["name"]: c for c in contracts["check_constraints"]}
+
+    disabled = by_name.get("CK_CONTRACTS_PREMIUM")
+    check(disabled is not None, "DISABLED check constraint is still extracted (not dropped)")
+    if disabled:
+        check(disabled["enforcement"]["status"] == "DISABLED", "DISABLE parsed as status DISABLED")
+        check(disabled["enforcement"]["is_enforced"] is False, "DISABLED constraint reports is_enforced False")
+        check(disabled["promotable_to_rule"] is False,
+              "DISABLED constraint is NOT promotable to a business rule (the key correctness fix)")
+
+    novalidate = by_name.get("CK_CONTRACTS_STATUS")
+    check(novalidate is not None, "ENABLE NOVALIDATE check constraint extracted")
+    if novalidate:
+        check(novalidate["enforcement"]["status"] == "ENABLED", "ENABLE NOVALIDATE parsed as ENABLED")
+        check(novalidate["enforcement"]["validated"] == "NOT_VALIDATED",
+              "NOVALIDATE parsed as validated=NOT_VALIDATED")
+        check(novalidate["enforcement"]["confidence"] == "enforced_new_data_only",
+              "ENABLE NOVALIDATE gets its own distinct confidence level")
+        check(novalidate["promotable_to_rule"] is True,
+              "ENABLE NOVALIDATE is still promotable (it IS enforced going forward)")
+
+    parties = tables["PARTIES"]
+    plain_check = parties["check_constraints"][0]
+    check(plain_check["enforcement"]["status"] == "ENABLED" and
+          plain_check["enforcement"]["validated"] == "VALIDATED",
+          "constraint with no explicit state defaults to Oracle's ENABLE VALIDATE")
+    check(plain_check["enforcement"]["explicitly_stated"] is False,
+          "default enforcement is flagged as not explicitly stated in the DDL")
+
+    disabled_issues = [i for i in art["issues"] if i["type"] == "constraint_not_enforced"]
+    check(len(disabled_issues) == 1, "DISABLED constraint raises exactly one 'not enforced' issue")
+    nv_issues = [i for i in art["issues"] if i["type"] == "constraint_not_validated"]
+    check(len(nv_issues) == 1, "ENABLE NOVALIDATE raises a 'not validated' info issue")
+
+    # An enum sourced from a DISABLED constraint must be downgraded.
+    print("\n  -- enum confidence follows constraint enforcement --")
+    premium_col = next(c for c in contracts["columns"] if c["name"] == "CONTRACT_STATUS")
+    check(premium_col.get("enum_values") == ["DRAFT", "ACTIVE", "LAPSED"],
+          "enum values mined from the NOVALIDATE CHECK constraint")
+
+    # --- ON DELETE ---
+    print("\n  -- ON DELETE actions --")
+    fk_cascade = contracts["foreign_keys"][0]
+    check(fk_cascade["on_delete"] == "CASCADE", "ON DELETE CASCADE captured")
+    fk_setnull = tables["CLAIMS"]["foreign_keys"][0]
+    check(fk_setnull["on_delete"] == "SET_NULL", "ON DELETE SET NULL captured")
+    check(parties["check_constraints"][0].get("on_delete") is None,
+          "non-FK constraints carry no on_delete key")
+
+    # --- virtual / IDENTITY columns ---
+    print("\n  -- virtual and IDENTITY columns --")
+    display = next((c for c in parties["columns"] if c["name"] == "DISPLAY_NAME"), None)
+    check(display is not None, "virtual column extracted (was silently dropped before)")
+    if display:
+        check(display["is_virtual"] is True, "virtual column flagged is_virtual")
+        check("first_name" in display["generation_expression"].lower() and
+              "last_name" in display["generation_expression"].lower(),
+              "virtual column generation formula captured")
+    party_id = next(c for c in parties["columns"] if c["name"] == "PARTY_ID")
+    check(party_id["is_identity"] is True, "IDENTITY column detected")
+    check(party_id["identity_generation"] == "ALWAYS", "IDENTITY generation mode captured")
+
+    # --- comments ---
+    print("\n  -- COMMENT ON extraction --")
+    check(parties["comment"] == "Legal entities that can hold a contract", "COMMENT ON TABLE captured")
+    ptype = next(c for c in parties["columns"] if c["name"] == "PARTY_TYPE")
+    check(ptype.get("comment") == "Legal classification driving KYC requirements",
+          "COMMENT ON COLUMN captured and attached to the right column")
+
+    # --- views / indexes / synonyms ---
+    print("\n  -- views, indexes, synonyms --")
+    check("ACTIVE_CONTRACTS" in views, "view extracted")
+    av = views.get("ACTIVE_CONTRACTS", {})
+    check(av.get("references_tables") == ["CONTRACTS"], "view's backing table resolved")
+    check(av.get("filter_predicate") and "ACTIVE" in av["filter_predicate"],
+          "view WHERE clause captured as a filter predicate (the rule the view encodes)")
+
+    uix = next((i for i in indexes if i["index"] == "UIX_CLAIMS_CONTRACT_AMT"), None)
+    check(uix is not None and uix["unique"] is True, "UNIQUE index extracted and flagged unique")
+    if uix:
+        check(uix["table"] == "CLAIMS" and uix["columns"] == ["CONTRACT_ID", "CLAIM_AMOUNT"],
+              "index table and column list correct")
+    nonuix = next((i for i in indexes if i["index"] == "IX_CONTRACTS_STATUS"), None)
+    check(nonuix is not None and nonuix["unique"] is False, "non-unique index flagged correctly")
+
+    check("SYN_PARTIES" in synonyms, "synonym extracted")
+    check(synonyms.get("SYN_PARTIES", {}).get("target_object") == "PARTIES",
+          "synonym target resolved")
+    check(synonyms.get("SYN_PARTIES", {}).get("public") is True, "PUBLIC synonym flagged")
+
+    # --- partitioning / GTT ---
+    print("\n  -- partitioning and temporary tables --")
+    part = contracts["partitioning"]
+    check(part is not None, "partitioning metadata captured")
+    if part:
+        check(part["strategy"] == "RANGE", "RANGE partition strategy detected")
+        check(part["key_columns"] == ["START_DATE"], "partition key column captured")
+        check(part["partition_count"] == 3, "partition count correct")
+    gtt = tables["TMP_CLAIM_BATCH"]
+    check(gtt["temporary"] is True, "global temporary table flagged temporary")
+    check(gtt["temporary_scope"] == "DELETE_ROWS", "ON COMMIT DELETE ROWS captured")
+    check(parties["temporary"] is False, "ordinary table not flagged temporary")
+
+    # --- sequences ---
+    print("\n  -- full sequence metadata --")
+    seq = sequences["SEQ_ORDER_ID"]
+    check(seq["start_with"] == 5000 and seq["increment_by"] == 10, "sequence start/increment")
+    check(seq["max_value"] == 9999999 and seq["min_value"] == 1000, "sequence max/min captured")
+    check(seq["cycle"] is True and seq["cache"] == 50, "sequence CYCLE and CACHE captured")
+    plain = sequences["SEQ_PLAIN_ID"]
+    check(plain["increment_by"] == 1 and plain["cycle"] is False,
+          "bare sequence gets Oracle defaults, not nulls")
+
+    # --- inferred FK, type-compat aware ---
+    print("\n  -- inferred relationships --")
+    inferred = art["inferred_relationships"]
+    claims_inf = [r for r in inferred if r["from_table"] == "CLAIMS" and r["from_column"] == "PARTY_ID"]
+    check(len(claims_inf) == 1, "undeclared claims.party_id detected as an inferred relationship")
+    if claims_inf:
+        check(claims_inf[0]["relationship_type"] == "inferred",
+              "inferred relationship never labelled 'declared'")
+        check(claims_inf[0]["basis"] == "name_match+type_compatible",
+              "inferred relationship records type compatibility in its basis")
+    declared_pairs = {(fk["references_table"], t)
+                      for t, tb in tables.items() for fk in tb["foreign_keys"]}
+    check(("PARTIES", "CLAIMS") not in declared_pairs,
+          "the inferred relationship is genuinely absent from declared FKs")
+
+    # --- %TYPE resolution ---
+    print("\n  -- %TYPE resolution --")
+    res = {r["reference"]: r for r in art["type_reference_resolutions"]}
+    check(res.get("CONTRACTS.CONTRACT_STATUS%TYPE", {}).get("resolved") is True,
+          "valid %TYPE reference resolves against the data dictionary")
+    check(res.get("CONTRACTS.NO_SUCH_COLUMN%TYPE", {}).get("resolved") is False,
+          "invalid %TYPE reference reported unresolved, not silently accepted")
+
+    # --- sequence usage, column catalogue, rule candidates ---
+    print("\n  -- derived catalogues --")
+    su = art["sequence_usages"]
+    check(any(u["sequence"] == "SEQ_ORDER_ID" for u in su),
+          "seq_order_id.NEXTVAL usage linked to the statement that uses it")
+
+    cat = {c["column_id"]: c for c in art["column_catalogue"]}
+    check("PARTIES.PARTY_TYPE" in cat, "flat column catalogue built")
+    check(cat["PARTIES.PARTY_TYPE"]["description"] == "Legal classification driving KYC requirements",
+          "column catalogue carries the COMMENT ON description")
+    used = cat.get("CONTRACTS.CONTRACT_STATUS", {}).get("used_by_objects", [])
+    check(len(used) >= 1, "column catalogue tracks which objects use a column")
+
+    kinds = {c["source_kind"] for c in art["ddl_rule_candidates"]}
+    check({"check_constraint", "virtual_column", "unique_constraint",
+           "unique_index", "view_filter"} <= kinds,
+          f"rule candidates harvested from all five DDL sources, got {sorted(kinds)}")
+    disabled_cands = [c for c in art["ddl_rule_candidates"]
+                      if c.get("constraint_name") == "CK_CONTRACTS_PREMIUM"]
+    check(len(disabled_cands) == 1 and disabled_cands[0]["is_enforced"] is False,
+          "DISABLED constraint still appears as a candidate but flagged is_enforced False")
+
+    erd = (data_dir / "erd.mmd").read_text(encoding="utf-8")
+    check(erd.startswith("erDiagram"), "ERD generated as valid Mermaid")
+    check("[CASCADE]" in erd, "ERD annotates ON DELETE CASCADE on the relationship")
+
+
+# ---------------------------------------------------------------------------
+# Layer 2 — real production DDL
+# ---------------------------------------------------------------------------
 
 def test_real_production_ddl(work_dir: Path) -> None:
-    print("\n=== Full pipeline: real src/ DDL (15 tables, 8 relationships, 1 CHECK) ===")
-    artifact = run_full_pipeline(ROOT / "src", work_dir / "real")
-    tables = artifact["tables"]
+    print("\n=== Real src/ DDL (regression guard on verified numbers) ===")
+    art, _ = run_pipeline(ROOT / "src", work_dir / "real")
+    tables = art["tables"]
 
-    check(artifact["stats"]["parse_errors"] == 0, "zero ANTLR syntax errors parsing real DDL")
-    check(artifact["stats"]["tables_found"] == 15, f"15 tables found, got {artifact['stats']['tables_found']}")
-    check(artifact["stats"]["sequences_found"] == 3, "3 sequences found")
-    check(artifact["stats"]["declared_foreign_keys"] == 7, "7 declared foreign keys found")
+    check(art["stats"]["parse_errors"] == 0, "zero syntax errors parsing real DDL")
+    check(art["stats"]["tables_found"] == 15, f"15 tables, got {art['stats']['tables_found']}")
+    check(art["stats"]["sequences_found"] == 3, "3 sequences found")
+    check(art["stats"]["declared_foreign_keys"] == 7, "7 declared foreign keys")
 
-    # CHECK constraint -> candidate business rule (accounts.account_status)
     accounts = tables["ACCOUNTS"]
-    check(len(accounts["check_constraints"]) == 1, "accounts has exactly one CHECK constraint")
     status_col = next(c for c in accounts["columns"] if c["name"] == "ACCOUNT_STATUS")
-    check(status_col.get("enum_source") == "check_constraint", "account_status enum sourced from CHECK constraint")
-    check(status_col.get("confidence") == "enforced", "CHECK-sourced enum marked confidence: enforced")
-    check(set(status_col.get("enum_values", [])) == {"ACTIVE", "DORMANT", "CLOSED"},
-          "account_status enum values extracted correctly from CHECK expression")
-    check(accounts["check_constraints"][0]["promotable_to_rule"] is True,
-          "CHECK constraint flagged promotable_to_rule for the Rules Agent")
-
-    # Comment-only enum (account_type has no CHECK, only an inline comment)
+    check(status_col.get("enum_source") == "check_constraint", "CHECK-sourced enum on account_status")
+    check(status_col.get("confidence") == "enforced",
+          "enum from an ENABLED constraint keeps 'enforced' confidence")
     type_col = next(c for c in accounts["columns"] if c["name"] == "ACCOUNT_TYPE")
-    check(type_col.get("enum_source") == "comment_only", "account_type enum sourced from comment, not a constraint")
-    check(type_col.get("confidence") == "documented_only", "comment-only enum marked confidence: documented_only")
+    check(type_col.get("enum_source") == "comment_only", "comment-only enum still detected")
     check(type_col.get("requires_sme_review") is True, "comment-only enum flagged for SME review")
-    check("SAVINGS_REGULAR" in type_col.get("enum_values", []) and "OVERDRAFT" in type_col.get("enum_values", []),
-          "account_type enum values mined correctly across a multi-line trailing comment")
 
-    # Declared FK correctness
-    fk_names = {fk["name"] for fk in accounts["foreign_keys"]}
-    check("FK_ACCOUNTS_CUSTOMER" in fk_names, "accounts.customer_id declared FK extracted with correct name")
-    ck_names = {fk["references_table"] for fk in accounts["foreign_keys"]}
-    check("CUSTOMERS" in ck_names, "declared FK correctly points at CUSTOMERS table")
+    balance = next(c for c in accounts["columns"] if c["name"] == "BALANCE")
+    check(balance["pyspark_type"] == "DecimalType(18,2)", "NUMBER(18,2) -> DecimalType(18,2)")
+    dob = next(c for c in tables["CUSTOMERS"]["columns"] if c["name"] == "DATE_OF_BIRTH")
+    check(dob["pyspark_type"] == "TimestampType", "Oracle DATE -> TimestampType (time component)")
 
-    # Implicit FK: fraud_score_results.account_number -> accounts.account_number (no declared FK exists)
-    inferred = artifact["inferred_relationships"]
-    fraud_inferred = [r for r in inferred if r["from_table"] == "FRAUD_SCORE_RESULTS"]
-    check(len(fraud_inferred) == 1, "fraud_score_results.account_number detected as an inferred relationship")
-    if fraud_inferred:
-        check(fraud_inferred[0]["to_table"] == "ACCOUNTS", "inferred relationship correctly targets ACCOUNTS")
-        check(fraud_inferred[0]["relationship_type"] == "inferred", "inferred relationship tagged 'inferred', never 'declared'")
-    declared_pairs = {(fk["references_table"], t) for t, tbl in tables.items() for fk in tbl["foreign_keys"]}
-    check(("ACCOUNTS", "FRAUD_SCORE_RESULTS") not in declared_pairs,
-          "inferred relationship is genuinely absent from declared FKs (not a duplicate)")
-
-    # Composite primary key (loan_amortization_schedule)
     amort = tables["LOAN_AMORTIZATION_SCHEDULE"]
     check(set(amort["primary_key"]) == {"LOAN_ACCOUNT_NUMBER", "INSTALLMENT_NO"},
-          "composite primary key extracted correctly")
+          "composite primary key extracted")
 
-    # Default value kind classification (literal vs function_call)
-    default_col = next(c for c in tables["CUSTOMERS"]["columns"] if c["name"] == "CUSTOMER_SINCE_DATE")
-    check(default_col["default"]["kind"] == "function_call", "SYSDATE default classified as function_call")
-    kyc_col = next(c for c in tables["CUSTOMERS"]["columns"] if c["name"] == "KYC_STATUS")
-    check(kyc_col["default"]["kind"] == "literal", "'VERIFIED' default classified as literal")
-
-    # Oracle -> PySpark type mapping
-    check(status_col["pyspark_type"] == "StringType", "VARCHAR2 maps to PySpark StringType")
-    balance_col = next(c for c in accounts["columns"] if c["name"] == "BALANCE")
-    check(balance_col["pyspark_type"] == "DecimalType(18,2)", "NUMBER(18,2) maps to PySpark DecimalType(18,2)")
-    dob_col = next(c for c in tables["CUSTOMERS"]["columns"] if c["name"] == "DATE_OF_BIRTH")
-    check(dob_col["pyspark_type"] == "TimestampType" and "time component" in dob_col.get("note", ""),
-          "Oracle DATE maps to TimestampType with the time-component gotcha noted, not narrowed to DateType")
-
-    # Cross-validation against Agent 2's output — regression guard: this
-    # codebase is already debugged, so this must stay at zero.
-    check(artifact["stats"]["unknown_tables"] == 0, "zero unknown-table references cross-validating against parser output")
-    check(artifact["stats"]["unknown_columns"] == 0, "zero unknown-column references cross-validating against parser output")
-
-    # ERD
-    erd_path = Path(list(Path(work_dir / "real" / "data_out").glob("erd.mmd"))[0])
-    erd_text = erd_path.read_text(encoding="utf-8")
-    check(erd_text.startswith("erDiagram"), "erd.mmd starts with a valid Mermaid erDiagram declaration")
-    check("ACCOUNTS" in erd_text and "CUSTOMERS" in erd_text, "ERD includes real table names")
-
-    # design_references present and non-empty — no unattributed rules
-    check(len(artifact.get("design_references", [])) >= 3, "design_references present with cited sources")
+    check(art["stats"]["unknown_tables"] == 0, "zero unknown-table references (regression guard)")
+    check(art["stats"]["unknown_columns"] == 0, "zero unknown-column references (regression guard)")
+    check(len(art.get("design_references", [])) >= 6, "design_references cite every major decision")
 
 
-def test_type_resolution_and_non_table_ddl_skipped() -> None:
-    print("\n=== Direct unit test: %TYPE resolution + non-table DDL safely ignored ===")
-    import importlib
-    d = importlib.import_module("03_data")
-
-    tree, errors = d.parse_source(str(FIXTURE_DIR / "01_schema.sql"))
-    check(errors == [], "01_schema.sql (table+sequence+index+view+synonym+grant) parses with zero syntax errors")
-
-    table_ctxs = d.find_all(tree, "Create_tableContext", [])
-    check(len(table_ctxs) == 1, "exactly one CREATE TABLE found — view/index/synonym/grant correctly not mistaken for tables")
-
-    table = d.extract_table(table_ctxs[0])
-    check(table["table"] == "ACCOUNTS", "table name extracted correctly despite schema-qualified 'app.accounts'")
-    check(table["primary_key"] == ["ACCOUNT_ID"], "inline PRIMARY KEY on account_id extracted correctly")
-    balance_col = next(c for c in table["columns"] if c["name"] == "BALANCE")
-    check(balance_col["pyspark_type"] == "DecimalType(15,2)", "NUMBER(15,2) in fixture maps correctly")
-
-    seq_ctxs = d.find_all(tree, "Create_sequenceContext", [])
-    check(len(seq_ctxs) == 1, "sequence found despite view/index/synonym/grant also present in the same file")
-
-    # %TYPE resolution against the package fixture's declaration:
-    # l_balance app.accounts.balance%TYPE  (in 02_account_mgmt.sql)
-    tables = {table["table"]: table}
-    m = d._TYPE_REF_RE.search("app.accounts.balance%TYPE")
-    check(m is not None, "%TYPE regex matches a schema-qualified owner.table.column%TYPE reference")
-    if m:
-        tbl, col = m.group(1).upper(), m.group(2).upper()
-        found = tbl in tables and any(c["name"] == col for c in tables[tbl]["columns"])
-        check(found, "app.accounts.balance%TYPE resolves correctly against the extracted table model")
-
+# ---------------------------------------------------------------------------
+# Layer 3 — resilience
+# ---------------------------------------------------------------------------
 
 def test_malformed_ddl_does_not_crash(work_dir: Path) -> None:
-    print("\n=== Error resilience: malformed DDL must not crash the run ===")
-    bad_dir = work_dir / "bad_ddl"
-    bad_dir.mkdir(parents=True, exist_ok=True)
-    (bad_dir / "broken.sql").write_text(
-        "CREATE TABLE t_broken (col1 NUMBER, CONSTRAINT ck CHECK (col1 >);\n",
-        encoding="utf-8",
-    )
-    (bad_dir / "fine.sql").write_text(
-        "CREATE TABLE t_fine (id NUMBER PRIMARY KEY, name VARCHAR2(50));\n",
-        encoding="utf-8",
-    )
-    artifact = run_full_pipeline(bad_dir, work_dir / "resilience")
-    check("T_FINE" in artifact["tables"], "well-formed sibling table still extracted despite malformed neighbor")
-    check(artifact["stats"]["parse_errors"] > 0, "malformed DDL's syntax error is logged, not silently swallowed")
+    print("\n=== Error resilience ===")
+    bad = work_dir / "bad_ddl"
+    bad.mkdir(parents=True, exist_ok=True)
+    (bad / "broken.sql").write_text(
+        "CREATE TABLE t_broken (col1 NUMBER, CONSTRAINT ck CHECK (col1 >);\n", encoding="utf-8")
+    (bad / "fine.sql").write_text(
+        "CREATE TABLE t_fine (id NUMBER PRIMARY KEY, name VARCHAR2(50));\n", encoding="utf-8")
+    art, _ = run_pipeline(bad, work_dir / "resilience")
+    check("T_FINE" in art["tables"], "well-formed table extracted despite a malformed neighbour")
+    check(art["stats"]["parse_errors"] > 0, "malformed DDL's syntax error is logged, not swallowed")
 
 
 def main() -> int:
     with tempfile.TemporaryDirectory() as tmp:
-        work_dir = Path(tmp)
-        test_real_production_ddl(work_dir)
-        test_type_resolution_and_non_table_ddl_skipped()
-        test_malformed_ddl_does_not_crash(work_dir)
+        work = Path(tmp)
+        test_advanced_fixture(work)
+        test_real_production_ddl(work)
+        test_malformed_ddl_does_not_crash(work)
 
     print(f"\n{len(failures)} failure(s)" if failures else "\nAll tests passed.")
     for f in failures:

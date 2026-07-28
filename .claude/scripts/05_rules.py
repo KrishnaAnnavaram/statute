@@ -164,24 +164,93 @@ def guess_subject(condition_text: str, known_fields: list[str]) -> str:
 # Rule mining
 # ---------------------------------------------------------------------------
 
-def mine_from_check_constraints(data_artifact: dict) -> list[dict]:
+# How a DDL candidate's enforcement state maps onto rule confidence.
+# A DISABLED constraint is deliberately still surfaced as a rule — dropping it
+# would hide a documented business intent from the BRD entirely — but it is
+# scored low and flagged for SME review, and its description says plainly that
+# the database is NOT enforcing it.
+_ENFORCEMENT_TO_CONFIDENCE = {
+    "enforced":               (5, "confirmed", False),
+    "enforced_new_data_only": (4, "high",      True),
+    "not_enforced":           (2, "low",       True),
+}
+
+
+def mine_from_ddl_candidates(data_artifact: dict) -> list[dict]:
+    """
+    Consume Agent 3's unified ddl_rule_candidates feed: CHECK constraints,
+    virtual (computed) column formulas, UNIQUE constraints/indexes, and view
+    filter predicates — each carrying its real Oracle enforcement state.
+    """
     rules = []
-    for table_name, table in data_artifact["tables"].items():
-        for chk in table["check_constraints"]:
-            if not chk.get("promotable_to_rule"):
-                continue
-            category = classify_category(chk["expression"])
-            subject = guess_subject(chk["expression"], [c["name"] for c in table["columns"]])
+    for cand in data_artifact.get("ddl_rule_candidates", []):
+        kind = cand["source_kind"]
+        signal, confidence, needs_review = _ENFORCEMENT_TO_CONFIDENCE.get(
+            cand.get("confidence", "enforced"), (3, "medium", True))
+        expression = cand.get("expression", "")
+        table = cand.get("table")
+        columns = cand.get("columns") or []
+
+        if kind == "check_constraint":
+            subject = guess_subject(expression, [])
+            is_set = "IN(" in expression.upper().replace(" ", "")
+            name = (f"Restrict {business_name(subject)} to allowed values" if is_set
+                    else make_rule_name(classify_category(expression), subject, expression))
+            desc = f"The database defines: {expression} (table {table}). {cand['explanation']}"
             rules.append({
-                "raw_key": f"CHECK::{table_name}::{chk['name']}",
-                "category": category,
-                "structural_pattern": "SET_MEMBERSHIP" if "IN(" in chk["expression"].upper().replace(" ", "") else classify_pattern(chk["expression"]),
-                "name": f"Restrict {business_name(subject)} to allowed values" if "IN" in chk["expression"].upper() else make_rule_name(category, subject, chk["expression"]),
-                "description": f"The database enforces: {chk['expression']}. This is a hard constraint on table {table_name}, "
-                               f"not merely application-level logic — it cannot be bypassed by any calling code.",
-                "condition_text": chk["expression"],
-                "signal_strength": 5, "confidence": "confirmed", "requires_sme_review": False,
-                "source": {"kind": "ddl_check_constraint", "table": table_name, "constraint_name": chk["name"]},
+                "raw_key": f"CHECK::{table}::{cand.get('constraint_name')}",
+                "category": classify_category(expression),
+                "structural_pattern": "SET_MEMBERSHIP" if is_set else classify_pattern(expression),
+                "name": name, "description": desc, "condition_text": expression,
+                "signal_strength": signal, "confidence": confidence,
+                "requires_sme_review": needs_review,
+                "is_enforced": cand["is_enforced"],
+                "source": {"kind": "ddl_check_constraint", "table": table,
+                           "constraint_name": cand.get("constraint_name")},
+            })
+
+        elif kind == "virtual_column":
+            col = cand.get("column", "")
+            rules.append({
+                "raw_key": f"VCOL::{table}::{col}",
+                "category": "CALCULATION", "structural_pattern": "ARITHMETIC_RESULT",
+                "name": f"Calculate {business_name(col)}",
+                "description": f"{business_name(col)} on table {table} is a computed column, always "
+                               f"derived by the database as: {expression}. {cand['explanation']}",
+                "condition_text": expression,
+                "signal_strength": signal, "confidence": confidence,
+                "requires_sme_review": needs_review, "is_enforced": cand["is_enforced"],
+                "source": {"kind": "ddl_virtual_column", "table": table, "column": col},
+            })
+
+        elif kind in ("unique_constraint", "unique_index"):
+            col_phrase = ", ".join(business_name(c) for c in columns) or "the key columns"
+            ident = cand.get("constraint_name") or cand.get("index_name")
+            rules.append({
+                "raw_key": f"UNIQUE::{table}::{'+'.join(columns)}",
+                "category": "VALIDATION", "structural_pattern": "UNIQUENESS",
+                "name": f"Enforce unique {col_phrase} on {business_name(table or '')}".strip(),
+                "description": f"No two rows in {table} may share the same {col_phrase}. "
+                               f"Enforced by {ident}. {cand['explanation']}",
+                "condition_text": f"UNIQUE({', '.join(columns)})",
+                "signal_strength": signal, "confidence": confidence,
+                "requires_sme_review": needs_review, "is_enforced": cand["is_enforced"],
+                "source": {"kind": f"ddl_{kind}", "table": table, "constraint_name": ident},
+            })
+
+        elif kind == "view_filter":
+            view = cand.get("view", "")
+            rules.append({
+                "raw_key": f"VIEW::{view}",
+                "category": classify_category(expression), "structural_pattern": classify_pattern(expression),
+                "name": f"Define {business_name(view)} population",
+                "description": f"The view {view} exposes only the rows matching {expression} from "
+                               f"{', '.join(cand.get('references_tables', [])) or 'its backing tables'}. "
+                               f"{cand['explanation']}",
+                "condition_text": expression,
+                "signal_strength": signal, "confidence": confidence,
+                "requires_sme_review": needs_review, "is_enforced": cand["is_enforced"],
+                "source": {"kind": "ddl_view_filter", "view": view},
             })
     return rules
 
@@ -296,7 +365,7 @@ def main() -> None:
     run_dir = Path(args.output_root) / run_version if versioned_run else Path(args.output)
     run_dir.mkdir(parents=True, exist_ok=True)
 
-    raw_rules = mine_from_check_constraints(data_artifact) + \
+    raw_rules = mine_from_ddl_candidates(data_artifact) + \
         mine_from_statements(parser_root, parser_artifact["object_index"], file_abs_paths)
     deduped = deduplicate(raw_rules)
     for i, r in enumerate(sorted(deduped, key=lambda x: (-x["signal_strength"], x["name"])), start=1):

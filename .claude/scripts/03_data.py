@@ -488,9 +488,11 @@ def extract_virtual_column(vc_ctx) -> dict:
         {"normalized_type": "UNKNOWN", "pyspark_type": "StringType"}
 
     expr_ctx = find_child(vc_ctx, "Virtual_column_expressionContext")
-    raw_expr = text_of(expr_ctx)
+    # Original spacing — this formula is shown verbatim in the BRD as the
+    # definition of a business calculation, so it must stay readable.
+    raw_expr = original_text_of(expr_ctx)
     # Strip the leading GENERATED [ALWAYS] AS wrapper to leave the formula.
-    formula = re.sub(r"^GENERATED(ALWAYS)?AS", "", raw_expr, flags=re.IGNORECASE).strip()
+    formula = re.sub(r"^\s*GENERATED\s*(ALWAYS)?\s*AS", "", raw_expr, flags=re.IGNORECASE).strip()
     if formula.startswith("(") and formula.endswith(")"):
         formula = formula[1:-1]
 
@@ -559,7 +561,10 @@ def extract_out_of_line_constraint(c_ctx) -> dict | None:
 
     if "CHECK" in text_upper:
         cond_ctx = find_child(c_ctx, "ConditionContext")
-        expr = text_of(cond_ctx)
+        # Original spacing, not getText() — a squashed "account_statusIN('A')"
+        # both reads badly in the BRD and breaks downstream identifier
+        # extraction, which would parse "account_statusIN" as the subject.
+        expr = original_text_of(cond_ctx)
         return {**base, "kind": "CHECK", "expression": expr,
                 # Only an actually-enforced constraint may be promoted to a
                 # confirmed business rule. A DISABLED one still appears in the

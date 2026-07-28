@@ -35,8 +35,9 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 DESIGN_REFERENCES = [
-    {"claim": "9-chapter BRD structure (exec summary, system overview, inventory, data model, "
-              "business rules, process descriptions, component architecture, error handling, gaps register).",
+    {"claim": "7-chapter BRD structure (exec summary; system overview, covering object inventory and "
+              "component architecture; data model; business rules; process descriptions; error handling; "
+              "gaps register).",
      "source": "reference/.claude/skills/section-assembler/SKILL.md — proven template for exactly this "
                "reverse-engineering-to-BRD use case."},
     {"claim": "Every business rule gets a formal EARS-syntax statement (IF/WHEN ... THE SYSTEM SHALL ...).",
@@ -219,7 +220,7 @@ def complexity_label(score: int) -> str:
 
 def write_brd(system_name, inventory, parser_artifact, data_artifact, logic_artifact,
               rules_artifact, diagrams_artifact, diagrams_dir, gaps, upstream,
-              parser_root: Path, logic_dir: Path) -> str:
+              parser_root: Path, logic_dir: Path, data_dir: Path) -> str:
     L = []
     now = datetime.now(timezone.utc).isoformat()
     by_sev = {"critical": [], "high": [], "medium": [], "low": []}
@@ -290,13 +291,19 @@ def write_brd(system_name, inventory, parser_artifact, data_artifact, logic_arti
 
     # Chapter 3 — Data model
     L.append("## 3. Data Model and Definitions\n")
-    erd_path = diagrams_dir.parent / "erd.mmd"
-    if not erd_path.exists():
-        # ERD lives in the Data Agent's own run directory, not the diagram agent's
-        pass
+    # The ERD is the Data Agent's deliverable, so it lives in that agent's run
+    # directory — not under the diagram run.
+    erd_path = data_dir / "erd.mmd"
+    if erd_path.exists():
+        L.append("**Figure 3.1 — Entity relationship diagram**\n")
+        L.append("```mermaid")
+        L.append(erd_path.read_text(encoding="utf-8").rstrip())
+        L.append("```")
+        L.append("*Solid connectors are foreign keys declared in the DDL. Dotted connectors are "
+                  "inferred relationships — see section 3.1.*\n")
     L.append("| Table | Columns | Primary Key | Foreign Keys |\n|---|---|---|---|")
     for table_name, table in data_artifact["tables"].items():
-        fks = ", ".join(f"{fk['columns'][0]}→{fk['references_table']}" for fk in table["foreign_keys"])
+        fks = ", ".join(f"{', '.join(fk['columns'])}→{fk['references_table']}" for fk in table["foreign_keys"])
         L.append(f"| {table_name} | {len(table['columns'])} | {', '.join(table['primary_key'] or [])} | {fks} |")
     L.append("")
     inferred = data_artifact.get("inferred_relationships", [])
@@ -332,14 +339,56 @@ def write_brd(system_name, inventory, parser_artifact, data_artifact, logic_arti
             L.append("---\n")
 
     # Chapter 5 — Error handling
-    L.append("## 5. Error Handling\n")
+    # Chapter 5 — Process descriptions
+    # Stage 4 produces a narrative and pseudocode for every object and stage 6 a
+    # process-flow diagram; without this chapter both are computed and discarded,
+    # leaving the BRD with no account of what any procedure actually does.
+    L.append("## 5. Process Descriptions\n")
+    L.append("One section per parsed object: a plain-English narrative, the control flow rendered "
+              "as pseudocode, and the corresponding process-flow diagram. Pseudocode is a faithful "
+              "structural translation of the source, not a re-implementation.\n")
+    flow_by_obj = {
+        meta["object_id"]: fname
+        for fname, meta in diagrams_artifact.get("diagram_index", {}).items()
+        if meta.get("type") == "process_flow" and meta.get("object_id")
+    }
+    fig = 0
+    for object_id in parser_artifact["object_index"]:
+        logic_rel = logic_rel_by_obj.get(object_id)
+        if not logic_rel or not (logic_dir / logic_rel).exists():
+            continue
+        rec = json.loads((logic_dir / logic_rel).read_text(encoding="utf-8"))
+        fig += 1
+        L.append(f"### 5.{fig} {object_id}\n")
+        if rec.get("narrative"):
+            L.append(f"{rec['narrative']}\n")
+        loops = rec.get("loops") or []
+        if loops:
+            terms = ", ".join(f"`{lp.get('termination_type', 'UNKNOWN')}`" for lp in loops)
+            L.append(f"**Loops:** {len(loops)} — termination: {terms}\n")
+        pseudocode = rec.get("pseudocode") or []
+        if pseudocode:
+            L.append("**Pseudocode**\n")
+            L.append("```text")
+            L.extend(pseudocode)
+            L.append("```\n")
+        flow_file = flow_by_obj.get(object_id)
+        if flow_file and (diagrams_dir / flow_file).exists():
+            L.append(f"**Figure 5.{fig} — {object_id} process flow**\n")
+            L.append("```mermaid")
+            L.append((diagrams_dir / flow_file).read_text(encoding="utf-8").rstrip())
+            L.append("```\n")
+        L.append("---\n")
+
+    # Chapter 6 — Error handling
+    L.append("## 6. Error Handling\n")
     for e in rules_artifact.get("error_handling_catalogue", []):
         L.append(f"- `{e['condition_text']}` in {e['source']['object_id']}, line {e['source']['line']} "
                   "(technical plumbing, not a business rule)")
     L.append("")
 
     # Chapter 6 — Gaps and assumptions register
-    L.append("## 6. Gaps and Assumptions Register\n")
+    L.append("## 7. Gaps and Assumptions Register\n")
     L.append("This chapter documents every item that could not be fully resolved by automated static "
               "analysis. Critical and high severity gaps should be resolved with subject matter expert "
               "input before this document is used as the basis for migration or testing activities.\n")
@@ -388,6 +437,7 @@ def main() -> None:
     diagrams_dir = Path(args.diagram_root) / diagram_rv / "diagrams"
     parser_root = Path(args.parser_root) / parser_rv
     logic_dir = Path(args.logic_root) / logic_rv
+    data_dir = Path(args.data_root) / data_rv
 
     versioned_run = args.output is None
     run_version = generate_run_version()
@@ -408,7 +458,7 @@ def main() -> None:
 
     brd_text = write_brd(args.system_name, inventory, parser_artifact, data_artifact, logic_artifact,
                           rules_artifact, diagrams_artifact, diagrams_dir, gaps, upstream,
-                          parser_root, logic_dir)
+                          parser_root, logic_dir, data_dir)
     (run_dir / "brd.md").write_text(brd_text, encoding="utf-8")
 
     if versioned_run:

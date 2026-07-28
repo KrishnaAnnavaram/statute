@@ -102,6 +102,17 @@ def short_label(stmt_id: str, statements: dict) -> str:
     return f"{kind}\\nL{s['start_line']}"
 
 
+def edge_label(text: str) -> str:
+    """Quote an edge label so Mermaid treats it as literal text.
+
+    Unquoted labels are lexed as markup: a handler label like WHEN(NO_DATA_FOUND)
+    opens a node shape at the '(' and kills the parse for the whole diagram.
+    Quoting makes any punctuation safe; embedded quotes become the #quot; entity
+    since a backslash escape is not honoured inside a quoted label.
+    """
+    return f'"{text.replace(chr(34), "#quot;")}"'
+
+
 def build_flow_diagram(object_id: str, obj: dict) -> str:
     statements = obj.get("statements", {})
     cfg = obj.get("control_flow_graph", {"nodes": [], "edges": []})
@@ -133,14 +144,14 @@ def build_flow_diagram(object_id: str, obj: dict) -> str:
         elif e["type"] == "LOOP_BACK_EDGE":
             style = "-->|loop back|"
         elif e["type"] == "BRANCH_ENTRY":
-            style = f'-->|{e.get("branch", "")}|'
+            style = f'-->|{edge_label(e.get("branch", ""))}|'
         else:
             style = "-->"
         lines.append(f"    {src} {style} {dst}")
 
     for e in cfg["edges"]:
         if e["from"] == "*" and node_ids.get(e["to"]):
-            lines.append(f'    ANY_ERROR{{"Any statement"}} -.->|{e.get("on", "OTHERS")}| {node_ids[e["to"]]}')
+            lines.append(f'    ANY_ERROR{{"Any statement"}} -.->|{edge_label(e.get("on", "OTHERS"))}| {node_ids[e["to"]]}')
 
     return "\n".join(lines) + "\n"
 

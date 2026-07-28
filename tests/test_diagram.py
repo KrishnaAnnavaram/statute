@@ -76,7 +76,10 @@ def main() -> int:
         if flow_files:
             text = flow_files[0].read_text(encoding="utf-8")
             check(text.startswith("flowchart TD"), "flow diagram starts with a valid Mermaid declaration")
-            check("-->|true|" in text and "-->|elsif|" in text and "-->|false|" in text,
+            # Edge labels are quoted so punctuation-bearing ones (e.g.
+            # WHEN(NO_DATA_FOUND)) cannot break the Mermaid parse; quoting is
+            # applied uniformly rather than only to the labels that need it.
+            check('-->|"true"|' in text and '-->|"elsif"|' in text and '-->|"false"|' in text,
                   "rendered diagram shows all three branch labels on the decision node")
             node_id_lines = [l.strip().split("[")[0].split("(")[0] for l in text.splitlines()
                               if l.strip() and not l.strip().startswith(("flowchart", "START", "ANY_ERROR"))]

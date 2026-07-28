@@ -231,7 +231,24 @@ def mine_from_statements(parser_root: Path, object_index: dict, file_abs_paths: 
             if stmt["statement_type"] == "EXCEPTION_HANDLER":
                 for handler_name in stmt.get("handler_for", []):
                     if handler_name.upper() == "OTHERS":
-                        continue  # generic plumbing, not a named business rule
+                        # Generic plumbing, not a named business rule — but it is
+                        # still error-handling behaviour worth cataloguing. Emit it
+                        # flagged so the caller can route it to the error-handling
+                        # catalogue and keep it out of the BR-xxx rule set.
+                        rules.append({
+                            "raw_key": f"EXC::OTHERS::{object_id}::{stmt['start_line']}",
+                            "category": "ERROR_HANDLING", "structural_pattern": "CONDITION_NAME",
+                            "generic_handler": True,
+                            "name": "Handle Unexpected Error",
+                            "description": f"A catch-all WHEN OTHERS handler covers any unnamed "
+                                            f"exception. Implemented in {object_id}, "
+                                            f"line {stmt['start_line']}.",
+                            "condition_text": "OTHERS", "signal_strength": 2, "confidence": "low",
+                            "requires_sme_review": False,
+                            "source": {"kind": "generic_exception", "object_id": object_id,
+                                        "statement_id": stmt["statement_id"], "line": stmt["start_line"]},
+                        })
+                        continue
                     category = classify_category(handler_name)
                     rules.append({
                         "raw_key": f"EXC::{handler_name.upper()}",
@@ -296,15 +313,21 @@ def main() -> None:
     run_dir = Path(args.output_root) / run_version if versioned_run else Path(args.output)
     run_dir.mkdir(parents=True, exist_ok=True)
 
-    raw_rules = mine_from_check_constraints(data_artifact) + \
+    raw_mined = mine_from_check_constraints(data_artifact) + \
         mine_from_statements(parser_root, parser_artifact["object_index"], file_abs_paths)
+    # Generic WHEN OTHERS handlers are catalogued, never promoted to BR-xxx rules.
+    generic_handlers = [r for r in raw_mined if r.get("generic_handler")]
+    raw_rules = [r for r in raw_mined if not r.get("generic_handler")]
     deduped = deduplicate(raw_rules)
     for i, r in enumerate(sorted(deduped, key=lambda x: (-x["signal_strength"], x["name"])), start=1):
         r["rule_id"] = f"BR-{i:03d}"
         del r["raw_key"]
     rule_sets = group_rule_sets(deduped)
 
-    error_handling_catalogue = [r for r in raw_rules if r["category"] == "ERROR_HANDLING" and r.get("signal_strength", 0) <= 2]
+    error_handling_catalogue = generic_handlers + \
+        [r for r in raw_rules if r["category"] == "ERROR_HANDLING" and r.get("signal_strength", 0) <= 2]
+    for r in error_handling_catalogue:
+        r.pop("raw_key", None)
 
     stats = {
         "branches_examined": sum(1 for r in raw_rules if r["source"]["kind"] == "conditional_branch"),

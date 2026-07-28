@@ -291,10 +291,18 @@ def extract_out_of_line_constraint(c_ctx) -> dict | None:
 
     fk_ctx = find_child(c_ctx, "Foreign_key_clauseContext")
     if fk_ctx is not None:
-        fk_cols = [text_of(c).upper() for c in find_all(fk_ctx, "Column_nameContext", [])]
         ref_ctx = find_child(fk_ctx, "References_clauseContext")
+        # The REFERENCES clause is a descendant of the foreign-key clause, so a
+        # recursive find_all over fk_ctx also picks up the referenced columns and
+        # appends them to the local ones (CUSTOMER_ID -> [CUSTOMER_ID, CUSTOMER_ID],
+        # or a bogus 2-column composite where the names differ). Resolve the
+        # referenced nodes first and exclude them by identity.
+        ref_col_nodes = find_all(ref_ctx, "Column_nameContext", []) if ref_ctx else []
+        ref_col_ids = {id(n) for n in ref_col_nodes}
+        fk_cols = [text_of(c).upper() for c in find_all(fk_ctx, "Column_nameContext", [])
+                   if id(c) not in ref_col_ids]
         ref_table = text_of(find_child(ref_ctx, "Tableview_nameContext")).upper() if ref_ctx else None
-        ref_cols = [text_of(c).upper() for c in find_all(ref_ctx, "Column_nameContext", [])] if ref_ctx else []
+        ref_cols = [text_of(c).upper() for c in ref_col_nodes]
         return {"kind": "FOREIGN_KEY", "name": constraint_name, "columns": fk_cols,
                 "references_table": ref_table, "references_columns": ref_cols, "relationship_type": "declared"}
 
@@ -622,7 +630,15 @@ def main() -> None:
     issues: list[dict] = []
     tables: dict[str, dict] = {}
     sequences: dict[str, dict] = {}
-    file_abs_paths: dict[str, str] = {}
+    # Every file in the inventory, not just the DDL ones parsed below: sequence
+    # usage (SEQ.NEXTVAL) lives in the procedural objects, so a map built only
+    # from DDL files leaves find_sequence_usage unable to resolve any object's
+    # file_id and silently drops every usage.
+    file_abs_paths: dict[str, str] = {
+        file_id: meta["abs_path"]
+        for file_id, meta in inventory.get("file_metadata", {}).items()
+        if meta.get("abs_path")
+    }
     stats = {"ddl_files_parsed": 0, "parse_errors": 0, "tables_found": 0, "sequences_found": 0,
              "columns_total": 0, "declared_foreign_keys": 0, "inferred_foreign_keys": 0,
              "check_constraints": 0, "candidate_rules_from_ddl": 0, "comment_only_enums": 0}

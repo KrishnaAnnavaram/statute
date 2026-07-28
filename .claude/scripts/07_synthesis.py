@@ -364,7 +364,9 @@ def write_brd(system_name, inventory, parser_artifact, data_artifact, logic_arti
             L.append(f"{rec['narrative']}\n")
         loops = rec.get("loops") or []
         if loops:
-            terms = ", ".join(f"`{lp.get('termination_type', 'UNKNOWN')}`" for lp in loops)
+            # Agent 4 emits `termination_pattern`, not `termination_type` —
+            # reading the wrong key silently rendered every loop as UNKNOWN.
+            terms = ", ".join(f"`{lp.get('termination_pattern', 'UNKNOWN')}`" for lp in loops)
             L.append(f"**Loops:** {len(loops)} — termination: {terms}\n")
         pseudocode = rec.get("pseudocode") or []
         if pseudocode:

@@ -113,6 +113,16 @@ DESIGN_REFERENCES = [
      "applied": "Formal requirement statements alongside plain-English description."},
 ]
 
+# How a loop ends decides whether a rebuild can express it as a set operation
+# or must keep iterating, so it belongs in a build specification.
+LOOP_TERMINATION_PHRASES = {
+    "COUNTED_OR_CURSOR_LOOP": "runs once per record returned by its query",
+    "CURSOR_FOR_LOOP": "runs once per record returned by its query",
+    "WHILE_CONDITION": "repeats while a condition holds",
+    "EXIT_WHEN": "repeats until an exit condition is met",
+    "UNBOUNDED": "has no visible exit condition — needs review",
+}
+
 CONFIDENCE_MARK = {
     "confirmed": "Confirmed", "high": "High", "medium": "Medium", "low": "Needs review",
 }
@@ -739,6 +749,19 @@ def build_document(ctx: dict) -> str:
                       humanise(fk.get("on_delete", "NO_ACTION")),
                       "Yes" if (fk.get("enforcement") or {}).get("is_enforced") else "**No**"]
                      for fk in fks])
+        idxs = [i for i in (ctx["data_artifact"].get("indexes") or [])
+                if (i.get("table") or "").upper() == tname.upper()]
+        if idxs:
+            # Indexes are not business rules, but a rebuild that omits them
+            # changes performance characteristics and, where unique, changes
+            # what the system permits.
+            d.p("**Indexes.** Recreate these to preserve performance and uniqueness.")
+            d.table(["Index", "Covers", "Unique?", "Purpose"],
+                    [[i.get("index", "—"),
+                      ", ".join(humanise(c) for c in (i.get("columns") or [])) or "—",
+                      "Yes — enforces a rule" if i.get("unique") else "No",
+                      "Uniqueness constraint" if i.get("unique") else "Lookup performance"]
+                     for i in idxs])
         checks = t.get("check_constraints") or []
         if checks:
             d.p("**Value rules enforced by the database.**")
@@ -797,6 +820,7 @@ def build_document(ctx: dict) -> str:
             ["Records touched", c["tables_phrase"]],
             ["Rules enforced", c["rule_count"]],
             ["Transaction boundary", ctx["tx_phrases"].get(oid, "—")],
+            ["Repetition", ctx["loop_phrases"].get(oid, "Runs once — no repetition")],
         ])
         rule_ids = c["rule_ids"]
         if rule_ids:
@@ -1065,6 +1089,20 @@ def build_context(args, artifacts) -> dict:
                                + (f", {rollbacks} undo point{'s' if rollbacks != 1 else ''}"
                                   if rollbacks else "") + ")")
 
+    loop_phrases = {}
+    for oid, rec in logic_records.items():
+        loops = rec.get("loops") or []
+        if not loops:
+            continue
+        parts = []
+        for lp in loops:
+            pattern = lp.get("termination_pattern", "")
+            phrase = LOOP_TERMINATION_PHRASES.get(pattern, humanise(pattern).lower())
+            parts.append(f"a loop at line {lp.get('line', '?')} that {phrase}")
+            if lp.get("warning"):
+                parts[-1] += " — **needs review**"
+        loop_phrases[oid] = sentence_case("; ".join(parts))
+
     flow_by_object = {m["object_id"]: f
                       for f, m in (diagrams_artifact or {}).get("diagram_index", {}).items()
                       if m.get("type") == "process_flow" and m.get("object_id")}
@@ -1107,7 +1145,7 @@ def build_context(args, artifacts) -> dict:
         "diagrams_artifact": diagrams_artifact, "diagrams_dir": artifacts["diagrams_dir"],
         "erd_path": artifacts["erd_path"], "parser_records": parser_records,
         "logic_records": logic_records, "object_names": object_names,
-        "table_titles": table_titles, "capabilities": caps,
+        "table_titles": table_titles, "capabilities": caps, "loop_phrases": loop_phrases,
         "glossary": glossary, "tx_phrases": tx_phrases, "flow_by_object": flow_by_object,
         "rule_figure": rule_figure, "rule_tables": rule_tables, "stats": stats,
         "annotations": annotations, "annotations_filename": Path(args.annotations).name,

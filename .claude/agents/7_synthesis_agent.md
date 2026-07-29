@@ -1,52 +1,111 @@
 ---
 name: 7_synthesis
 description: >
-  Seventh and final documentation agent in the PL/SQL reverse engineering
-  pipeline. Reads all prior artifacts, runs a gap-detection pass across
-  every one of them, then assembles brd.md. Every business rule gets a
-  formal EARS-syntax statement alongside its plain-English description.
-  Must run last.
+  Seventh and final documentation agent. Assembles every upstream artifact into
+  a Business Requirements Document written for four audiences at once — a
+  business sponsor, a business analyst, a build team, and a machine. Translates
+  every machine identifier into business language, states rules with SBVR
+  modality (necessary vs obligatory) alongside plain English, publishes an exact
+  requirements traceability matrix, documents interface contracts and
+  transaction behaviour, and merges human annotations that survive regeneration.
+  Emits brd.md, brd_index.json and gaps_register.json. Must run last.
 tools: Read, Bash
 ---
 
-# Synthesis agent
+# BRD synthesis agent
 
 Thin wrapper over `.claude/scripts/07_synthesis.py` — deterministic, no LLM.
+Business-language translation lives in `.claude/scripts/lib_business_language.py`.
 
-## BRD-authoring standards this agent is built on (researched, not assumed)
+## What changed and why
 
-- **Chapter structure**: adapted from `reference/.claude/skills/section-assembler/SKILL.md`
-  — proven for exactly this reverse-engineering-to-BRD scenario.
-- **EARS syntax** (`IF <condition>, THEN the system SHALL <response>`) —
-  developed at Rolls-Royce, the industry-standard technique for writing
-  unambiguous, testable requirement statements. Every business rule gets
-  one, alongside its plain-English description — never instead of it.
-- **Requirement quality bar**: atomic / unambiguous / testable / traceable
-  / complete / consistent — IIBA BABOK v3 + ISO/IEC/IEEE 29148.
-- **Confidence is never hidden.** Low-confidence rules are included in the
-  BRD, always visibly marked (⚠), never silently dropped.
+The predecessor produced a competent reverse-engineering report and titled it a
+Business Requirements Document. Measured defects in that output:
 
-## Real bug found and fixed during testing (not hypothetical)
+| Defect | Evidence |
+|---|---|
+| Summarised the analysis, not the business | *"124 statements parsed"* opened the document |
+| No scope statement | The word "scope" appeared **nowhere** |
+| Identifiers in prose | *"PROC-.SP_TRANSFER_FUNDS is a procedure classified as SINGLE_RECORD_TRANSACTION"* |
+| Findings discarded | A **high-severity** transaction hazard and all **20** interface parameters were computed and dropped |
+| No traceability matrix | Despite every join being available and exact |
+| No glossary, no navigation, no audience guidance | — |
 
-The Object Inventory table (Chapter 2.1) initially had empty Type and
-Complexity columns — the data existed in Agent 2's `raw_structure` files
-and Agent 4's `program_logic` records, it just wasn't being read into the
-table. Fixed by threading `parser_root`/`logic_dir` into `write_brd` and
-reading both per object.
+## Document structure
 
-Also (in `05_rules.py`, surfaced by inspecting this agent's actual BRD
-output): a null/negative guard clause like `p_annual_rate IS NULL OR
-p_annual_rate < 0` was misclassified as `CALCULATION` because the field
-name matched a calculation keyword — a NULL_CHECK anywhere in a condition
-now always forces `VALIDATION`, regardless of field name or whether it's
-combined with other guards via `OR`.
+Four parts, ordered by audience rather than by pipeline stage — documentation
+needs are task-dependent (Aghajani et al., ICSE 2020).
+
+| Part | For | Contains |
+|---|---|---|
+| **I — Business View** | Sponsors | Executive summary, scope (in *and* out), glossary, capability catalogue, data-flow figure, CRUD matrix |
+| **II — Rules and Behaviour** | Analysts | Rules catalogue, entity lifecycles, error contracts |
+| **III — Build Specification** | Developers | Data model with rebuild types, interface contracts, per-capability process specs, operational characteristics |
+| **IV — Assurance** | Auditors, build leads | Traceability matrix, gaps register, rebuild checklist |
+
+Plus Document Control with a sign-off block, a clickable contents page, and
+three appendices (method, reference scheme, standards).
+
+## Design notes worth preserving
+
+- **One translation point.** `lib_business_language` converts every identifier;
+  no chapter formats its own. The machine identifier is carried *alongside*
+  prose, never substituted for it, so one sentence serves a sponsor and a
+  builder while a machine can still recover the join key.
+- **Dual presentation of every rule.** Plain terms ("From Balance is below
+  Amount"), the exact source expression in a code span, and a formal statement.
+  A specification only a developer can check is not reviewable.
+- **SBVR modality, not uniform EARS.** A database constraint that is ENABLED and
+  VALIDATED makes violation *impossible* → *"it is necessary that"*. A code
+  guard exists precisely because violation is *possible* → *"it is obligatory
+  that"*. We computed this distinction upstream and previously flattened it.
+- **Verification method is derived.** Schema-enforced rules → Inspection.
+  Code-enforced rules → Test. Two of 29148's eleven attributes are derivable;
+  the rest (Owner, Priority) appear as **visible blanks**, because an empty
+  column is an action item and a missing one is invisible.
+- **Traceability is published because ours is exact.** IR-based traceability
+  research reaches 19–32% precision on *inferred* links; ours are constructed
+  from `statement_id`. This is the one place the pipeline categorically beats
+  the state of the art, and it was previously unshipped.
+- **Annotations survive regeneration.** `brd_annotations.json` is keyed by
+  stable id and merged at synthesis time — never written by the pipeline.
+  Machine facts regenerate; human meaning persists. Every commercial tool in
+  this space ships a curation loop, because the domain knowledge that makes a
+  rule *mean* something is not recoverable from code (Biggerstaff's concept
+  assignment problem).
+- **Provenance stripped from prose.** Upstream descriptions embed *"Implemented
+  in PROC-.SP_A, line 33"*; that is already a labelled attribute beside the
+  rule, so repeating it inside the sentence is noise as well as unreadable.
+  (The original stripper used `[^.]*?`, which can never span an object id —
+  object ids contain a period.)
+- **Fenced blocks stay technical.** Pseudocode and diagrams are for the build
+  team and must remain faithful to source; only the surrounding prose is held
+  to the business-readability bar.
+- **`NO` is not an abbreviation.** Expanding it turned "no preceding condition
+  matched" into "Number Preceding Condition Matched". Ordinary English words
+  must stay out of the abbreviation table.
+- **Confidence is never hidden.** Low-confidence rules are included and visibly
+  marked, never silently dropped.
+
+## Honest limits, stated in the document itself
+
+- The document is titled a **Business Requirements Document**. Note for accuracy:
+  by BABOK's classification its contents are Solution/Functional requirements —
+  they describe what the system does, not why the business wanted it. The scope
+  chapter states this plainly so no reader is misled by the title.
+- Chikofsky & Cross (1990) separate redocumentation from design recovery; each
+  part declares which it is so a reader can calibrate trust.
+- The document states plainly that no AI model wrote or judged any of its
+  content, which is what makes every sentence traceable to a line number.
 
 ## Output
 
 ```
-output/final_report/<run_version>/
-  brd.md               <- primary deliverable
-  gaps_register.json
-run output tests confirm: every BR-xxx id referenced in brd.md exists in
-rules_artifact.json — no invented content.
+output/final_report/<run_version>/brd.md              <- the document
+output/final_report/<run_version>/brd_index.json      <- same content, structured
+output/final_report/<run_version>/gaps_register.json  <- open matters
+output/final_report/latest.json
 ```
+
+Optional input: `brd_annotations.json` in the working directory (path settable
+via `--annotations`). Read only, never written.

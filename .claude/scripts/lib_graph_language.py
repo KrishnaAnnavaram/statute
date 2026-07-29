@@ -276,9 +276,15 @@ def _gaps(graph, *_):
 INTENTS = [
     Intent("impact_of_column",
            "What breaks if I change a given column?",
-           [r"\b(break|impact|affect|depend|change|modif)\w*\b.*\b\w+\.\w+\b",
-            r"\bwhat (uses|reads|writes|touches)\b", r"\bimpact analysis\b",
-            r"\bwho (uses|reads|writes)\b"],
+           # Patterns do not require the entity to appear — `needs_entity`
+           # already guards that, and a question the tool advertises must be
+           # RECOGNISED even when asked generically, so the refusal explains
+           # what is missing rather than claiming not to understand at all.
+           [r"\bwhat breaks\b", r"\bimpact analysis\b",
+            r"\b(break|impact|affect|depend)\w*\b.*\b(chang|modif|alter|drop|rename)\w*\b",
+            r"\b(chang|modif|alter|drop|rename)\w*\b.*\b(break|impact|affect|depend)\w*\b",
+            r"\bwhat (uses|reads|writes|touches)\b", r"\bwho (uses|reads|writes)\b",
+            r"\b(break|impact|affect|depend)\w*\b.*\b\w+\.\w+\b"],
            """MATCH (c:Column {column_id: $column})
 OPTIONAL MATCH (o:Object)-[r:READS_COLUMN|WRITES_COLUMN]->(c)
 OPTIONAL MATCH (br:BusinessRule)-[:CONSTRAINS]->(c)
@@ -342,8 +348,11 @@ RETURN p.name, p.mode, p.data_type;""",
 
     Intent("hot_columns",
            "Which columns are used most widely?",
+           # Both orders occur: "most widely used" and "used most widely".
            [r"\b(most|widely|heavily)\b.*\b(used|referenced|shared)\b",
-            r"\bhot columns?\b", r"\bshared (data|columns?)\b"],
+            r"\b(used|referenced|shared)\b.*\b(most|widely|heavily)\b",
+            r"\bhot columns?\b", r"\bshared (data|columns?)\b",
+            r"\bcolumns?\b.*\b(most|widely|heavily)\b"],
            """MATCH (o:Object)-[:READS_COLUMN|WRITES_COLUMN]->(c:Column)
 RETURN c.column_id, count(DISTINCT o) AS units ORDER BY units DESC;""",
            _hot_columns),

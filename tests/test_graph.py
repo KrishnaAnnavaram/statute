@@ -214,6 +214,24 @@ def test_answers(graph) -> None:
         check(bool(r.get("cypher")), "every answer ships the equivalent Cypher")
 
 
+def test_advertised_questions_are_answerable(graph) -> None:
+    """
+    Every question the tool ADVERTISES must be answerable when asked verbatim.
+
+    Found by judging the output: "Which columns are used most widely?" was
+    printed in the supported list and then refused, because the trigger pattern
+    assumed the word order "most widely used". Advertising a capability and
+    then refusing it is worse than not offering it.
+    """
+    print("\n=== Every advertised question actually works ===")
+    for intent in gl.INTENTS:
+        res = gl.ask(graph, intent.question)
+        # Entity-specific intents cannot answer their generic phrasing, but
+        # they must still be RECOGNISED rather than fall through to "no match".
+        recognised = res.get("ok") or "could not identify which" in res.get("reason", "")
+        check(recognised, f"advertised question is recognised: {intent.question}")
+
+
 def test_refusals(graph) -> None:
     """
     The negative tests, and the most important ones here.
@@ -271,6 +289,7 @@ def main() -> int:
         test_export_is_loadable(cypher, out)
         test_documentation(readme, artifact)
         test_answers(graph)
+        test_advertised_questions_are_answerable(graph)
         test_refusals(graph)
         test_model_invariants(graph)
 

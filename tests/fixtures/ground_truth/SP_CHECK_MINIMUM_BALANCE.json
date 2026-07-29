@@ -1,0 +1,104 @@
+{
+  "object_id": "PROC-.SP_CHECK_MINIMUM_BALANCE",
+  "source_file": "src/03_simple_check_minimum_balance.sql",
+  "annotated_by": "hand-annotated from a domain reading of the source",
+  "held_out": true,
+  "annotation_notes": [
+    "SECOND HELD-OUT SET. The first held-out procedure",
+    "(SP_PROCESS_MONTHLY_INTEREST_CREDIT) stopped being a clean generalisation",
+    "test the moment its failures were used to fix the extractor. This one is",
+    "annotated blind, before running the extractor against it, to obtain an",
+    "honest number.",
+    "",
+    "Structurally novel: a CASE EXPRESSION inside an assignment — a construct",
+    "absent from all three previously measured procedures.",
+    "",
+    "Consistency of principle over convenience: in the tiered-interest",
+    "procedure each IF/ELSIF tier was annotated as its own rule, because each",
+    "threshold is a separately changeable policy. The same reasoning applies to",
+    "each CASE branch here, even though the extractor is unlikely to decompose",
+    "them. Annotating them as one rule would flatter the tool."
+  ],
+  "rules": [
+    {
+      "id": "GT-01",
+      "statement": "A SAVINGS_REGULAR account must maintain a minimum balance of 1,000.",
+      "source_lines": [29],
+      "subject": "v_min_balance_req",
+      "category": "LIMIT_CHECK",
+      "raises": null
+    },
+    {
+      "id": "GT-02",
+      "statement": "A SAVINGS_PREMIUM account must maintain a minimum balance of 10,000.",
+      "source_lines": [30],
+      "subject": "v_min_balance_req",
+      "category": "LIMIT_CHECK",
+      "raises": null
+    },
+    {
+      "id": "GT-03",
+      "statement": "A SAVINGS_ZERO_BAL account has no minimum balance requirement.",
+      "source_lines": [31],
+      "subject": "v_min_balance_req",
+      "category": "LIMIT_CHECK",
+      "raises": null
+    },
+    {
+      "id": "GT-04",
+      "statement": "A CURRENT_REGULAR account must maintain a minimum balance of 5,000.",
+      "source_lines": [32],
+      "subject": "v_min_balance_req",
+      "category": "LIMIT_CHECK",
+      "raises": null
+    },
+    {
+      "id": "GT-05",
+      "statement": "A CURRENT_PREMIUM account must maintain a minimum balance of 25,000.",
+      "source_lines": [33],
+      "subject": "v_min_balance_req",
+      "category": "LIMIT_CHECK",
+      "raises": null
+    },
+    {
+      "id": "GT-06",
+      "statement": "An account of any other type defaults to a minimum balance of 1,000.",
+      "source_lines": [34],
+      "subject": "v_min_balance_req",
+      "category": "LIMIT_CHECK",
+      "raises": null
+    },
+    {
+      "id": "GT-07",
+      "statement": "An account at or above its minimum balance incurs no shortfall and no penalty.",
+      "source_lines": [37, 38, 39, 40],
+      "subject": "v_current_balance",
+      "category": "VALIDATION",
+      "raises": null
+    },
+    {
+      "id": "GT-08",
+      "statement": "Shortfall is the minimum balance requirement less the current balance.",
+      "source_lines": [42],
+      "subject": "p_shortfall_amount",
+      "category": "CALCULATION",
+      "raises": null
+    },
+    {
+      "id": "GT-09",
+      "statement": "The penalty is 5% of the shortfall, floored at 50 and capped at 500.",
+      "source_lines": [45],
+      "subject": "p_penalty_amount",
+      "category": "CALCULATION",
+      "raises": null
+    },
+    {
+      "id": "GT-10",
+      "statement": "A request for an account that does not exist is reported as ACCOUNT_NOT_FOUND with null amounts.",
+      "source_lines": [50, 51],
+      "subject": "p_message",
+      "category": "ERROR_HANDLING",
+      "raises": "NO_DATA_FOUND"
+    }
+  ]
+}

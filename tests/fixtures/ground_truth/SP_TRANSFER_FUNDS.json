@@ -1,0 +1,87 @@
+{
+  "object_id": "PROC-.SP_TRANSFER_FUNDS",
+  "source_file": "src/05_medium_fund_transfer_with_validation.sql",
+  "annotated_by": "hand-annotated from a domain reading of the source",
+  "annotation_notes": [
+    "A business rule here means a statement that CONSTRAINS or DEFINES what the",
+    "business permits — not a description of mechanics. So 'a transfer debits the",
+    "source and credits the destination' is process, not rule, and is excluded.",
+    "WHEN OTHERS is excluded: it is plumbing, not a business decision.",
+    "Rules are stated as positive obligations (SBVR): the rule is the constraint,",
+    "the exception is merely evidence that the constraint exists."
+  ],
+  "rules": [
+    {
+      "id": "GT-01",
+      "statement": "A transfer amount must be provided and must be greater than zero.",
+      "source_lines": [35, 36],
+      "subject": "p_amount",
+      "category": "VALIDATION",
+      "raises": "e_invalid_amount"
+    },
+    {
+      "id": "GT-02",
+      "statement": "The source and destination accounts of a transfer must be different.",
+      "source_lines": [39, 40, 41, 42],
+      "subject": "p_from_account",
+      "category": "VALIDATION",
+      "raises": null
+    },
+    {
+      "id": "GT-03",
+      "statement": "The source account must exist.",
+      "source_lines": [55, 56],
+      "subject": "p_from_account",
+      "category": "VALIDATION",
+      "raises": "e_account_not_found"
+    },
+    {
+      "id": "GT-04",
+      "statement": "The source account must have status ACTIVE.",
+      "source_lines": [59, 60],
+      "subject": "v_from_status",
+      "category": "VALIDATION",
+      "raises": "e_account_inactive"
+    },
+    {
+      "id": "GT-05",
+      "statement": "The destination account must exist.",
+      "source_lines": [70, 71],
+      "subject": "p_to_account",
+      "category": "VALIDATION",
+      "raises": "e_account_not_found"
+    },
+    {
+      "id": "GT-06",
+      "statement": "The destination account must have status ACTIVE.",
+      "source_lines": [74, 75],
+      "subject": "v_to_status",
+      "category": "VALIDATION",
+      "raises": "e_account_inactive"
+    },
+    {
+      "id": "GT-07",
+      "statement": "The source account balance must be at least the transfer amount.",
+      "source_lines": [78, 79],
+      "subject": "v_from_balance",
+      "category": "LIMIT_CHECK",
+      "raises": "e_insufficient_balance"
+    },
+    {
+      "id": "GT-08",
+      "statement": "The day's cumulative outward transfers plus this transfer must not exceed the account's daily transfer limit.",
+      "source_lines": [90, 91],
+      "subject": "v_today_txn_total",
+      "category": "LIMIT_CHECK",
+      "raises": "e_daily_limit_exceeded"
+    },
+    {
+      "id": "GT-09",
+      "statement": "The daily transfer total counts only TRANSFER_OUT transactions dated today for the source account.",
+      "source_lines": [83, 84, 85, 86, 87, 88],
+      "subject": "v_today_txn_total",
+      "category": "CALCULATION",
+      "raises": null
+    }
+  ]
+}

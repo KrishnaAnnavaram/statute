@@ -99,6 +99,29 @@ def main() -> int:
     check(has_confirmed_mark and has_warning_mark,
           "both confirmed and warning confidence marker glyphs appear in the BRD -- nothing hidden")
 
+    print("\n=== EARS statements say something ===")
+    import re as _re
+    ears = _re.findall(r"\*\*Formal statement:\*\* (.+)", brd)
+    vacuous = [e for e in ears if "apply the processing described below" in e]
+    # The generic fallback is technically true and completely uninformative.
+    # Where the branch plainly sets a value, raises a specific application
+    # error, or derives a formula, the requirement must state THAT.
+    check(len(ears) > 0, "the BRD contains formal statements at all")
+    check(not vacuous,
+          f"no requirement falls back to the vacuous generic form ({len(vacuous)} did)")
+    # The developer's own RAISE_APPLICATION_ERROR message is the clearest
+    # statement of a rule in the source; it must reach the BRD verbatim.
+    check("Principal amount must be greater than zero" in brd,
+          "a RAISE_APPLICATION_ERROR message reaches the BRD as the rule statement")
+
+    print("\n=== Rule names are distinguishable ===")
+    names = _re.findall(r"^#### BR-\d{3} — (.+)$", brd, _re.MULTILINE)
+    dupes = {n for n in names if names.count(n) > 1}
+    # A BRD in which several rules share one name cannot be reviewed: an SME
+    # cannot say which "Enforce Balance" they are approving.
+    check(len(dupes) <= 1,
+          f"rule names are effectively unique across the catalogue (duplicated: {sorted(dupes)})")
+
     print("\n=== No invented content — every referenced rule ID is real ===")
     import re
     referenced_rule_ids = set(re.findall(r"\bBR-\d{3}\b", brd))

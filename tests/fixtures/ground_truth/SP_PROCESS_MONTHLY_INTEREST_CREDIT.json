@@ -1,0 +1,102 @@
+{
+  "object_id": "PROC-.SP_PROCESS_MONTHLY_INTEREST_CREDIT",
+  "source_file": "src/04_medium_process_monthly_interest_credit.sql",
+  "annotated_by": "hand-annotated from a domain reading of the source",
+  "held_out": true,
+  "annotation_notes": [
+    "HELD-OUT TEST SET. The extraction heuristics were tuned against",
+    "SP_TRANSFER_FUNDS and SP_UPDATE_DORMANT_ACCOUNT_STATUS, which reached",
+    "F1 1.000 — a result that cannot be trusted as evidence of generalisation",
+    "because the same person wrote both the heuristics and those annotations.",
+    "This procedure was annotated WITHOUT running the extractor against it, and",
+    "is structurally different (cursor batch loop, tiered rates, per-row error",
+    "isolation) from both tuned procedures.",
+    "",
+    "Same criteria applied for consistency: a rule CONSTRAINS or DEFINES what",
+    "the business permits. Mechanics are excluded — as 'debit source, credit",
+    "destination' was excluded in SP_TRANSFER_FUNDS, so are the UPDATE/INSERT",
+    "statements and the simple new_balance addition here."
+  ],
+  "rules": [
+    {
+      "id": "GT-01",
+      "statement": "Only accounts with status ACTIVE and an account type beginning SAVINGS are eligible for monthly interest.",
+      "source_lines": [17, 18, 19, 20, 21],
+      "subject": "account_status",
+      "category": "VALIDATION",
+      "raises": null
+    },
+    {
+      "id": "GT-02",
+      "statement": "The number of days in the interest month is taken from the run date's calendar month.",
+      "source_lines": [32],
+      "subject": "v_days_in_month",
+      "category": "CALCULATION",
+      "raises": null
+    },
+    {
+      "id": "GT-03",
+      "statement": "A balance below 100,000 earns an annual interest rate of 3.0%.",
+      "source_lines": [38, 39],
+      "subject": "rec.balance",
+      "category": "CALCULATION",
+      "raises": null
+    },
+    {
+      "id": "GT-04",
+      "statement": "A balance below 1,000,000 earns an annual interest rate of 3.5%.",
+      "source_lines": [40, 41],
+      "subject": "rec.balance",
+      "category": "CALCULATION",
+      "raises": null
+    },
+    {
+      "id": "GT-05",
+      "statement": "A balance below 10,000,000 earns an annual interest rate of 4.0%.",
+      "source_lines": [42, 43],
+      "subject": "rec.balance",
+      "category": "CALCULATION",
+      "raises": null
+    },
+    {
+      "id": "GT-06",
+      "statement": "A balance of 10,000,000 or more earns an annual interest rate of 4.5%.",
+      "source_lines": [44, 45],
+      "subject": "v_interest_rate",
+      "category": "CALCULATION",
+      "raises": null
+    },
+    {
+      "id": "GT-07",
+      "statement": "Monthly interest is the balance multiplied by the annual rate, prorated by days in month over 365, rounded to two decimals.",
+      "source_lines": [49, 50, 51, 52],
+      "subject": "v_interest_amount",
+      "category": "CALCULATION",
+      "raises": null
+    },
+    {
+      "id": "GT-08",
+      "statement": "Interest is credited only when the computed interest amount is greater than zero.",
+      "source_lines": [54],
+      "subject": "v_interest_amount",
+      "category": "VALIDATION",
+      "raises": null
+    },
+    {
+      "id": "GT-09",
+      "statement": "A failure processing one account is logged to the batch error log and does not stop the batch.",
+      "source_lines": [75, 76, 77, 78],
+      "subject": "p_accounts_failed",
+      "category": "ERROR_HANDLING",
+      "raises": null
+    },
+    {
+      "id": "GT-10",
+      "statement": "A failure at batch level rolls back the whole run and reports application error -20010.",
+      "source_lines": [91, 92, 93, 94],
+      "subject": "batch",
+      "category": "ERROR_HANDLING",
+      "raises": "RAISE_APPLICATION_ERROR"
+    }
+  ]
+}

@@ -1,0 +1,53 @@
+{
+  "object_id": "PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS",
+  "source_file": "src/02_simple_update_dormant_account_status.sql",
+  "annotated_by": "hand-annotated from a domain reading of the source",
+  "annotation_notes": [
+    "Same criteria as SP_TRANSFER_FUNDS: a rule constrains or defines what the",
+    "business permits. The three IF branches encode three distinct outcomes and",
+    "are therefore three rules, not one. The 365-day threshold is the business",
+    "policy; the UPDATE statements are its mechanical consequence."
+  ],
+  "rules": [
+    {
+      "id": "GT-01",
+      "statement": "An ACTIVE account with no customer-initiated transaction for more than 365 days must be marked DORMANT.",
+      "source_lines": [27, 28, 29],
+      "subject": "v_days_inactive",
+      "category": "VALIDATION",
+      "raises": null
+    },
+    {
+      "id": "GT-02",
+      "statement": "A DORMANT account that has transacted within the last 365 days must be reactivated to ACTIVE.",
+      "source_lines": [37, 38, 40],
+      "subject": "v_days_inactive",
+      "category": "VALIDATION",
+      "raises": null
+    },
+    {
+      "id": "GT-03",
+      "statement": "An account meeting neither the dormancy nor the reactivation condition keeps its current status.",
+      "source_lines": [48, 49],
+      "subject": "p_result",
+      "category": "VALIDATION",
+      "raises": null
+    },
+    {
+      "id": "GT-04",
+      "statement": "A request for an account that does not exist must be reported as ACCOUNT_NOT_FOUND.",
+      "source_lines": [55, 56],
+      "subject": "p_result",
+      "category": "ERROR_HANDLING",
+      "raises": "NO_DATA_FOUND"
+    },
+    {
+      "id": "GT-05",
+      "statement": "Days inactive is measured from the last transaction date to the as-of date, treating a missing last-transaction date as effectively unlimited inactivity.",
+      "source_lines": [25],
+      "subject": "v_days_inactive",
+      "category": "CALCULATION",
+      "raises": null
+    }
+  ]
+}

@@ -1,11 +1,17 @@
 #!/usr/bin/env python3
 """
-Regression tests for .claude/scripts/05_rules.py.
+Regression tests for .claude/scripts/05_rules.py (redesigned agent).
 
-Includes a regression guard for a real bug found during development: a
-cursor record's dotted field access (`rec.balance`) was truncated to just
-the generic loop-variable name (`rec`), producing the meaningless rule
-name "Enforce Rec" instead of "Enforce Balance".
+The previous version of this suite tested a condition-mining agent with three
+sources (IF conditions, named exceptions, CHECK constraints). The redesigned
+agent mines from nine, restates exceptions as positive obligations, and
+decomposes multi-branch constructs — so most of the old assertions described
+behaviour that no longer exists. This suite tests what the agent does now.
+
+Each test below traces to a specific defect or design decision, noted inline,
+so a future reader can tell an intentional guarantee from an incidental one.
+Correctness against hand-annotated rules is measured separately by
+tests/evaluate_rules.py; this suite guards behaviour, not accuracy.
 
 Usage:
     python tests/test_rules.py
@@ -18,12 +24,9 @@ import tempfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-INVENTORY_SCRIPT = ROOT / ".claude" / "scripts" / "01_inventory.py"
-PARSER_SCRIPT = ROOT / ".claude" / "scripts" / "02_parser.py"
-DATA_SCRIPT = ROOT / ".claude" / "scripts" / "03_data.py"
-RULES_SCRIPT = ROOT / ".claude" / "scripts" / "05_rules.py"
+SCRIPTS = ROOT / ".claude" / "scripts"
 
-sys.path.insert(0, str(ROOT / ".claude" / "scripts"))
+sys.path.insert(0, str(SCRIPTS))
 
 failures: list[str] = []
 
@@ -35,78 +38,155 @@ def check(condition: bool, label: str) -> None:
         failures.append(label)
 
 
+def _stage(script: str, args: list[str], out_dir: Path, artifact: str) -> Path:
+    subprocess.run([sys.executable, str(SCRIPTS / script), *args, "--output", str(out_dir / "run")],
+                   capture_output=True, text=True, check=True)
+    (out_dir / "latest.json").write_text(json.dumps(
+        {"run_version": "run", "path": f"run/{artifact}", "updated_at": "test"}))
+    return out_dir
+
+
 def run_pipeline(sql_dir: Path, work_dir: Path) -> dict:
-    inv_dir = work_dir / "inventory"
-    subprocess.run([sys.executable, str(INVENTORY_SCRIPT), str(sql_dir),
-                     "--output", str(inv_dir / "run" / "inventory-artifact.json")],
-                    capture_output=True, text=True, check=True)
-    (inv_dir / "latest.json").write_text(json.dumps(
+    """Stages 1-5. Agent 5 now consumes Agent 4's slices, so logic must run."""
+    inv = work_dir / "inventory"
+    subprocess.run([sys.executable, str(SCRIPTS / "01_inventory.py"), str(sql_dir),
+                    "--output", str(inv / "run" / "inventory-artifact.json")],
+                   capture_output=True, text=True, check=True)
+    (inv / "latest.json").write_text(json.dumps(
         {"run_version": "run", "path": "run/inventory-artifact.json", "updated_at": "test"}))
 
-    parser_dir = work_dir / "parser"
-    subprocess.run([sys.executable, str(PARSER_SCRIPT), "--inventory-root", str(inv_dir),
-                     "--output", str(parser_dir / "run")], capture_output=True, text=True, check=True)
-    (parser_dir / "latest.json").write_text(json.dumps(
-        {"run_version": "run", "path": "run/parser_artifact.json", "updated_at": "test"}))
+    parser = _stage("02_parser.py", ["--inventory-root", str(inv)],
+                    work_dir / "parser", "parser_artifact.json")
+    data = _stage("03_data.py", ["--inventory-root", str(inv), "--parser-root", str(parser)],
+                  work_dir / "data", "data_artifact.json")
+    logic = _stage("04_logic.py", ["--parser-root", str(parser), "--inventory-root", str(inv)],
+                   work_dir / "logic", "logic_artifact.json")
 
-    data_dir = work_dir / "data"
-    subprocess.run([sys.executable, str(DATA_SCRIPT), "--inventory-root", str(inv_dir),
-                     "--parser-root", str(parser_dir), "--output", str(data_dir / "run")],
-                    capture_output=True, text=True, check=True)
-    (data_dir / "latest.json").write_text(json.dumps(
-        {"run_version": "run", "path": "run/data_artifact.json", "updated_at": "test"}))
-
-    rules_dir = work_dir / "rules_out"
-    r = subprocess.run([sys.executable, str(RULES_SCRIPT), "--parser-root", str(parser_dir),
-                         "--data-root", str(data_dir), "--inventory-root", str(inv_dir),
-                         "--output", str(rules_dir)], capture_output=True, text=True)
+    rules = work_dir / "rules"
+    r = subprocess.run([sys.executable, str(SCRIPTS / "05_rules.py"),
+                        "--parser-root", str(parser), "--data-root", str(data),
+                        "--inventory-root", str(inv), "--logic-root", str(logic),
+                        "--output", str(rules / "run")], capture_output=True, text=True)
     if r.returncode != 0:
         raise RuntimeError(f"05_rules.py failed:\n{r.stdout}\n{r.stderr}")
-    print(r.stdout)
-    return json.loads((rules_dir / "rules_artifact.json").read_text(encoding="utf-8"))
+    return json.loads((rules / "run" / "rules_artifact.json").read_text(encoding="utf-8"))
 
 
-def test_real_pipeline(work_dir: Path) -> None:
-    print("\n=== Full pipeline: real src/ rule mining ===")
-    artifact = run_pipeline(ROOT / "src", work_dir)
+def test_pipeline_contract(artifact: dict) -> None:
+    """Invariants every consumer downstream (Agents 6 and 7) relies on."""
+    print("\n=== Contract: structure every downstream agent depends on ===")
     rules = artifact["business_rules"]
-    by_name = {r["name"]: r for r in rules}
 
-    # CHECK-constraint-sourced rule (from Agent 3's promotable_to_rule)
-    check_rules = [r for r in rules if r["source"]["kind"] == "ddl_check_constraint"]
-    check(len(check_rules) == 1, "the accounts.account_status CHECK constraint promoted to exactly one rule")
-    if check_rules:
-        check(check_rules[0]["confidence"] == "confirmed", "CHECK-constraint rule gets top confidence, no SME review")
-        check(check_rules[0]["requires_sme_review"] is False, "CHECK-constraint rule never flagged for SME review")
+    check(len(rules) > 0, "the agent extracts rules from the real src/ corpus")
+    check(all(r["source"].get("kind") for r in rules),
+          "every rule carries a source kind (no invented rules)")
+    check(all(r.get("rule_id") for r in rules), "every rule has a rule_id")
+    check(len({r["rule_id"] for r in rules}) == len(rules), "rule_ids are unique")
 
-    # Named business exceptions promoted; WHEN OTHERS excluded
-    exc_rules = [r for r in rules if r["source"]["kind"] == "named_exception"]
-    exc_names = {r["condition_text"].upper() for r in exc_rules}
-    check("E_INSUFFICIENT_BALANCE" in exc_names, "named exception E_INSUFFICIENT_BALANCE promoted to a rule")
-    check("E_DAILY_LIMIT_EXCEEDED" in exc_names, "named exception E_DAILY_LIMIT_EXCEEDED promoted to a rule")
-    check("OTHERS" not in exc_names, "generic WHEN OTHERS handler never promoted to a business rule")
-    check(all(r["confidence"] == "confirmed" for r in exc_rules), "all named-exception rules get top confidence")
+    # Agent 7 formats rule provenance by branching on source kind. A kind it
+    # does not recognise previously crashed it with KeyError: 'object_id' —
+    # so object_id must be present on every non-DDL kind.
+    non_ddl = [r for r in rules if not r["source"]["kind"].startswith("ddl_")]
+    check(all("object_id" in r["source"] for r in non_ddl),
+          "every code-sourced rule names its object_id (Agent 7 formats on it)")
+    check(all("line" in r["source"] for r in non_ddl),
+          "every code-sourced rule cites a source line (traceability to source)")
 
-    # Regression guard: dotted record-field subject must not collapse to the
-    # generic loop-variable name.
-    check("Enforce Rec" not in by_name, "cursor record field (rec.balance) never produces the meaningless name 'Enforce Rec'")
-    check("Enforce Balance" in by_name, "cursor record field (rec.balance) correctly resolves to 'Enforce Balance'")
-
-    # Every rule traces to a real source
-    for r in rules:
-        check("source" in r and r["source"].get("kind"), f"{r['rule_id']} has a traceable source")
-        break  # one representative check is enough to avoid flooding output; full coverage below
-    check(all("source" in r and r["source"].get("kind") for r in rules), "every extracted rule has a traceable source (no invented rules)")
-
-    # Rule sets partition all rules
-    all_rule_ids_in_sets = {rid for rs in artifact["rule_sets"] for rid in rs["rule_ids"]}
-    check(all_rule_ids_in_sets == {r["rule_id"] for r in rules}, "every rule belongs to exactly one rule set")
-
-    check(len(artifact.get("design_references", [])) >= 2, "design_references present with cited sources")
+    ids_in_sets = {rid for rs in artifact["rule_sets"] for rid in rs["rule_ids"]}
+    check(ids_in_sets == {r["rule_id"] for r in rules}, "rule sets partition all rules")
+    check(len(artifact.get("design_references", [])) >= 2, "design_references cite sources")
 
 
-def test_category_and_pattern_classification() -> None:
-    print("\n=== Direct unit test: category/pattern classification ===")
+def test_exceptions_are_obligations(artifact: dict) -> None:
+    """
+    SBVR principle: 'there are no exceptions; instead there are well stated
+    business rules.' A RAISE guarded by an IF states a prohibition, and the
+    BRD should read as the positive obligation, not as 'exception X is raised'.
+    """
+    print("\n=== Obligation form: exceptions restated as business rules ===")
+    rules = artifact["business_rules"]
+    obligations = [r for r in rules if r.get("is_obligation")]
+
+    check(len(obligations) > 0, "the agent emits obligation-form rules")
+    check(all("raise" not in r["name"].lower() for r in obligations),
+          "no obligation rule is named after the RAISE mechanism")
+
+    # A guarded RAISE must MERGE with the IF that guards it rather than
+    # producing a second rule for the same decision — they are one rule.
+    text = json.dumps(rules)
+    check("e_insufficient_balance" not in text.lower() or
+          any("must" in r["description"].lower() for r in obligations),
+          "guarded exceptions are phrased as what must hold, not what is raised")
+
+
+def test_branch_decomposition(artifact: dict) -> None:
+    """
+    A multi-branch construct encodes one business outcome PER BRANCH.
+    Emitting only the leading IF cost 2 of 5 rules on the dormant-account
+    procedure; leaving CASE whole cost 6 of 10 on the minimum-balance one.
+    """
+    print("\n=== Decomposition: every branch is its own business outcome ===")
+    rules = artifact["business_rules"]
+
+    case_rules = [r for r in rules if r["source"]["kind"] == "case_branch"]
+    check(len(case_rules) >= 5,
+          "a CASE expression is decomposed into one rule per branch, not left whole")
+    check(any(r["structural_pattern"] == "DEFAULT_BRANCH" for r in case_rules),
+          "the CASE ELSE branch is captured as the default rule")
+
+    branch_rules = [r for r in rules if r["source"]["kind"] == "conditional_branch"]
+    check(any(r["structural_pattern"] == "DEFAULT_BRANCH" for r in branch_rules),
+          "an IF/ELSE else-branch is captured as the default rule")
+
+    # Distinct branches must occupy distinct lines, or dedup collapses them.
+    case_lines = [r["source"]["line"] for r in case_rules]
+    check(len(set(case_lines)) == len(case_lines),
+          "each CASE branch rule cites its own source line (not the statement start)")
+
+
+def test_when_others_three_way_split(artifact: dict) -> None:
+    """
+    WHEN OTHERS is not one thing. Logging a per-row failure and continuing is
+    a resilience REQUIREMENT; re-raising as -20010 is an error CONTRACT;
+    a bare rollback-and-reraise is plumbing and must not reach the BRD.
+    """
+    print("\n=== WHEN OTHERS: resilience vs error contract vs plumbing ===")
+    kinds = {r["source"]["kind"] for r in artifact["business_rules"]}
+
+    check("failure_isolation" in kinds,
+          "a per-row failure that is logged and skipped becomes a resilience rule")
+    check("error_contract" in kinds,
+          "a WHEN OTHERS that raises a specific application error becomes an error contract")
+
+    generic = [r for r in artifact["business_rules"]
+               if r["source"]["kind"] == "generic_exception"]
+    check(all(r["requires_sme_review"] for r in generic),
+          "any residual generic handler is flagged for SME review rather than asserted")
+
+
+def test_derivation_and_cursor_mining(artifact: dict) -> None:
+    """Sources the old three-source agent had no access to at all."""
+    print("\n=== Slice-derived and cursor-derived rules ===")
+    rules = artifact["business_rules"]
+    kinds = {r["source"]["kind"] for r in rules}
+
+    check("variable_derivation" in kinds,
+          "business formulas are mined from Agent 4's backward slices")
+    check("cursor_eligibility" in kinds,
+          "a cursor WHERE clause is mined as a population-eligibility rule")
+
+    # Regression guard: a slice includes TRANSITIVE dependencies, so the
+    # statement computing v_interest_amount also appears in v_new_balance's
+    # slice. Attributing it to both produced a duplicate rule.
+    deriv = [r for r in rules if r["source"]["kind"] == "variable_derivation"]
+    lines = [(r["source"]["object_id"], r["source"]["line"]) for r in deriv]
+    check(len(set(lines)) == len(lines),
+          "one derivation rule per formula (transitive slice members not re-attributed)")
+
+
+def test_unit_level_helpers() -> None:
+    """Direct tests of the classification and phrasing helpers."""
+    print("\n=== Unit: classification, naming, derivation scoring ===")
     import importlib
     rl = importlib.import_module("05_rules")
 
@@ -114,16 +194,68 @@ def test_category_and_pattern_classification() -> None:
           "amount-vs-limit comparison classified as LIMIT_CHECK")
     check(rl.classify_category("v_account_status = 'CLOSED'") == "VALIDATION",
           "status field comparison classified as VALIDATION")
-    check(rl.classify_pattern("v_status = 'ACTIVE'") == "FIELD_VALUE_COMPARE", "literal comparison pattern detected")
-    check(rl.classify_pattern("v_amount > 10000 AND v_flag = 'Y'") == "MULTI_CONDITION", "AND/OR compound condition pattern detected")
-    check(rl.business_name("p_account_number") == "Account Number", "parameter prefix stripped and abbreviation expanded")
-    check(rl.business_name("rec.balance") == "Balance", "dotted record-field access resolves to the field name, not the loop variable")
+    check(rl.classify_pattern("v_status = 'ACTIVE'") == "FIELD_VALUE_COMPARE",
+          "literal comparison pattern detected")
+    check(rl.classify_pattern("v_amount > 10000 AND v_flag = 'Y'") == "MULTI_CONDITION",
+          "AND/OR compound condition pattern detected")
+
+    check(rl.business_name("p_account_number") == "Account Number",
+          "parameter prefix stripped and abbreviation expanded")
+    # Regression guard: `rec.balance` once collapsed to the generic loop
+    # variable, producing the meaningless rule name "Enforce Rec".
+    check(rl.business_name("rec.balance") == "Balance",
+          "dotted record-field access resolves to the field, not the loop variable")
+
+    # Enforcement state drives confidence: a DISABLED constraint is not a
+    # confirmed rule just because it is written down.
+    signal, conf, sme = rl._ENFORCEMENT_TO_CONFIDENCE["enforced"]
+    check((conf, sme) == ("confirmed", False),
+          "an ENABLED VALIDATED constraint is confirmed and needs no SME review")
+
+    signal, conf, sme = rl._ENFORCEMENT_TO_CONFIDENCE["enforced_new_data_only"]
+    check(conf != "confirmed" and sme,
+          "ENABLE NOVALIDATE is not confirmed — existing rows may violate it")
+
+    signal, conf, sme = rl._ENFORCEMENT_TO_CONFIDENCE["not_enforced"]
+    check(conf == "low" and sme,
+          "a DISABLED constraint is low confidence and flagged for SME review")
+
+
+def test_dedup_prefers_obligations() -> None:
+    print("\n=== Unit: deduplication keeps the stronger statement ===")
+    import importlib
+    rl = importlib.import_module("05_rules")
+
+    weak = {"raw_key": "K", "name": "weak", "signal_strength": 2, "category": "VALIDATION",
+            "source": {"kind": "conditional_branch"}}
+    strong = {"raw_key": "K", "name": "strong", "signal_strength": 2, "is_obligation": True,
+              "category": "VALIDATION", "source": {"kind": "named_exception"}}
+
+    kept = rl.deduplicate([weak, strong])
+    check(len(kept) == 1, "two rules sharing a raw_key collapse to one")
+    check(kept[0]["name"] == "strong",
+          "the obligation form wins over the bare condition for the same decision")
+
+    louder = {"raw_key": "J", "name": "louder", "signal_strength": 5, "category": "VALIDATION",
+              "source": {"kind": "conditional_branch"}}
+    quieter = {"raw_key": "J", "name": "quieter", "signal_strength": 1, "category": "VALIDATION",
+               "source": {"kind": "conditional_branch"}}
+    kept = rl.deduplicate([quieter, louder])
+    check(kept[0]["name"] == "louder",
+          "with neither an obligation, the higher-signal rule wins regardless of order")
 
 
 def main() -> int:
     with tempfile.TemporaryDirectory() as tmp:
-        test_real_pipeline(Path(tmp))
-    test_category_and_pattern_classification()
+        artifact = run_pipeline(ROOT / "src", Path(tmp))
+        test_pipeline_contract(artifact)
+        test_exceptions_are_obligations(artifact)
+        test_branch_decomposition(artifact)
+        test_when_others_three_way_split(artifact)
+        test_derivation_and_cursor_mining(artifact)
+
+    test_unit_level_helpers()
+    test_dedup_prefers_obligations()
 
     print(f"\n{len(failures)} failure(s)" if failures else "\nAll tests passed.")
     for f in failures:

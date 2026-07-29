@@ -171,6 +171,28 @@ def to_ears_statement(rule: dict) -> str:
         return f"The system SHALL reject any row that duplicates an existing {cond}."
     if kind == "ddl_view_filter":
         return f"The system SHALL expose only records where {cond}."
+    if kind == "variable_derivation":
+        return f"The system SHALL derive this value as: {cond}."
+    if kind == "cursor_eligibility":
+        return f"The system SHALL process only records where {cond}."
+
+    # An existence obligation reads as a rejection, not as a conditional — its
+    # condition_text is already phrased as the requirement ("row must exist
+    # in ACCOUNTS ..."), so wrapping it in "IF ..., THEN ..." is ungrammatical.
+    if rule.get("structural_pattern") == "EXISTENCE_CHECK":
+        raises = f" and raise {rule['raises']}" if rule.get("raises") else ""
+        return f"The system SHALL reject the operation unless {cond}{raises}."
+
+    # A guarded exception states a prohibition: the condition is the VIOLATION.
+    if rule.get("raises"):
+        return (f"IF {cond}, THEN the system SHALL reject the operation "
+                f"and raise {rule['raises']}.")
+
+    # Where the outcome is known, state it. "SHALL apply the processing
+    # described below" is vacuous when the branch plainly sets a value.
+    if rule.get("outcome_text"):
+        return f"IF {cond}, THEN the system SHALL {rule['outcome_text']}."
+
     if kind == "named_exception":
         return (f"IF the condition '{cond}' occurs, THEN the system SHALL detect it and invoke the "
                 "associated error handling.")

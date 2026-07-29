@@ -1,0 +1,186 @@
+{
+  "overall": {
+    "precision": 0.6154,
+    "recall": 0.5714,
+    "f1": 0.5926,
+    "matched": 8,
+    "extracted": 13,
+    "ground_truth": 14
+  },
+  "per_object": [
+    {
+      "object_id": "PROC-.SP_TRANSFER_FUNDS",
+      "ground_truth_count": 9,
+      "extracted_count": 11,
+      "matched": 6,
+      "precision": 0.5455,
+      "recall": 0.6667,
+      "f1": 0.6,
+      "subject_agreement_rate": 0.6667,
+      "missed_rules": [
+        {
+          "id": "GT-03",
+          "statement": "The source account must exist.",
+          "lines": [
+            55,
+            56
+          ]
+        },
+        {
+          "id": "GT-05",
+          "statement": "The destination account must exist.",
+          "lines": [
+            70,
+            71
+          ]
+        },
+        {
+          "id": "GT-09",
+          "statement": "The daily transfer total counts only TRANSFER_OUT transactions dated today for the source account.",
+          "lines": [
+            83,
+            84,
+            85,
+            86,
+            87,
+            88
+          ]
+        }
+      ],
+      "unmatched_extracted": [
+        {
+          "rule_id": "BR-005",
+          "name": "Handle E Invalid Amount",
+          "lines": [
+            128
+          ]
+        },
+        {
+          "rule_id": "BR-002",
+          "name": "Handle E Account Not Found",
+          "lines": [
+            130
+          ]
+        },
+        {
+          "rule_id": "BR-001",
+          "name": "Handle E Account Inactive",
+          "lines": [
+            133
+          ]
+        },
+        {
+          "rule_id": "BR-004",
+          "name": "Handle E Insufficient Balance",
+          "lines": [
+            136
+          ]
+        },
+        {
+          "rule_id": "BR-003",
+          "name": "Handle E Daily Limit Exceeded",
+          "lines": [
+            139
+          ]
+        }
+      ],
+      "pairs": [
+        {
+          "truth": "GT-01",
+          "truth_statement": "A transfer amount must be provided and must be greater than zero.",
+          "extracted": "BR-012",
+          "extracted_name": "Validate Amount",
+          "subject_agreement": true
+        },
+        {
+          "truth": "GT-02",
+          "truth_statement": "The source and destination accounts of a transfer must be different.",
+          "extracted": "BR-016",
+          "extracted_name": "Validate From Account",
+          "subject_agreement": true
+        },
+        {
+          "truth": "GT-04",
+          "truth_statement": "The source account must have status ACTIVE.",
+          "extracted": "BR-017",
+          "extracted_name": "Validate From Status",
+          "subject_agreement": true
+        },
+        {
+          "truth": "GT-06",
+          "truth_statement": "The destination account must have status ACTIVE.",
+          "extracted": "BR-020",
+          "extracted_name": "Validate To Status",
+          "subject_agreement": true
+        },
+        {
+          "truth": "GT-07",
+          "truth_statement": "The source account balance must be at least the transfer amount.",
+          "extracted": "BR-008",
+          "extracted_name": "Calculate Amount",
+          "subject_agreement": false
+        },
+        {
+          "truth": "GT-08",
+          "truth_statement": "The day's cumulative outward transfers plus this transfer must not exceed the account's daily transfer limit.",
+          "extracted": "BR-010",
+          "extracted_name": "Enforce Amount",
+          "subject_agreement": false
+        }
+      ]
+    },
+    {
+      "object_id": "PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS",
+      "ground_truth_count": 5,
+      "extracted_count": 2,
+      "matched": 2,
+      "precision": 1.0,
+      "recall": 0.4,
+      "f1": 0.5714,
+      "subject_agreement_rate": 0.0,
+      "missed_rules": [
+        {
+          "id": "GT-02",
+          "statement": "A DORMANT account that has transacted within the last 365 days must be reactivated to ACTIVE.",
+          "lines": [
+            37,
+            38,
+            40
+          ]
+        },
+        {
+          "id": "GT-03",
+          "statement": "An account meeting neither the dormancy nor the reactivation condition keeps its current status.",
+          "lines": [
+            48,
+            49
+          ]
+        },
+        {
+          "id": "GT-05",
+          "statement": "Days inactive is measured from the last transaction date to the as-of date, treating a missing last-transaction date as effectively unlimited inactivity.",
+          "lines": [
+            25
+          ]
+        }
+      ],
+      "unmatched_extracted": [],
+      "pairs": [
+        {
+          "truth": "GT-01",
+          "truth_statement": "An ACTIVE account with no customer-initiated transaction for more than 365 days must be marked DORMANT.",
+          "extracted": "BR-014",
+          "extracted_name": "Validate Current Status",
+          "subject_agreement": false
+        },
+        {
+          "truth": "GT-04",
+          "truth_statement": "A request for an account that does not exist must be reported as ACCOUNT_NOT_FOUND.",
+          "extracted": "BR-006",
+          "extracted_name": "Handle No Data Found",
+          "subject_agreement": false
+        }
+      ]
+    }
+  ]
+}

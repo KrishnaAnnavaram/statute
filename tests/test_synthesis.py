@@ -250,8 +250,12 @@ def test_honesty(brd: str, index: dict) -> None:
     print("\n=== Honest about its own limits ===")
     check("Out of scope" in brd, "what is NOT covered is stated explicitly")
     check("cannot" in brd.lower(), "the document states what the method cannot do")
-    check("no AI model wrote" in brd.lower() or "no ai model wrote" in brd.lower(),
+    check("no language model generates" in brd.lower(),
           "provenance of the content is declared")
+    # The hallucination guarantee is structural, not statistical — there is no
+    # model in the generation path, so there is no temperature to tune.
+    check("structurally impossible" in brd.lower(),
+          "the document states that hallucination is structurally impossible, not merely rare")
     check(len(index["gaps"]) > 0, "open matters are surfaced rather than hidden")
     check("to be assigned" in brd, "unknowable attributes appear as visible blanks")
     check("Needs review" in brd, "uncertain rules are marked")

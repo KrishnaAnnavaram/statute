@@ -1,0 +1,24 @@
+{
+  "stage": "6_diagram",
+  "run_version": "2026-07-29T16.06.14.882Z",
+  "status": "success",
+  "generated_at": "2026-07-29T16:06:14.882625+00:00",
+  "upstream": {
+    "parser_run_version": "2026-07-29T16.05.37.101Z",
+    "data_run_version": "2026-07-29T16.05.52.383Z",
+    "logic_run_version": "2026-07-29T16.06.06.468Z",
+    "rules_run_version": "2026-07-29T16.06.06.566Z",
+    "inventory_run_version": "2026-07-29T16.05.30.018Z"
+  },
+  "quality": {
+    "decision_nodes": 14,
+    "decision_label_tier1_pct": 1.0,
+    "branch_edges": 21,
+    "branch_traceability_pct": 1.0,
+    "max_nodes_any_diagram": 45,
+    "fallback_labels": 2,
+    "total_nodes": 132,
+    "leaked_identifiers": 0,
+    "degraded_inputs": []
+  }
+}

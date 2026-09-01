@@ -1,0 +1,60 @@
+flowchart TD
+    START(["SP_PROCESS_MONTHLY_INTEREST_CREDIT"])
+    N1["Set Accounts Processed to 0"]
+    N2["Set Accounts Failed to 0"]
+    N3["Set Days In Month to EXTRACT(DAY FROM LAST_DAY(p_run_date))"]
+    N4[/"Repeat for each row"/]
+    N5["Body (line 36)"]
+    N6{"rec.balance < 100000?"}
+    N7["Set Interest Rate to 3.0"]
+    N8["Set Interest Rate to 3.5"]
+    N9["Set Interest Rate to 4.0"]
+    N10["Set Interest Rate to 4.5"]
+    N11["Set Interest Amount to ROUND( rec.balance * (v_interest_rate / 100..."]
+    N12{"interest_amount > 0?"}
+    N13["Set New Balance to rec.balance + v_interest_amount"]
+    N14[("Update ACCOUNTS")]:::dataNode
+    N15[("Insert into TRANSACTION_LEDGER")]:::dataNode
+    N16["Set Accounts Processed to p_accounts_processed + 1"]
+    N17["On error: OTHERS"]:::errorNode
+    N18[("Insert into BATCH_ERROR_LOG")]:::dataNode
+    N19["Set Accounts Failed to p_accounts_failed + 1"]
+    N20(["Commit"])
+    N21["On error: OTHERS"]:::errorNode
+    N22(["Rollback"])
+    N23["Call RAISE_APPLICATION_ERROR"]
+    N24["Any statement fails"]:::errorNode
+    START --> N1
+    N1 --> N2
+    N2 --> N3
+    N3 --> N4
+    N4 --> N17
+    N17 --> N20
+    N20 --> N21
+    N6 --> N11
+    N11 --> N12
+    N7 --> N8
+    N8 --> N9
+    N9 --> N10
+    N13 --> N14
+    N14 --> N15
+    N15 --> N16
+    N18 --> N19
+    N22 --> N23
+    N4 -->|"each row"| N5
+    N5 -->|"BR-041 · set Interest Rate to 3.0"| N6
+    N6 -->|"BR-041 · set Interest Rate to 3.0"| N7
+    N6 -->|"BR-039 · set Interest Rate to 3.5"| N8
+    N6 -->|"BR-040 · set Interest Rate to 4.0"| N9
+    N6 -->|"BR-035 · set Interest Rate to 4.5"| N10
+    N12 -->|"BR-032 · set New Balance to rec.balance + v_interest_am..."| N13
+    N17 -.->|"OTHERS"| N18
+    N21 -.->|"OTHERS"| N22
+    N5 -.->|"repeat"| N4
+    N24 -.->|"OTHERS"| N17
+    N24 -.->|"OTHERS"| N21
+    classDef warning fill:#fff4e5,stroke:#d97706,stroke-width:2px
+    classDef external fill:#f5f5f5,stroke:#999,stroke-dasharray: 4 2
+    classDef inferred fill:#f5f5f5,stroke:#999,stroke-dasharray: 4 2
+    classDef errorNode fill:#fdecea,stroke:#c0392b
+    classDef dataNode fill:#eaf3fb,stroke:#2c6fad

@@ -1,0 +1,4 @@
+sequence,cache,increment_by,start_with
+SEQ_BATCH_RUN_ID,0,1,1
+SEQ_LOG_ID,0,1,1
+SEQ_TXN_ID,0,1,100001

@@ -1,0 +1,102 @@
+flowchart TD
+    START(["SP_TRANSFER_FUNDS"])
+    N1["Set Status to 'FAILED'"]
+    N2{"amount IS NULL OR amount <= 0?"}
+    N3["Raise e_invalid_amount"]:::errorNode
+    N4{"from_account = to_account?"}
+    N5["2 steps<br/>lines 40-41"]
+    N6(["Return"])
+    N7["2 steps<br/>lines 45-57"]
+    N8[("Look up ACCOUNTS")]:::dataNode
+    N9["On error: NO_DATA_FOUND"]:::errorNode
+    N10["Raise e_account_not_found"]:::errorNode
+    N11{"from_status <> 'ACTIVE'?"}
+    N12["Raise e_account_inactive"]:::errorNode
+    N13["Body (line 64)"]
+    N14[("Look up ACCOUNTS")]:::dataNode
+    N15["On error: NO_DATA_FOUND"]:::errorNode
+    N16["Raise e_account_not_found"]:::errorNode
+    N17{"to_status <> 'ACTIVE'?"}
+    N18["Raise e_account_inactive"]:::errorNode
+    N19{"from_balance < amount?"}
+    N20["Raise e_insufficient_balance"]:::errorNode
+    N21[("Look up TRANSACTION_LEDGER")]:::dataNode
+    N22{"(today_txn_total + amount) > daily_limit?"}
+    N23["Raise e_daily_limit_exceeded"]:::errorNode
+    N24["6 steps<br/>touches ACCOUNTS, TRANSACTION_LEDGER"]
+    N25(["Commit"])
+    N26["On error: E_INVALID_AMOUNT"]:::errorNode
+    N27["2 steps<br/>lines 129-129"]
+    N28["On error: E_ACCOUNT_NOT_FOUND"]:::errorNode
+    N29(["Rollback"])
+    N30["2 steps<br/>lines 132-132"]
+    N31["On error: E_ACCOUNT_INACTIVE"]:::errorNode
+    N32(["Rollback"])
+    N33["2 steps<br/>lines 135-135"]
+    N34["On error: E_INSUFFICIENT_BALANCE"]:::errorNode
+    N35(["Rollback"])
+    N36["2 steps<br/>lines 138-138"]
+    N37["On error: E_DAILY_LIMIT_EXCEEDED"]:::errorNode
+    N38(["Rollback"])
+    N39["2 steps<br/>lines 141-141"]
+    N40["On error: OTHERS"]:::errorNode
+    N41(["Rollback"])
+    N42["2 steps<br/>lines 144-144"]
+    N43["Raise error"]:::errorNode
+    N44["Any statement fails"]:::errorNode
+    START --> N1
+    N1 --> N2
+    N2 --> N4
+    N4 --> N7
+    N7 --> N9
+    N9 --> N11
+    N11 --> N13
+    N13 --> N15
+    N15 --> N17
+    N17 --> N19
+    N19 --> N21
+    N21 --> N22
+    N22 --> N24
+    N24 --> N25
+    N25 --> N26
+    N26 --> N28
+    N28 --> N31
+    N31 --> N34
+    N34 --> N37
+    N37 --> N40
+    N5 --> N6
+    N29 --> N30
+    N32 --> N33
+    N35 --> N36
+    N38 --> N39
+    N41 --> N42
+    N42 --> N43
+    N2 -->|"BR-016"| N3
+    N4 -->|"BR-031 · set Status to 'FAILED' and set Message to 'Sou..."| N5
+    N7 --> N8
+    N9 -.->|"BR-012"| N10
+    N11 -->|"BR-017"| N12
+    N13 --> N14
+    N15 -.->|"BR-013"| N16
+    N17 -->|"BR-018"| N18
+    N19 -->|"BR-002"| N20
+    N22 -->|"BR-001"| N23
+    N26 -.->|"E_INVALID_AMOUNT"| N27
+    N28 -.->|"E_ACCOUNT_NOT_FOUND"| N29
+    N31 -.->|"E_ACCOUNT_INACTIVE"| N32
+    N34 -.->|"E_INSUFFICIENT_BALANCE"| N35
+    N37 -.->|"E_DAILY_LIMIT_EXCEEDED"| N38
+    N40 -.->|"OTHERS"| N41
+    N44 -.->|"NO_DATA_FOUND"| N9
+    N44 -.->|"NO_DATA_FOUND"| N15
+    N44 -.->|"E_INVALID_AMOUNT"| N26
+    N44 -.->|"E_ACCOUNT_NOT_FOUND"| N28
+    N44 -.->|"E_ACCOUNT_INACTIVE"| N31
+    N44 -.->|"E_INSUFFICIENT_BALANCE"| N34
+    N44 -.->|"E_DAILY_LIMIT_EXCEEDED"| N37
+    N44 -.->|"OTHERS"| N40
+    classDef warning fill:#fff4e5,stroke:#d97706,stroke-width:2px
+    classDef external fill:#f5f5f5,stroke:#999,stroke-dasharray: 4 2
+    classDef inferred fill:#f5f5f5,stroke:#999,stroke-dasharray: 4 2
+    classDef errorNode fill:#fdecea,stroke:#c0392b
+    classDef dataNode fill:#eaf3fb,stroke:#2c6fad

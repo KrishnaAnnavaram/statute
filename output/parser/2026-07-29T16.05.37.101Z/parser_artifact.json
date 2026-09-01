@@ -1,0 +1,27 @@
+{
+  "pipeline_stage": "2_parser",
+  "schema_version": "1.0",
+  "generated_at": "2026-07-29T16:05:51.683185+00:00",
+  "upstream": {
+    "inventory_run_version": "2026-07-29T16.05.30.018Z"
+  },
+  "files_parsed": 5,
+  "files_passthrough": 2,
+  "files_skipped": 0,
+  "stats": {
+    "objects_parsed": 5,
+    "package_members": 0,
+    "statements_extracted": 124,
+    "dynamic_sql_blocks": 0,
+    "parse_errors": 0,
+    "unresolved_calls": 0
+  },
+  "object_index": {
+    "FUNC-.FN_CALCULATE_SIMPLE_INTEREST": "raw_structure/FUNC-.FN_CALCULATE_SIMPLE_INTEREST.json",
+    "PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS": "raw_structure/PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS.json",
+    "PROC-.SP_CHECK_MINIMUM_BALANCE": "raw_structure/PROC-.SP_CHECK_MINIMUM_BALANCE.json",
+    "PROC-.SP_PROCESS_MONTHLY_INTEREST_CREDIT": "raw_structure/PROC-.SP_PROCESS_MONTHLY_INTEREST_CREDIT.json",
+    "PROC-.SP_TRANSFER_FUNDS": "raw_structure/PROC-.SP_TRANSFER_FUNDS.json"
+  },
+  "issues": []
+}

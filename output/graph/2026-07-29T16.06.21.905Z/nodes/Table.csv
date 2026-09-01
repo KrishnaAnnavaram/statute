@@ -1,0 +1,16 @@
+table,column_count,partitioned,primary_key,temporary,title
+ACCOUNTS,10,False,ACCOUNT_NUMBER,False,Accounts
+BATCH_CONTROL_LOG,10,False,BATCH_RUN_ID,False,Batch Control Log
+BATCH_ERROR_LOG,5,False,LOG_ID,False,Batch Error Log
+CUSTOMERS,6,False,CUSTOMER_ID,False,Customers
+FRAUD_SCORE_RESULTS,6,False,TXN_ID,False,Fraud Score Results
+HOLIDAY_CALENDAR,3,False,"HOLIDAY_DATE, CALENDAR_TYPE",False,Holiday Calendar
+INTEREST_ACCRUAL_LEDGER,6,False,"ACCOUNT_NUMBER, ACCRUAL_DATE",False,Interest Accrual Ledger
+INTEREST_RATE_MASTER,5,False,"PRODUCT_CODE, MIN_BALANCE, EFFECTIVE_DATE",False,Interest Rate Master
+LOAN_AMORTIZATION_SCHEDULE,8,False,"LOAN_ACCOUNT_NUMBER, INSTALLMENT_NO",False,Loan Amortization Schedule
+LOAN_MASTER,13,False,LOAN_ACCOUNT_NUMBER,False,Loan Master
+LOAN_RATE_RESET_HISTORY,4,False,"LOAN_ACCOUNT_NUMBER, EFFECTIVE_INSTALLMENT_NO",False,Loan Rate Reset History
+LOAN_REPAYMENT_TRACKER,5,False,"LOAN_ACCOUNT_NUMBER, AS_OF_DATE",False,Loan Repayment Tracker
+NPA_CLASSIFICATION_HISTORY,9,False,"LOAN_ACCOUNT_NUMBER, CLASSIFICATION_DATE",False,Non-Performing Asset Classification History
+NPA_PROVISIONING_SUMMARY,4,False,QUARTER_END_DATE,False,Non-Performing Asset Provisioning Summary
+TRANSACTION_LEDGER,11,False,TXN_ID,False,Transaction Ledger

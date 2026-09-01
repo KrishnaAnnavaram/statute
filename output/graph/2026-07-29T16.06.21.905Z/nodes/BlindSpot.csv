@@ -1,0 +1,5 @@
+blind_spot,detail
+DYNAMIC_SQL,0 dynamic SQL block(s). Tables and columns referenced only in strings assembled at runtime are invisible to static analysis.
+EXTERNAL_CALLERS,"Schedulers, screens, batch wrappers and other systems that invoke these objects are outside the analysed source, so no inbound edge exists."
+TRIGGER_SIDE_EFFECTS,Database triggers fire on DML without an explicit call edge; any such effect is not represented as a dependency.
+UNRESOLVED_CALLS,0 call(s) to routines outside this codebase. Their effects are unknown and absent from the graph.

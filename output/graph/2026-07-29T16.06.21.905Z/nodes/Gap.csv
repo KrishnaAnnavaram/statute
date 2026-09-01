@@ -1,0 +1,22 @@
+gap_id,severity,title,type
+GAP-001,medium,Permitted values not enforced: Accounts — Account Type,UNDOCUMENTED_ENUM
+GAP-002,medium,Permitted values not enforced: Transaction Ledger — Transaction Type,UNDOCUMENTED_ENUM
+GAP-003,medium,Permitted values not enforced: Loan Master — Loan Type,UNDOCUMENTED_ENUM
+GAP-004,medium,Permitted values not enforced: Holiday Calendar — Calendar Type,UNDOCUMENTED_ENUM
+GAP-005,medium,Permitted values not enforced: Non-Performing Asset Classification History — Classification,UNDOCUMENTED_ENUM
+GAP-006,medium,Permitted values not enforced: Non-Performing Asset Classification History — Movement Type,UNDOCUMENTED_ENUM
+GAP-007,low,Worth confirming: Apply default Day Count Basis handling (BR-038),MEDIUM_CONFIDENCE_RULE
+GAP-008,low,Worth confirming: Apply default Current Status handling (BR-037),MEDIUM_CONFIDENCE_RULE
+GAP-009,low,Worth confirming: Apply default Current Balance handling (BR-036),MEDIUM_CONFIDENCE_RULE
+GAP-010,high,"Needs business confirmation: Enforce Balance below 100,000 (BR-041)",SME_REVIEW_REQUIRED
+GAP-011,high,"Needs business confirmation: Enforce Balance below 1,000,000 (BR-039)",SME_REVIEW_REQUIRED
+GAP-012,high,"Needs business confirmation: Enforce Balance below 10,000,000 (BR-040)",SME_REVIEW_REQUIRED
+GAP-013,low,Worth confirming: Apply default Balance handling (BR-035),MEDIUM_CONFIDENCE_RULE
+GAP-014,low,Transaction behaviour to preserve in Calculate Simple Interest: No Transaction Control,TRANSACTION_HAZARD
+GAP-015,low,Transaction behaviour to preserve in Check Minimum Balance: No Transaction Control,TRANSACTION_HAZARD
+GAP-016,high,Transaction behaviour to preserve in Transfer Funds: Savepoint Partial Rollback,TRANSACTION_HAZARD
+GAP-017,medium,Unusually complex process: Transfer Funds,HIGH_COMPLEXITY
+GAP-018,low,Observation from state_ACCOUNTS,DIAGRAM_NOTE
+GAP-019,low,Observation from flow_SP_TRANSFER_FUNDS,DIAGRAM_NOTE
+GAP-020,low,Diagram detail merged: flow_SP_TRANSFER_FUNDS,DIAGRAM_DETAIL_COLLAPSED
+GAP-021,medium,Process too large to diagram comfortably: Transfer Funds,DIAGRAM_OVERSIZE

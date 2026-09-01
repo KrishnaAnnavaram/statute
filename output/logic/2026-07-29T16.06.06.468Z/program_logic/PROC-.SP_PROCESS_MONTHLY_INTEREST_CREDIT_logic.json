@@ -1,0 +1,280 @@
+{
+  "object_id": "PROC-.SP_PROCESS_MONTHLY_INTEREST_CREDIT",
+  "type": "PROCEDURE",
+  "file_id": "04_MEDIUM_PROCESS_MONTHLY_INTEREST_CREDIT__B115DB87",
+  "narrative": "PROC-.SP_PROCESS_MONTHLY_INTEREST_CREDIT is a procedure classified as BATCH_PROCESSOR. Iterates a result set and writes inside the loop — the classic row-by-row batch pattern. In Spark this becomes a set-based DataFrame transformation, not a loop. It accesses: accounts, batch_error_log, transaction_ledger. It calls: RAISE_APPLICATION_ERROR. It handles 2 error condition(s). Testability (cyclomatic) 8 — simple, minimal risk; understandability (cognitive) 10 — moderate mental effort.",
+  "shape": {
+    "shape": "BATCH_PROCESSOR",
+    "rationale": "Iterates a result set and writes inside the loop — the classic row-by-row batch pattern. In Spark this becomes a set-based DataFrame transformation, not a loop.",
+    "has_loop": true,
+    "has_dml": true,
+    "dml_inside_loop": true
+  },
+  "complexity": {
+    "cyclomatic": {
+      "score": 8,
+      "decision_points": 7,
+      "breakdown": {
+        "if": 2,
+        "elsif": 2,
+        "case_when": 0,
+        "loop": 1,
+        "exception_handler": 2,
+        "logical_operators": 0
+      },
+      "threshold": 10,
+      "exceeds_threshold": false,
+      "interpretation": "simple, minimal risk",
+      "means": "Minimum number of test cases needed for full branch coverage."
+    },
+    "cognitive": {
+      "score": 10,
+      "breakdown": {
+        "structural": 5,
+        "nesting": 2,
+        "hybrid_else_elsif": 3,
+        "logical_sequences": 0,
+        "goto": 0
+      },
+      "threshold": 15,
+      "exceeds_threshold": false,
+      "interpretation": "moderate mental effort",
+      "means": "Relative mental effort to understand this code. Penalises nesting; ignores shorthand. Not a test-case count."
+    }
+  },
+  "pseudocode": [
+    "SET p_accounts_processed := 0",
+    "SET p_accounts_failed := 0",
+    "SET v_days_in_month := EXTRACT(DAY FROM LAST_DAY(p_run_date))",
+    "REPEAT — FOR each row/iteration",
+    "  -- nested block",
+    "    IF rec.balance < 100000 THEN",
+    "      SET v_interest_rate := 3.0",
+    "    ELSIF rec.balance < 1000000 THEN",
+    "      SET v_interest_rate := 3.5",
+    "    ELSIF rec.balance < 10000000 THEN",
+    "      SET v_interest_rate := 4.0",
+    "    ELSE",
+    "      SET v_interest_rate := 4.5",
+    "    END IF",
+    "    SET v_interest_amount := ROUND( rec.balance * (v_interest_rate / 100) * (v_days_in_month / 365), 2 )",
+    "    IF v_interest_amount > 0 THEN",
+    "      SET v_new_balance := rec.balance + v_interest_amount",
+    "      UPDATE accounts: SET balance, last_transaction_date (matching on: account_number)",
+    "      INSERT a new row INTO transaction_ledger",
+    "      SET p_accounts_processed := p_accounts_processed + 1",
+    "    END IF",
+    "END REPEAT",
+    "COMMIT the transaction",
+    "EXCEPTION HANDLING:",
+    "    IF an error 'OTHERS' occurs THEN",
+    "      INSERT a new row INTO batch_error_log",
+    "      SET p_accounts_failed := p_accounts_failed + 1",
+    "IF an error 'OTHERS' occurs THEN",
+    "  ROLL BACK the transaction",
+    "  CALL RAISE_APPLICATION_ERROR"
+  ],
+  "variable_slices": [
+    {
+      "variable": "V_INTEREST_RATE",
+      "determined_by_statements": [
+        "04_MEDIUM_PROCESS_MONTHLY_INTEREST_CREDIT__B115DB87__PROC-.SP_PROCESS_MONTHLY_INTEREST_CREDIT__STMT_0004",
+        "04_MEDIUM_PROCESS_MONTHLY_INTEREST_CREDIT__B115DB87__PROC-.SP_PROCESS_MONTHLY_INTEREST_CREDIT__STMT_0005",
+        "04_MEDIUM_PROCESS_MONTHLY_INTEREST_CREDIT__B115DB87__PROC-.SP_PROCESS_MONTHLY_INTEREST_CREDIT__STMT_0006",
+        "04_MEDIUM_PROCESS_MONTHLY_INTEREST_CREDIT__B115DB87__PROC-.SP_PROCESS_MONTHLY_INTEREST_CREDIT__STMT_0007",
+        "04_MEDIUM_PROCESS_MONTHLY_INTEREST_CREDIT__B115DB87__PROC-.SP_PROCESS_MONTHLY_INTEREST_CREDIT__STMT_0008",
+        "04_MEDIUM_PROCESS_MONTHLY_INTEREST_CREDIT__B115DB87__PROC-.SP_PROCESS_MONTHLY_INTEREST_CREDIT__STMT_0009",
+        "04_MEDIUM_PROCESS_MONTHLY_INTEREST_CREDIT__B115DB87__PROC-.SP_PROCESS_MONTHLY_INTEREST_CREDIT__STMT_0010"
+      ],
+      "statement_count": 7,
+      "depends_on_variables": [],
+      "source_lines": [
+        34,
+        36,
+        38,
+        39,
+        41,
+        43,
+        45
+      ]
+    },
+    {
+      "variable": "V_DAYS_IN_MONTH",
+      "determined_by_statements": [
+        "04_MEDIUM_PROCESS_MONTHLY_INTEREST_CREDIT__B115DB87__PROC-.SP_PROCESS_MONTHLY_INTEREST_CREDIT__STMT_0003"
+      ],
+      "statement_count": 1,
+      "depends_on_variables": [
+        "DAY",
+        "EXTRACT",
+        "P_RUN_DATE"
+      ],
+      "source_lines": [
+        32
+      ]
+    },
+    {
+      "variable": "V_INTEREST_AMOUNT",
+      "determined_by_statements": [
+        "04_MEDIUM_PROCESS_MONTHLY_INTEREST_CREDIT__B115DB87__PROC-.SP_PROCESS_MONTHLY_INTEREST_CREDIT__STMT_0003",
+        "04_MEDIUM_PROCESS_MONTHLY_INTEREST_CREDIT__B115DB87__PROC-.SP_PROCESS_MONTHLY_INTEREST_CREDIT__STMT_0004",
+        "04_MEDIUM_PROCESS_MONTHLY_INTEREST_CREDIT__B115DB87__PROC-.SP_PROCESS_MONTHLY_INTEREST_CREDIT__STMT_0005",
+        "04_MEDIUM_PROCESS_MONTHLY_INTEREST_CREDIT__B115DB87__PROC-.SP_PROCESS_MONTHLY_INTEREST_CREDIT__STMT_0006",
+        "04_MEDIUM_PROCESS_MONTHLY_INTEREST_CREDIT__B115DB87__PROC-.SP_PROCESS_MONTHLY_INTEREST_CREDIT__STMT_0007",
+        "04_MEDIUM_PROCESS_MONTHLY_INTEREST_CREDIT__B115DB87__PROC-.SP_PROCESS_MONTHLY_INTEREST_CREDIT__STMT_0008",
+        "04_MEDIUM_PROCESS_MONTHLY_INTEREST_CREDIT__B115DB87__PROC-.SP_PROCESS_MONTHLY_INTEREST_CREDIT__STMT_0009",
+        "04_MEDIUM_PROCESS_MONTHLY_INTEREST_CREDIT__B115DB87__PROC-.SP_PROCESS_MONTHLY_INTEREST_CREDIT__STMT_0010",
+        "04_MEDIUM_PROCESS_MONTHLY_INTEREST_CREDIT__B115DB87__PROC-.SP_PROCESS_MONTHLY_INTEREST_CREDIT__STMT_0011"
+      ],
+      "statement_count": 9,
+      "depends_on_variables": [
+        "BALANCE",
+        "DAY",
+        "EXTRACT",
+        "P_RUN_DATE",
+        "REC",
+        "V_DAYS_IN_MONTH",
+        "V_INTEREST_RATE"
+      ],
+      "source_lines": [
+        32,
+        34,
+        36,
+        38,
+        39,
+        41,
+        43,
+        45,
+        49
+      ]
+    },
+    {
+      "variable": "V_NEW_BALANCE",
+      "determined_by_statements": [
+        "04_MEDIUM_PROCESS_MONTHLY_INTEREST_CREDIT__B115DB87__PROC-.SP_PROCESS_MONTHLY_INTEREST_CREDIT__STMT_0003",
+        "04_MEDIUM_PROCESS_MONTHLY_INTEREST_CREDIT__B115DB87__PROC-.SP_PROCESS_MONTHLY_INTEREST_CREDIT__STMT_0004",
+        "04_MEDIUM_PROCESS_MONTHLY_INTEREST_CREDIT__B115DB87__PROC-.SP_PROCESS_MONTHLY_INTEREST_CREDIT__STMT_0005",
+        "04_MEDIUM_PROCESS_MONTHLY_INTEREST_CREDIT__B115DB87__PROC-.SP_PROCESS_MONTHLY_INTEREST_CREDIT__STMT_0006",
+        "04_MEDIUM_PROCESS_MONTHLY_INTEREST_CREDIT__B115DB87__PROC-.SP_PROCESS_MONTHLY_INTEREST_CREDIT__STMT_0007",
+        "04_MEDIUM_PROCESS_MONTHLY_INTEREST_CREDIT__B115DB87__PROC-.SP_PROCESS_MONTHLY_INTEREST_CREDIT__STMT_0008",
+        "04_MEDIUM_PROCESS_MONTHLY_INTEREST_CREDIT__B115DB87__PROC-.SP_PROCESS_MONTHLY_INTEREST_CREDIT__STMT_0009",
+        "04_MEDIUM_PROCESS_MONTHLY_INTEREST_CREDIT__B115DB87__PROC-.SP_PROCESS_MONTHLY_INTEREST_CREDIT__STMT_0010",
+        "04_MEDIUM_PROCESS_MONTHLY_INTEREST_CREDIT__B115DB87__PROC-.SP_PROCESS_MONTHLY_INTEREST_CREDIT__STMT_0011",
+        "04_MEDIUM_PROCESS_MONTHLY_INTEREST_CREDIT__B115DB87__PROC-.SP_PROCESS_MONTHLY_INTEREST_CREDIT__STMT_0012",
+        "04_MEDIUM_PROCESS_MONTHLY_INTEREST_CREDIT__B115DB87__PROC-.SP_PROCESS_MONTHLY_INTEREST_CREDIT__STMT_0013"
+      ],
+      "statement_count": 11,
+      "depends_on_variables": [
+        "BALANCE",
+        "DAY",
+        "EXTRACT",
+        "P_RUN_DATE",
+        "REC",
+        "V_DAYS_IN_MONTH",
+        "V_INTEREST_AMOUNT",
+        "V_INTEREST_RATE"
+      ],
+      "source_lines": [
+        32,
+        34,
+        36,
+        38,
+        39,
+        41,
+        43,
+        45,
+        49,
+        54,
+        56
+      ]
+    },
+    {
+      "variable": "P_ACCOUNTS_PROCESSED",
+      "determined_by_statements": [
+        "04_MEDIUM_PROCESS_MONTHLY_INTEREST_CREDIT__B115DB87__PROC-.SP_PROCESS_MONTHLY_INTEREST_CREDIT__STMT_0001",
+        "04_MEDIUM_PROCESS_MONTHLY_INTEREST_CREDIT__B115DB87__PROC-.SP_PROCESS_MONTHLY_INTEREST_CREDIT__STMT_0004",
+        "04_MEDIUM_PROCESS_MONTHLY_INTEREST_CREDIT__B115DB87__PROC-.SP_PROCESS_MONTHLY_INTEREST_CREDIT__STMT_0005",
+        "04_MEDIUM_PROCESS_MONTHLY_INTEREST_CREDIT__B115DB87__PROC-.SP_PROCESS_MONTHLY_INTEREST_CREDIT__STMT_0012",
+        "04_MEDIUM_PROCESS_MONTHLY_INTEREST_CREDIT__B115DB87__PROC-.SP_PROCESS_MONTHLY_INTEREST_CREDIT__STMT_0016"
+      ],
+      "statement_count": 5,
+      "depends_on_variables": [],
+      "source_lines": [
+        29,
+        34,
+        36,
+        54,
+        72
+      ]
+    },
+    {
+      "variable": "P_ACCOUNTS_FAILED",
+      "determined_by_statements": [
+        "04_MEDIUM_PROCESS_MONTHLY_INTEREST_CREDIT__B115DB87__PROC-.SP_PROCESS_MONTHLY_INTEREST_CREDIT__STMT_0002",
+        "04_MEDIUM_PROCESS_MONTHLY_INTEREST_CREDIT__B115DB87__PROC-.SP_PROCESS_MONTHLY_INTEREST_CREDIT__STMT_0017",
+        "04_MEDIUM_PROCESS_MONTHLY_INTEREST_CREDIT__B115DB87__PROC-.SP_PROCESS_MONTHLY_INTEREST_CREDIT__STMT_0019"
+      ],
+      "statement_count": 3,
+      "depends_on_variables": [],
+      "source_lines": [
+        30,
+        76,
+        84
+      ]
+    }
+  ],
+  "transactions": {
+    "commits": [
+      {
+        "statement_id": "04_MEDIUM_PROCESS_MONTHLY_INTEREST_CREDIT__B115DB87__PROC-.SP_PROCESS_MONTHLY_INTEREST_CREDIT__STMT_0020",
+        "line": 89
+      }
+    ],
+    "rollbacks": [
+      {
+        "statement_id": "04_MEDIUM_PROCESS_MONTHLY_INTEREST_CREDIT__B115DB87__PROC-.SP_PROCESS_MONTHLY_INTEREST_CREDIT__STMT_0022",
+        "line": 93
+      }
+    ],
+    "savepoints": [],
+    "commit_inside_loop": [],
+    "rollback_in_exception_handler": [
+      {
+        "statement_id": "04_MEDIUM_PROCESS_MONTHLY_INTEREST_CREDIT__B115DB87__PROC-.SP_PROCESS_MONTHLY_INTEREST_CREDIT__STMT_0022",
+        "line": 93
+      }
+    ],
+    "transaction_segments": [
+      {
+        "ends_at_line": 89,
+        "statement_count": 20,
+        "tables_written": [
+          "accounts",
+          "batch_error_log",
+          "transaction_ledger"
+        ]
+      },
+      {
+        "ends_at_line": null,
+        "statement_count": 3,
+        "tables_written": [],
+        "note": "no COMMIT — transaction left open to the caller"
+      }
+    ],
+    "hazards": [],
+    "is_atomic": true
+  },
+  "crud_matrix": {
+    "ACCOUNTS": "U",
+    "BATCH_ERROR_LOG": "C",
+    "TRANSACTION_LEDGER": "C"
+  },
+  "loops": [
+    {
+      "statement_id": "04_MEDIUM_PROCESS_MONTHLY_INTEREST_CREDIT__B115DB87__PROC-.SP_PROCESS_MONTHLY_INTEREST_CREDIT__STMT_0004",
+      "line": 34,
+      "termination_pattern": "COUNTED_OR_CURSOR_LOOP"
+    }
+  ],
+  "statement_count": 23
+}

@@ -1,0 +1,133 @@
+{
+  "object_id": "FUNC-.FN_CALCULATE_SIMPLE_INTEREST",
+  "type": "FUNCTION",
+  "file_id": "01_SIMPLE_CALCULATE_SIMPLE_INTEREST__4CCD8A69",
+  "narrative": "FUNC-.FN_CALCULATE_SIMPLE_INTEREST is a function classified as CALCULATION. Computes and returns a value with no persistent writes — maps cleanly to a Spark UDF or column expression. It calls: DBMS_OUTPUT.PUT_LINE, RAISE_APPLICATION_ERROR. It handles 1 error condition(s). Testability (cyclomatic) 9 — simple, minimal risk; understandability (cognitive) 9 — moderate mental effort.",
+  "shape": {
+    "shape": "CALCULATION",
+    "rationale": "Computes and returns a value with no persistent writes — maps cleanly to a Spark UDF or column expression.",
+    "has_loop": false,
+    "has_dml": false,
+    "dml_inside_loop": false
+  },
+  "complexity": {
+    "cyclomatic": {
+      "score": 9,
+      "decision_points": 8,
+      "breakdown": {
+        "if": 4,
+        "elsif": 0,
+        "case_when": 0,
+        "loop": 0,
+        "exception_handler": 1,
+        "logical_operators": 3
+      },
+      "threshold": 10,
+      "exceeds_threshold": false,
+      "interpretation": "simple, minimal risk",
+      "means": "Minimum number of test cases needed for full branch coverage."
+    },
+    "cognitive": {
+      "score": 9,
+      "breakdown": {
+        "structural": 5,
+        "nesting": 0,
+        "hybrid_else_elsif": 1,
+        "logical_sequences": 3,
+        "goto": 0
+      },
+      "threshold": 15,
+      "exceeds_threshold": false,
+      "interpretation": "moderate mental effort",
+      "means": "Relative mental effort to understand this code. Penalises nesting; ignores shorthand. Not a test-case count."
+    }
+  },
+  "pseudocode": [
+    "IF p_principal IS NULL OR p_principal <= 0 THEN",
+    "  CALL RAISE_APPLICATION_ERROR",
+    "END IF",
+    "IF p_annual_rate IS NULL OR p_annual_rate < 0 THEN",
+    "  CALL RAISE_APPLICATION_ERROR",
+    "END IF",
+    "IF p_tenure_days IS NULL OR p_tenure_days <= 0 THEN",
+    "  CALL RAISE_APPLICATION_ERROR",
+    "END IF",
+    "IF p_day_count_basis = '360' THEN",
+    "  SET v_basis_days := 360",
+    "ELSE",
+    "  SET v_basis_days := 365",
+    "END IF",
+    "SET v_interest := ROUND( (p_principal * p_annual_rate * p_tenure_days) / (100 * v_basis_days), 2 )",
+    "RETURN v_interest",
+    "EXCEPTION HANDLING:",
+    "IF an error 'OTHERS' occurs THEN",
+    "  CALL DBMS_OUTPUT.PUT_LINE",
+    "  RAISE"
+  ],
+  "variable_slices": [
+    {
+      "variable": "V_INTEREST",
+      "determined_by_statements": [
+        "01_SIMPLE_CALCULATE_SIMPLE_INTEREST__4CCD8A69__FUNC-.FN_CALCULATE_SIMPLE_INTEREST__STMT_0007",
+        "01_SIMPLE_CALCULATE_SIMPLE_INTEREST__4CCD8A69__FUNC-.FN_CALCULATE_SIMPLE_INTEREST__STMT_0008",
+        "01_SIMPLE_CALCULATE_SIMPLE_INTEREST__4CCD8A69__FUNC-.FN_CALCULATE_SIMPLE_INTEREST__STMT_0009",
+        "01_SIMPLE_CALCULATE_SIMPLE_INTEREST__4CCD8A69__FUNC-.FN_CALCULATE_SIMPLE_INTEREST__STMT_0010"
+      ],
+      "statement_count": 4,
+      "depends_on_variables": [
+        "P_ANNUAL_RATE",
+        "P_PRINCIPAL",
+        "P_TENURE_DAYS",
+        "V_BASIS_DAYS"
+      ],
+      "source_lines": [
+        32,
+        33,
+        35,
+        39
+      ]
+    },
+    {
+      "variable": "V_BASIS_DAYS",
+      "determined_by_statements": [
+        "01_SIMPLE_CALCULATE_SIMPLE_INTEREST__4CCD8A69__FUNC-.FN_CALCULATE_SIMPLE_INTEREST__STMT_0007",
+        "01_SIMPLE_CALCULATE_SIMPLE_INTEREST__4CCD8A69__FUNC-.FN_CALCULATE_SIMPLE_INTEREST__STMT_0008",
+        "01_SIMPLE_CALCULATE_SIMPLE_INTEREST__4CCD8A69__FUNC-.FN_CALCULATE_SIMPLE_INTEREST__STMT_0009"
+      ],
+      "statement_count": 3,
+      "depends_on_variables": [],
+      "source_lines": [
+        32,
+        33,
+        35
+      ]
+    }
+  ],
+  "transactions": {
+    "commits": [],
+    "rollbacks": [],
+    "savepoints": [],
+    "commit_inside_loop": [],
+    "rollback_in_exception_handler": [],
+    "transaction_segments": [
+      {
+        "ends_at_line": null,
+        "statement_count": 14,
+        "tables_written": [],
+        "note": "no COMMIT — transaction left open to the caller"
+      }
+    ],
+    "hazards": [
+      {
+        "hazard": "NO_TRANSACTION_CONTROL",
+        "severity": "info",
+        "occurrences": [],
+        "explanation": "This object issues no COMMIT or ROLLBACK — the transaction boundary is owned by its caller. Confirm the caller's boundary before migrating."
+      }
+    ],
+    "is_atomic": true
+  },
+  "crud_matrix": {},
+  "loops": [],
+  "statement_count": 14
+}

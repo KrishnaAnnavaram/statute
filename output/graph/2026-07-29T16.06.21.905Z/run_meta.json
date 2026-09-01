@@ -1,0 +1,47 @@
+{
+  "stage": "8_graph",
+  "run_version": "2026-07-29T16.06.21.905Z",
+  "status": "success",
+  "generated_at": "2026-07-29T16:06:21.915011+00:00",
+  "stats": {
+    "nodes": {
+      "BlindSpot": 4,
+      "BusinessRule": 41,
+      "Column": 105,
+      "File": 7,
+      "Gap": 21,
+      "Index": 1,
+      "Object": 5,
+      "Parameter": 20,
+      "RuleSet": 4,
+      "Sequence": 3,
+      "State": 3,
+      "Statement": 124,
+      "Table": 15
+    },
+    "relationships": {
+      "AFFECTS": 7,
+      "BELONGS_TO": 41,
+      "BRANCHES_TO": 40,
+      "CONSTRAINS_TABLE": 1,
+      "CONTAINS": 5,
+      "CONTAINS_STATEMENT": 124,
+      "COVERS": 2,
+      "DETERMINES": 119,
+      "ENFORCED_IN": 40,
+      "FOLLOWS": 86,
+      "FOREIGN_KEY_ON": 7,
+      "HAS_COLUMN": 105,
+      "HAS_PARAMETER": 20,
+      "HAS_STATE": 3,
+      "IMPLEMENTED_AT": 39,
+      "LOOPS_BACK_TO": 1,
+      "READS": 4,
+      "READS_COLUMN": 36,
+      "REFERENCES": 7,
+      "TOUCHES": 7,
+      "WRITES": 6,
+      "WRITES_COLUMN": 69
+    }
+  }
+}

@@ -1,0 +1,2 @@
+index,bitmap,table,unique
+IDX_TXN_LEDGER_ACCT_DATE,False,TRANSACTION_LEDGER,False

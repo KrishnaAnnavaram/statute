@@ -1,0 +1,26 @@
+{
+  "stage": "01_inventory",
+  "run_version": "2026-07-29T16.05.30.018Z",
+  "generated_at": "2026-07-29T16:05:30.018037+00:00",
+  "status": "success",
+  "source_dir": "E:\\Virtusa Projects\\plsql_to_brd\\src",
+  "cli_args": {
+    "encoding": "utf-8",
+    "exclude_patterns": [
+      "*.bak",
+      "*.tmp",
+      "*_backup.*",
+      "*_old.*",
+      ".git/*",
+      "node_modules/*",
+      "__pycache__/*"
+    ],
+    "content_hints": true
+  },
+  "output_file": "inventory-artifact.json",
+  "stats_summary": {
+    "total_files_ok": 7,
+    "total_files_excluded": 0,
+    "total_files_unreadable": 0
+  }
+}

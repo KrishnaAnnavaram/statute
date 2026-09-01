@@ -1,0 +1,377 @@
+{
+  "pipeline_stage": "6_diagram",
+  "schema_version": "2.0",
+  "generated_at": "2026-07-29T16:06:14.882625+00:00",
+  "upstream": {
+    "parser_run_version": "2026-07-29T16.05.37.101Z",
+    "data_run_version": "2026-07-29T16.05.52.383Z",
+    "logic_run_version": "2026-07-29T16.06.06.468Z",
+    "rules_run_version": "2026-07-29T16.06.06.566Z",
+    "inventory_run_version": "2026-07-29T16.05.30.018Z"
+  },
+  "design_references": [
+    {
+      "work": "Moody, D.L. (2009) The 'Physics' of Notations, IEEE TSE 35(6):756-779",
+      "applied": "Semantic transparency (business text on nodes), dual coding (text + shape + colour), complexity management (node budget), graphic economy (six node kinds)."
+    },
+    {
+      "work": "Shneiderman, B. (1996) The Eyes Have It, IEEE Visual Languages",
+      "applied": "Output is an information hierarchy: data-flow overview -> per-object process flow -> rule detail reached by BR-id."
+    },
+    {
+      "work": "Shneiderman, Mayer, McKay & Heller (1977) CACM 20(6):373-381",
+      "applied": "Detailed statement-level flowcharts showed no measurable benefit; straight-line runs are collapsed and only decisions, loops, error paths and outcomes are drawn."
+    },
+    {
+      "work": "Purchase, H. (1997/2002) graph drawing aesthetics",
+      "applied": "Edge crossings dominate comprehension and scale with graph size; a hard node budget is enforced."
+    },
+    {
+      "work": "VEIL: Reading Control Flow Graphs Like Code (arXiv 2511.05066)",
+      "applied": "Nodes are emitted in source order so the renderer's layout follows reading order."
+    },
+    {
+      "work": "BABOK v3 - Data Flow Diagrams, State Modelling, CRUD matrix",
+      "applied": "Diagram selection: what belongs in a requirements document."
+    }
+  ],
+  "node_budget": 40,
+  "diagram_index": {
+    "system_dataflow.mmd": {
+      "type": "dataflow",
+      "title": "System data flow: programs and the data they touch",
+      "nodes": 8,
+      "edges": 7,
+      "budget": {
+        "original_nodes": 8,
+        "emitted_nodes": 8,
+        "budget": 40,
+        "collapsed": []
+      },
+      "notes": []
+    },
+    "state_ACCOUNTS.mmd": {
+      "type": "state",
+      "title": "ACCOUNTS: Account Status lifecycle",
+      "nodes": 3,
+      "edges": 2,
+      "budget": {
+        "original_nodes": 3,
+        "emitted_nodes": 3,
+        "budget": null,
+        "collapsed": []
+      },
+      "notes": [
+        "State CLOSED: Permitted by CK_ACCOUNTS_STATUS but no code in this repository transitions into it."
+      ],
+      "entity": "ACCOUNTS"
+    },
+    "flow_FN_CALCULATE_SIMPLE_INTEREST.mmd": {
+      "type": "process_flow",
+      "title": "Process flow: FN_CALCULATE_SIMPLE_INTEREST",
+      "nodes": 16,
+      "edges": 16,
+      "budget": {
+        "original_nodes": 14,
+        "emitted_nodes": 16,
+        "budget": 40,
+        "oversize": false,
+        "collapsed": []
+      },
+      "notes": [],
+      "object_id": "FUNC-.FN_CALCULATE_SIMPLE_INTEREST",
+      "node_origins": {
+        "START": "FUNC-.FN_CALCULATE_SIMPLE_INTEREST",
+        "N1": "01_SIMPLE_CALCULATE_SIMPLE_INTEREST__4CCD8A69__FUNC-.FN_CALCULATE_SIMPLE_INTEREST__STMT_0001",
+        "N2": "01_SIMPLE_CALCULATE_SIMPLE_INTEREST__4CCD8A69__FUNC-.FN_CALCULATE_SIMPLE_INTEREST__STMT_0002",
+        "N3": "01_SIMPLE_CALCULATE_SIMPLE_INTEREST__4CCD8A69__FUNC-.FN_CALCULATE_SIMPLE_INTEREST__STMT_0003",
+        "N4": "01_SIMPLE_CALCULATE_SIMPLE_INTEREST__4CCD8A69__FUNC-.FN_CALCULATE_SIMPLE_INTEREST__STMT_0004",
+        "N5": "01_SIMPLE_CALCULATE_SIMPLE_INTEREST__4CCD8A69__FUNC-.FN_CALCULATE_SIMPLE_INTEREST__STMT_0005",
+        "N6": "01_SIMPLE_CALCULATE_SIMPLE_INTEREST__4CCD8A69__FUNC-.FN_CALCULATE_SIMPLE_INTEREST__STMT_0006",
+        "N7": "01_SIMPLE_CALCULATE_SIMPLE_INTEREST__4CCD8A69__FUNC-.FN_CALCULATE_SIMPLE_INTEREST__STMT_0007",
+        "N8": "01_SIMPLE_CALCULATE_SIMPLE_INTEREST__4CCD8A69__FUNC-.FN_CALCULATE_SIMPLE_INTEREST__STMT_0008",
+        "N9": "01_SIMPLE_CALCULATE_SIMPLE_INTEREST__4CCD8A69__FUNC-.FN_CALCULATE_SIMPLE_INTEREST__STMT_0009",
+        "N10": "01_SIMPLE_CALCULATE_SIMPLE_INTEREST__4CCD8A69__FUNC-.FN_CALCULATE_SIMPLE_INTEREST__STMT_0010",
+        "N11": "01_SIMPLE_CALCULATE_SIMPLE_INTEREST__4CCD8A69__FUNC-.FN_CALCULATE_SIMPLE_INTEREST__STMT_0011",
+        "N12": "01_SIMPLE_CALCULATE_SIMPLE_INTEREST__4CCD8A69__FUNC-.FN_CALCULATE_SIMPLE_INTEREST__STMT_0012",
+        "N13": "01_SIMPLE_CALCULATE_SIMPLE_INTEREST__4CCD8A69__FUNC-.FN_CALCULATE_SIMPLE_INTEREST__STMT_0013",
+        "N14": "01_SIMPLE_CALCULATE_SIMPLE_INTEREST__4CCD8A69__FUNC-.FN_CALCULATE_SIMPLE_INTEREST__STMT_0014"
+      },
+      "rule_ids": [
+        "BR-027",
+        "BR-030",
+        "BR-033",
+        "BR-034",
+        "BR-038"
+      ]
+    },
+    "flow_SP_UPDATE_DORMANT_ACCOUNT_STATUS.mmd": {
+      "type": "process_flow",
+      "title": "Process flow: SP_UPDATE_DORMANT_ACCOUNT_STATUS",
+      "nodes": 17,
+      "edges": 19,
+      "budget": {
+        "original_nodes": 15,
+        "emitted_nodes": 17,
+        "budget": 40,
+        "oversize": false,
+        "collapsed": []
+      },
+      "notes": [],
+      "object_id": "PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS",
+      "node_origins": {
+        "START": "PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS",
+        "N1": "02_SIMPLE_UPDATE_DORMANT_ACCOUNT_STATUS__D2070F06__PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS__STMT_0001",
+        "N2": "02_SIMPLE_UPDATE_DORMANT_ACCOUNT_STATUS__D2070F06__PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS__STMT_0002",
+        "N3": "02_SIMPLE_UPDATE_DORMANT_ACCOUNT_STATUS__D2070F06__PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS__STMT_0003",
+        "N4": "02_SIMPLE_UPDATE_DORMANT_ACCOUNT_STATUS__D2070F06__PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS__STMT_0004",
+        "N5": "02_SIMPLE_UPDATE_DORMANT_ACCOUNT_STATUS__D2070F06__PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS__STMT_0005",
+        "N6": "02_SIMPLE_UPDATE_DORMANT_ACCOUNT_STATUS__D2070F06__PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS__STMT_0006",
+        "N7": "02_SIMPLE_UPDATE_DORMANT_ACCOUNT_STATUS__D2070F06__PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS__STMT_0007",
+        "N8": "02_SIMPLE_UPDATE_DORMANT_ACCOUNT_STATUS__D2070F06__PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS__STMT_0008",
+        "N9": "02_SIMPLE_UPDATE_DORMANT_ACCOUNT_STATUS__D2070F06__PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS__STMT_0009",
+        "N10": "02_SIMPLE_UPDATE_DORMANT_ACCOUNT_STATUS__D2070F06__PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS__STMT_0010",
+        "N11": "02_SIMPLE_UPDATE_DORMANT_ACCOUNT_STATUS__D2070F06__PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS__STMT_0011",
+        "N12": "02_SIMPLE_UPDATE_DORMANT_ACCOUNT_STATUS__D2070F06__PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS__STMT_0012",
+        "N13": "02_SIMPLE_UPDATE_DORMANT_ACCOUNT_STATUS__D2070F06__PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS__STMT_0013",
+        "N14": "02_SIMPLE_UPDATE_DORMANT_ACCOUNT_STATUS__D2070F06__PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS__STMT_0014",
+        "N15": "02_SIMPLE_UPDATE_DORMANT_ACCOUNT_STATUS__D2070F06__PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS__STMT_0015"
+      },
+      "rule_ids": [
+        "BR-028",
+        "BR-029",
+        "BR-037"
+      ]
+    },
+    "flow_SP_CHECK_MINIMUM_BALANCE.mmd": {
+      "type": "process_flow",
+      "title": "Process flow: SP_CHECK_MINIMUM_BALANCE",
+      "nodes": 18,
+      "edges": 19,
+      "budget": {
+        "original_nodes": 16,
+        "emitted_nodes": 18,
+        "budget": 40,
+        "oversize": false,
+        "collapsed": []
+      },
+      "notes": [],
+      "object_id": "PROC-.SP_CHECK_MINIMUM_BALANCE",
+      "node_origins": {
+        "START": "PROC-.SP_CHECK_MINIMUM_BALANCE",
+        "N1": "03_SIMPLE_CHECK_MINIMUM_BALANCE__C83B3807__PROC-.SP_CHECK_MINIMUM_BALANCE__STMT_0001",
+        "N2": "03_SIMPLE_CHECK_MINIMUM_BALANCE__C83B3807__PROC-.SP_CHECK_MINIMUM_BALANCE__STMT_0002",
+        "N3": "03_SIMPLE_CHECK_MINIMUM_BALANCE__C83B3807__PROC-.SP_CHECK_MINIMUM_BALANCE__STMT_0003",
+        "N4": "03_SIMPLE_CHECK_MINIMUM_BALANCE__C83B3807__PROC-.SP_CHECK_MINIMUM_BALANCE__STMT_0004",
+        "N5": "03_SIMPLE_CHECK_MINIMUM_BALANCE__C83B3807__PROC-.SP_CHECK_MINIMUM_BALANCE__STMT_0005",
+        "N6": "03_SIMPLE_CHECK_MINIMUM_BALANCE__C83B3807__PROC-.SP_CHECK_MINIMUM_BALANCE__STMT_0006",
+        "N7": "03_SIMPLE_CHECK_MINIMUM_BALANCE__C83B3807__PROC-.SP_CHECK_MINIMUM_BALANCE__STMT_0007",
+        "N8": "03_SIMPLE_CHECK_MINIMUM_BALANCE__C83B3807__PROC-.SP_CHECK_MINIMUM_BALANCE__STMT_0008",
+        "N9": "03_SIMPLE_CHECK_MINIMUM_BALANCE__C83B3807__PROC-.SP_CHECK_MINIMUM_BALANCE__STMT_0009",
+        "N10": "03_SIMPLE_CHECK_MINIMUM_BALANCE__C83B3807__PROC-.SP_CHECK_MINIMUM_BALANCE__STMT_0010",
+        "N11": "03_SIMPLE_CHECK_MINIMUM_BALANCE__C83B3807__PROC-.SP_CHECK_MINIMUM_BALANCE__STMT_0011",
+        "N12": "03_SIMPLE_CHECK_MINIMUM_BALANCE__C83B3807__PROC-.SP_CHECK_MINIMUM_BALANCE__STMT_0012",
+        "N13": "03_SIMPLE_CHECK_MINIMUM_BALANCE__C83B3807__PROC-.SP_CHECK_MINIMUM_BALANCE__STMT_0013",
+        "N14": "03_SIMPLE_CHECK_MINIMUM_BALANCE__C83B3807__PROC-.SP_CHECK_MINIMUM_BALANCE__STMT_0014",
+        "N15": "03_SIMPLE_CHECK_MINIMUM_BALANCE__C83B3807__PROC-.SP_CHECK_MINIMUM_BALANCE__STMT_0015",
+        "N16": "03_SIMPLE_CHECK_MINIMUM_BALANCE__C83B3807__PROC-.SP_CHECK_MINIMUM_BALANCE__STMT_0016"
+      },
+      "rule_ids": [
+        "BR-025",
+        "BR-036"
+      ]
+    },
+    "flow_SP_PROCESS_MONTHLY_INTEREST_CREDIT.mmd": {
+      "type": "process_flow",
+      "title": "Process flow: SP_PROCESS_MONTHLY_INTEREST_CREDIT",
+      "nodes": 25,
+      "edges": 29,
+      "budget": {
+        "original_nodes": 23,
+        "emitted_nodes": 25,
+        "budget": 40,
+        "oversize": false,
+        "collapsed": []
+      },
+      "notes": [],
+      "object_id": "PROC-.SP_PROCESS_MONTHLY_INTEREST_CREDIT",
+      "node_origins": {
+        "START": "PROC-.SP_PROCESS_MONTHLY_INTEREST_CREDIT",
+        "N1": "04_MEDIUM_PROCESS_MONTHLY_INTEREST_CREDIT__B115DB87__PROC-.SP_PROCESS_MONTHLY_INTEREST_CREDIT__STMT_0001",
+        "N2": "04_MEDIUM_PROCESS_MONTHLY_INTEREST_CREDIT__B115DB87__PROC-.SP_PROCESS_MONTHLY_INTEREST_CREDIT__STMT_0002",
+        "N3": "04_MEDIUM_PROCESS_MONTHLY_INTEREST_CREDIT__B115DB87__PROC-.SP_PROCESS_MONTHLY_INTEREST_CREDIT__STMT_0003",
+        "N4": "04_MEDIUM_PROCESS_MONTHLY_INTEREST_CREDIT__B115DB87__PROC-.SP_PROCESS_MONTHLY_INTEREST_CREDIT__STMT_0004",
+        "N5": "04_MEDIUM_PROCESS_MONTHLY_INTEREST_CREDIT__B115DB87__PROC-.SP_PROCESS_MONTHLY_INTEREST_CREDIT__STMT_0005",
+        "N6": "04_MEDIUM_PROCESS_MONTHLY_INTEREST_CREDIT__B115DB87__PROC-.SP_PROCESS_MONTHLY_INTEREST_CREDIT__STMT_0006",
+        "N7": "04_MEDIUM_PROCESS_MONTHLY_INTEREST_CREDIT__B115DB87__PROC-.SP_PROCESS_MONTHLY_INTEREST_CREDIT__STMT_0007",
+        "N8": "04_MEDIUM_PROCESS_MONTHLY_INTEREST_CREDIT__B115DB87__PROC-.SP_PROCESS_MONTHLY_INTEREST_CREDIT__STMT_0008",
+        "N9": "04_MEDIUM_PROCESS_MONTHLY_INTEREST_CREDIT__B115DB87__PROC-.SP_PROCESS_MONTHLY_INTEREST_CREDIT__STMT_0009",
+        "N10": "04_MEDIUM_PROCESS_MONTHLY_INTEREST_CREDIT__B115DB87__PROC-.SP_PROCESS_MONTHLY_INTEREST_CREDIT__STMT_0010",
+        "N11": "04_MEDIUM_PROCESS_MONTHLY_INTEREST_CREDIT__B115DB87__PROC-.SP_PROCESS_MONTHLY_INTEREST_CREDIT__STMT_0011",
+        "N12": "04_MEDIUM_PROCESS_MONTHLY_INTEREST_CREDIT__B115DB87__PROC-.SP_PROCESS_MONTHLY_INTEREST_CREDIT__STMT_0012",
+        "N13": "04_MEDIUM_PROCESS_MONTHLY_INTEREST_CREDIT__B115DB87__PROC-.SP_PROCESS_MONTHLY_INTEREST_CREDIT__STMT_0013",
+        "N14": "04_MEDIUM_PROCESS_MONTHLY_INTEREST_CREDIT__B115DB87__PROC-.SP_PROCESS_MONTHLY_INTEREST_CREDIT__STMT_0014",
+        "N15": "04_MEDIUM_PROCESS_MONTHLY_INTEREST_CREDIT__B115DB87__PROC-.SP_PROCESS_MONTHLY_INTEREST_CREDIT__STMT_0015",
+        "N16": "04_MEDIUM_PROCESS_MONTHLY_INTEREST_CREDIT__B115DB87__PROC-.SP_PROCESS_MONTHLY_INTEREST_CREDIT__STMT_0016",
+        "N17": "04_MEDIUM_PROCESS_MONTHLY_INTEREST_CREDIT__B115DB87__PROC-.SP_PROCESS_MONTHLY_INTEREST_CREDIT__STMT_0017",
+        "N18": "04_MEDIUM_PROCESS_MONTHLY_INTEREST_CREDIT__B115DB87__PROC-.SP_PROCESS_MONTHLY_INTEREST_CREDIT__STMT_0018",
+        "N19": "04_MEDIUM_PROCESS_MONTHLY_INTEREST_CREDIT__B115DB87__PROC-.SP_PROCESS_MONTHLY_INTEREST_CREDIT__STMT_0019",
+        "N20": "04_MEDIUM_PROCESS_MONTHLY_INTEREST_CREDIT__B115DB87__PROC-.SP_PROCESS_MONTHLY_INTEREST_CREDIT__STMT_0020",
+        "N21": "04_MEDIUM_PROCESS_MONTHLY_INTEREST_CREDIT__B115DB87__PROC-.SP_PROCESS_MONTHLY_INTEREST_CREDIT__STMT_0021",
+        "N22": "04_MEDIUM_PROCESS_MONTHLY_INTEREST_CREDIT__B115DB87__PROC-.SP_PROCESS_MONTHLY_INTEREST_CREDIT__STMT_0022",
+        "N23": "04_MEDIUM_PROCESS_MONTHLY_INTEREST_CREDIT__B115DB87__PROC-.SP_PROCESS_MONTHLY_INTEREST_CREDIT__STMT_0023"
+      },
+      "rule_ids": [
+        "BR-032",
+        "BR-035",
+        "BR-039",
+        "BR-040",
+        "BR-041"
+      ]
+    },
+    "flow_SP_TRANSFER_FUNDS.mmd": {
+      "type": "process_flow",
+      "title": "Process flow: SP_TRANSFER_FUNDS",
+      "nodes": 45,
+      "edges": 51,
+      "budget": {
+        "original_nodes": 56,
+        "emitted_nodes": 45,
+        "budget": 40,
+        "oversize": true,
+        "collapsed": [
+          "2 statements collapsed (lines 40-41)",
+          "2 statements collapsed (lines 45-57)",
+          "6 statements collapsed (lines 95-124)",
+          "2 statements collapsed (lines 129-129)",
+          "2 statements collapsed (lines 132-132)",
+          "2 statements collapsed (lines 135-135)",
+          "2 statements collapsed (lines 138-138)",
+          "2 statements collapsed (lines 141-141)",
+          "2 statements collapsed (lines 144-144)"
+        ]
+      },
+      "notes": [
+        "This procedure needs 45 nodes to show its decisions and error paths, above the 40-node readability budget. Nothing was dropped; consider reviewing it in sections."
+      ],
+      "object_id": "PROC-.SP_TRANSFER_FUNDS",
+      "node_origins": {
+        "START": "PROC-.SP_TRANSFER_FUNDS",
+        "N1": "05_MEDIUM_FUND_TRANSFER_WITH_VALIDATION__5E3A3BBB__PROC-.SP_TRANSFER_FUNDS__STMT_0001",
+        "N2": "05_MEDIUM_FUND_TRANSFER_WITH_VALIDATION__5E3A3BBB__PROC-.SP_TRANSFER_FUNDS__STMT_0002",
+        "N3": "05_MEDIUM_FUND_TRANSFER_WITH_VALIDATION__5E3A3BBB__PROC-.SP_TRANSFER_FUNDS__STMT_0003",
+        "N4": "05_MEDIUM_FUND_TRANSFER_WITH_VALIDATION__5E3A3BBB__PROC-.SP_TRANSFER_FUNDS__STMT_0004",
+        "N5": "05_MEDIUM_FUND_TRANSFER_WITH_VALIDATION__5E3A3BBB__PROC-.SP_TRANSFER_FUNDS__STMT_0005",
+        "N6": "05_MEDIUM_FUND_TRANSFER_WITH_VALIDATION__5E3A3BBB__PROC-.SP_TRANSFER_FUNDS__STMT_0007",
+        "N7": "05_MEDIUM_FUND_TRANSFER_WITH_VALIDATION__5E3A3BBB__PROC-.SP_TRANSFER_FUNDS__STMT_0008",
+        "N8": "05_MEDIUM_FUND_TRANSFER_WITH_VALIDATION__5E3A3BBB__PROC-.SP_TRANSFER_FUNDS__STMT_0010",
+        "N9": "05_MEDIUM_FUND_TRANSFER_WITH_VALIDATION__5E3A3BBB__PROC-.SP_TRANSFER_FUNDS__STMT_0011",
+        "N10": "05_MEDIUM_FUND_TRANSFER_WITH_VALIDATION__5E3A3BBB__PROC-.SP_TRANSFER_FUNDS__STMT_0012",
+        "N11": "05_MEDIUM_FUND_TRANSFER_WITH_VALIDATION__5E3A3BBB__PROC-.SP_TRANSFER_FUNDS__STMT_0013",
+        "N12": "05_MEDIUM_FUND_TRANSFER_WITH_VALIDATION__5E3A3BBB__PROC-.SP_TRANSFER_FUNDS__STMT_0014",
+        "N13": "05_MEDIUM_FUND_TRANSFER_WITH_VALIDATION__5E3A3BBB__PROC-.SP_TRANSFER_FUNDS__STMT_0015",
+        "N14": "05_MEDIUM_FUND_TRANSFER_WITH_VALIDATION__5E3A3BBB__PROC-.SP_TRANSFER_FUNDS__STMT_0016",
+        "N15": "05_MEDIUM_FUND_TRANSFER_WITH_VALIDATION__5E3A3BBB__PROC-.SP_TRANSFER_FUNDS__STMT_0017",
+        "N16": "05_MEDIUM_FUND_TRANSFER_WITH_VALIDATION__5E3A3BBB__PROC-.SP_TRANSFER_FUNDS__STMT_0018",
+        "N17": "05_MEDIUM_FUND_TRANSFER_WITH_VALIDATION__5E3A3BBB__PROC-.SP_TRANSFER_FUNDS__STMT_0019",
+        "N18": "05_MEDIUM_FUND_TRANSFER_WITH_VALIDATION__5E3A3BBB__PROC-.SP_TRANSFER_FUNDS__STMT_0020",
+        "N19": "05_MEDIUM_FUND_TRANSFER_WITH_VALIDATION__5E3A3BBB__PROC-.SP_TRANSFER_FUNDS__STMT_0021",
+        "N20": "05_MEDIUM_FUND_TRANSFER_WITH_VALIDATION__5E3A3BBB__PROC-.SP_TRANSFER_FUNDS__STMT_0022",
+        "N21": "05_MEDIUM_FUND_TRANSFER_WITH_VALIDATION__5E3A3BBB__PROC-.SP_TRANSFER_FUNDS__STMT_0023",
+        "N22": "05_MEDIUM_FUND_TRANSFER_WITH_VALIDATION__5E3A3BBB__PROC-.SP_TRANSFER_FUNDS__STMT_0024",
+        "N23": "05_MEDIUM_FUND_TRANSFER_WITH_VALIDATION__5E3A3BBB__PROC-.SP_TRANSFER_FUNDS__STMT_0025",
+        "N24": "05_MEDIUM_FUND_TRANSFER_WITH_VALIDATION__5E3A3BBB__PROC-.SP_TRANSFER_FUNDS__STMT_0026",
+        "N25": "05_MEDIUM_FUND_TRANSFER_WITH_VALIDATION__5E3A3BBB__PROC-.SP_TRANSFER_FUNDS__STMT_0032",
+        "N26": "05_MEDIUM_FUND_TRANSFER_WITH_VALIDATION__5E3A3BBB__PROC-.SP_TRANSFER_FUNDS__STMT_0033",
+        "N27": "05_MEDIUM_FUND_TRANSFER_WITH_VALIDATION__5E3A3BBB__PROC-.SP_TRANSFER_FUNDS__STMT_0034",
+        "N28": "05_MEDIUM_FUND_TRANSFER_WITH_VALIDATION__5E3A3BBB__PROC-.SP_TRANSFER_FUNDS__STMT_0036",
+        "N29": "05_MEDIUM_FUND_TRANSFER_WITH_VALIDATION__5E3A3BBB__PROC-.SP_TRANSFER_FUNDS__STMT_0037",
+        "N30": "05_MEDIUM_FUND_TRANSFER_WITH_VALIDATION__5E3A3BBB__PROC-.SP_TRANSFER_FUNDS__STMT_0038",
+        "N31": "05_MEDIUM_FUND_TRANSFER_WITH_VALIDATION__5E3A3BBB__PROC-.SP_TRANSFER_FUNDS__STMT_0040",
+        "N32": "05_MEDIUM_FUND_TRANSFER_WITH_VALIDATION__5E3A3BBB__PROC-.SP_TRANSFER_FUNDS__STMT_0041",
+        "N33": "05_MEDIUM_FUND_TRANSFER_WITH_VALIDATION__5E3A3BBB__PROC-.SP_TRANSFER_FUNDS__STMT_0042",
+        "N34": "05_MEDIUM_FUND_TRANSFER_WITH_VALIDATION__5E3A3BBB__PROC-.SP_TRANSFER_FUNDS__STMT_0044",
+        "N35": "05_MEDIUM_FUND_TRANSFER_WITH_VALIDATION__5E3A3BBB__PROC-.SP_TRANSFER_FUNDS__STMT_0045",
+        "N36": "05_MEDIUM_FUND_TRANSFER_WITH_VALIDATION__5E3A3BBB__PROC-.SP_TRANSFER_FUNDS__STMT_0046",
+        "N37": "05_MEDIUM_FUND_TRANSFER_WITH_VALIDATION__5E3A3BBB__PROC-.SP_TRANSFER_FUNDS__STMT_0048",
+        "N38": "05_MEDIUM_FUND_TRANSFER_WITH_VALIDATION__5E3A3BBB__PROC-.SP_TRANSFER_FUNDS__STMT_0049",
+        "N39": "05_MEDIUM_FUND_TRANSFER_WITH_VALIDATION__5E3A3BBB__PROC-.SP_TRANSFER_FUNDS__STMT_0050",
+        "N40": "05_MEDIUM_FUND_TRANSFER_WITH_VALIDATION__5E3A3BBB__PROC-.SP_TRANSFER_FUNDS__STMT_0052",
+        "N41": "05_MEDIUM_FUND_TRANSFER_WITH_VALIDATION__5E3A3BBB__PROC-.SP_TRANSFER_FUNDS__STMT_0053",
+        "N42": "05_MEDIUM_FUND_TRANSFER_WITH_VALIDATION__5E3A3BBB__PROC-.SP_TRANSFER_FUNDS__STMT_0054",
+        "N43": "05_MEDIUM_FUND_TRANSFER_WITH_VALIDATION__5E3A3BBB__PROC-.SP_TRANSFER_FUNDS__STMT_0056"
+      },
+      "rule_ids": [
+        "BR-001",
+        "BR-002",
+        "BR-012",
+        "BR-013",
+        "BR-016",
+        "BR-017",
+        "BR-018",
+        "BR-031"
+      ]
+    }
+  },
+  "erd_reference": "output\\data\\2026-07-29T16.05.52.383Z\\erd.mmd",
+  "crud_matrix": {
+    "markdown": "| Program | ACCOUNTS | BATCH_ERROR_LOG | TRANSACTION_LEDGER |\n|---|---|---|---|\n| SP_CHECK_MINIMUM_BALANCE | R |  |  |\n| SP_PROCESS_MONTHLY_INTEREST_CREDIT | U | C | C |\n| SP_TRANSFER_FUNDS | CRU |  | CR |\n| SP_UPDATE_DORMANT_ACCOUNT_STATUS | RU |  |  |\n\n*C = creates, R = reads, U = updates, D = deletes. Derived from the DML statements each program executes.*",
+    "raw": {
+      "PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS": {
+        "ACCOUNTS": "RU"
+      },
+      "PROC-.SP_CHECK_MINIMUM_BALANCE": {
+        "ACCOUNTS": "R"
+      },
+      "PROC-.SP_PROCESS_MONTHLY_INTEREST_CREDIT": {
+        "ACCOUNTS": "U",
+        "BATCH_ERROR_LOG": "C",
+        "TRANSACTION_LEDGER": "C"
+      },
+      "PROC-.SP_TRANSFER_FUNDS": {
+        "ACCOUNTS": "CRU",
+        "TRANSACTION_LEDGER": "CR"
+      }
+    }
+  },
+  "quality": {
+    "decision_nodes": 14,
+    "decision_label_tier1_pct": 1.0,
+    "branch_edges": 21,
+    "branch_traceability_pct": 1.0,
+    "max_nodes_any_diagram": 45,
+    "fallback_labels": 2,
+    "total_nodes": 132,
+    "leaked_identifiers": 0,
+    "degraded_inputs": []
+  },
+  "warnings": [
+    {
+      "kind": "DIAGRAM_NOTE",
+      "diagram": "state_ACCOUNTS",
+      "detail": "State CLOSED: Permitted by CK_ACCOUNTS_STATUS but no code in this repository transitions into it."
+    },
+    {
+      "kind": "DIAGRAM_NOTE",
+      "diagram": "flow_SP_TRANSFER_FUNDS",
+      "detail": "This procedure needs 45 nodes to show its decisions and error paths, above the 40-node readability budget. Nothing was dropped; consider reviewing it in sections."
+    },
+    {
+      "kind": "DETAIL_COLLAPSED",
+      "diagram": "flow_SP_TRANSFER_FUNDS",
+      "detail": "2 statements collapsed (lines 40-41); 2 statements collapsed (lines 45-57); 6 statements collapsed (lines 95-124); 2 statements collapsed (lines 129-129); 2 statements collapsed (lines 132-132); 2 statements collapsed (lines 135-135); 2 statements collapsed (lines 138-138); 2 statements collapsed (lines 141-141); 2 statements collapsed (lines 144-144)"
+    },
+    {
+      "kind": "OVERSIZE",
+      "diagram": "flow_SP_TRANSFER_FUNDS",
+      "object_id": "PROC-.SP_TRANSFER_FUNDS",
+      "detail": "45 nodes exceeds the 40-node readability budget"
+    }
+  ],
+  "stats": {
+    "diagrams_generated": 7,
+    "dataflow": 1,
+    "state_models": 1,
+    "process_flows": 5
+  }
+}

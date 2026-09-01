@@ -1,0 +1,3 @@
+from_label,from_key,to_label,to_key,properties
+Index,IDX_TXN_LEDGER_ACCT_DATE,Column,TRANSACTION_LEDGER.ACCOUNT_NUMBER,
+Index,IDX_TXN_LEDGER_ACCT_DATE,Column,TRANSACTION_LEDGER.TXN_DATE,

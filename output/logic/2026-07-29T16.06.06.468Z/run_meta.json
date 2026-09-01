@@ -1,0 +1,23 @@
+{
+  "stage": "4_logic",
+  "run_version": "2026-07-29T16.06.06.468Z",
+  "status": "success",
+  "generated_at": "2026-07-29T16:06:06.482348+00:00",
+  "upstream": {
+    "parser_run_version": "2026-07-29T16.05.37.101Z",
+    "inventory_run_version": "2026-07-29T16.05.30.018Z"
+  },
+  "stats_summary": {
+    "objects_processed": 5,
+    "statements_translated": 151,
+    "variable_slices": 25,
+    "loops_classified": 1,
+    "unbounded_loops_without_exit": 0,
+    "objects_exceeding_cyclomatic_threshold": 1,
+    "objects_exceeding_cognitive_threshold": 0,
+    "objects_with_transaction_hazards": 1,
+    "commit_inside_loop": 0,
+    "savepoint_usage": 1,
+    "objects_with_no_internal_callers": 5
+  }
+}

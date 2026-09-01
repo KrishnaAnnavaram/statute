@@ -1,0 +1,38 @@
+flowchart TD
+    START(["FN_CALCULATE_SIMPLE_INTEREST"])
+    N1{"principal IS NULL OR principal <= 0?"}
+    N2["Call RAISE_APPLICATION_ERROR"]
+    N3{"annual_rate IS NULL OR annual_rate < 0?"}
+    N4["Call RAISE_APPLICATION_ERROR"]
+    N5{"tenure_days IS NULL OR tenure_days <= 0?"}
+    N6["Call RAISE_APPLICATION_ERROR"]
+    N7{"day_count_basis = '360'?"}
+    N8["Set Basis Days to 360"]
+    N9["Set Basis Days to 365"]
+    N10["Set Interest to ROUND( (p_principal * p_annual_rate * p_ten..."]
+    N11(["Return v_interest"])
+    N12["On error: OTHERS"]:::errorNode
+    N13["Call DBMS_OUTPUT.PUT_LINE"]
+    N14["Raise error"]:::errorNode
+    N15["Any statement fails"]:::errorNode
+    START --> N1
+    N1 --> N3
+    N3 --> N5
+    N5 --> N7
+    N7 --> N10
+    N10 --> N11
+    N11 --> N12
+    N8 --> N9
+    N13 --> N14
+    N1 -->|"BR-033 · reject the operation with error -20001: Princi..."| N2
+    N3 -->|"BR-027 · reject the operation with error -20002: Intere..."| N4
+    N5 -->|"BR-034 · reject the operation with error -20003: Tenure..."| N6
+    N7 -->|"BR-030 · set Basis Days to 360"| N8
+    N7 -->|"BR-038 · set Basis Days to 365"| N9
+    N12 -.->|"OTHERS"| N13
+    N15 -.->|"OTHERS"| N12
+    classDef warning fill:#fff4e5,stroke:#d97706,stroke-width:2px
+    classDef external fill:#f5f5f5,stroke:#999,stroke-dasharray: 4 2
+    classDef inferred fill:#f5f5f5,stroke:#999,stroke-dasharray: 4 2
+    classDef errorNode fill:#fdecea,stroke:#c0392b
+    classDef dataNode fill:#eaf3fb,stroke:#2c6fad

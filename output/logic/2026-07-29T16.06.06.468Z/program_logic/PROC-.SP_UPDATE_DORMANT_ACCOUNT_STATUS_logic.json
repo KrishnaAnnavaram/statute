@@ -1,0 +1,196 @@
+{
+  "object_id": "PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS",
+  "type": "PROCEDURE",
+  "file_id": "02_SIMPLE_UPDATE_DORMANT_ACCOUNT_STATUS__D2070F06",
+  "narrative": "PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS is a procedure classified as SINGLE_RECORD_TRANSACTION. Reads and writes a small, bounded set of rows in one pass — maps to a single transactional operation. It accesses: accounts. It handles 2 error condition(s), including NO_DATA_FOUND. Testability (cyclomatic) 7 — simple, minimal risk; understandability (cognitive) 7 — moderate mental effort.",
+  "shape": {
+    "shape": "SINGLE_RECORD_TRANSACTION",
+    "rationale": "Reads and writes a small, bounded set of rows in one pass — maps to a single transactional operation.",
+    "has_loop": false,
+    "has_dml": true,
+    "dml_inside_loop": false
+  },
+  "complexity": {
+    "cyclomatic": {
+      "score": 7,
+      "decision_points": 6,
+      "breakdown": {
+        "if": 1,
+        "elsif": 1,
+        "case_when": 0,
+        "loop": 0,
+        "exception_handler": 2,
+        "logical_operators": 2
+      },
+      "threshold": 10,
+      "exceeds_threshold": false,
+      "interpretation": "simple, minimal risk",
+      "means": "Minimum number of test cases needed for full branch coverage."
+    },
+    "cognitive": {
+      "score": 7,
+      "breakdown": {
+        "structural": 3,
+        "nesting": 0,
+        "hybrid_else_elsif": 2,
+        "logical_sequences": 2,
+        "goto": 0
+      },
+      "threshold": 15,
+      "exceeds_threshold": false,
+      "interpretation": "moderate mental effort",
+      "means": "Relative mental effort to understand this code. Penalises nesting; ignores shorthand. Not a test-case count."
+    }
+  },
+  "pseudocode": [
+    "LOOK UP account_number, account_status, last_transaction_date, p_account_number FROM accounts",
+    "SET v_days_inactive := p_as_of_date - NVL(v_last_txn_date, p_as_of_date - 9999)",
+    "IF v_days_inactive > 365 AND v_current_status = 'ACTIVE' THEN",
+    "  UPDATE accounts: SET account_status, last_modified_by, status_change_date WHERE account_number = p_account_number",
+    "  SET p_result := 'ACCOUNT_MARKED_DORMANT'",
+    "ELSIF v_days_inactive <= 365 AND v_current_status = 'DORMANT' THEN",
+    "  UPDATE accounts: SET account_status, last_modified_by, status_change_date WHERE account_number = p_account_number",
+    "  SET p_result := 'ACCOUNT_REACTIVATED'",
+    "ELSE",
+    "  SET p_result := 'NO_STATUS_CHANGE_REQUIRED'",
+    "END IF",
+    "COMMIT the transaction",
+    "EXCEPTION HANDLING:",
+    "IF an error 'NO_DATA_FOUND' occurs THEN",
+    "  SET p_result := 'ACCOUNT_NOT_FOUND'",
+    "IF an error 'OTHERS' occurs THEN",
+    "  ROLL BACK the transaction",
+    "  SET p_result := 'ERROR: ' || SQLERRM",
+    "  RAISE"
+  ],
+  "variable_slices": [
+    {
+      "variable": "V_LAST_TXN_DATE",
+      "determined_by_statements": [
+        "02_SIMPLE_UPDATE_DORMANT_ACCOUNT_STATUS__D2070F06__PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS__STMT_0001"
+      ],
+      "statement_count": 1,
+      "depends_on_variables": [
+        "ACCOUNT_NUMBER",
+        "ACCOUNT_STATUS",
+        "LAST_TRANSACTION_DATE",
+        "P_ACCOUNT_NUMBER"
+      ],
+      "source_lines": [
+        20
+      ]
+    },
+    {
+      "variable": "V_CURRENT_STATUS",
+      "determined_by_statements": [
+        "02_SIMPLE_UPDATE_DORMANT_ACCOUNT_STATUS__D2070F06__PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS__STMT_0001"
+      ],
+      "statement_count": 1,
+      "depends_on_variables": [
+        "ACCOUNT_NUMBER",
+        "ACCOUNT_STATUS",
+        "LAST_TRANSACTION_DATE",
+        "P_ACCOUNT_NUMBER"
+      ],
+      "source_lines": [
+        20
+      ]
+    },
+    {
+      "variable": "V_DAYS_INACTIVE",
+      "determined_by_statements": [
+        "02_SIMPLE_UPDATE_DORMANT_ACCOUNT_STATUS__D2070F06__PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS__STMT_0001",
+        "02_SIMPLE_UPDATE_DORMANT_ACCOUNT_STATUS__D2070F06__PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS__STMT_0002"
+      ],
+      "statement_count": 2,
+      "depends_on_variables": [
+        "ACCOUNT_NUMBER",
+        "ACCOUNT_STATUS",
+        "LAST_TRANSACTION_DATE",
+        "P_ACCOUNT_NUMBER",
+        "P_AS_OF_DATE",
+        "V_LAST_TXN_DATE"
+      ],
+      "source_lines": [
+        20,
+        25
+      ]
+    },
+    {
+      "variable": "P_RESULT",
+      "determined_by_statements": [
+        "02_SIMPLE_UPDATE_DORMANT_ACCOUNT_STATUS__D2070F06__PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS__STMT_0003",
+        "02_SIMPLE_UPDATE_DORMANT_ACCOUNT_STATUS__D2070F06__PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS__STMT_0005",
+        "02_SIMPLE_UPDATE_DORMANT_ACCOUNT_STATUS__D2070F06__PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS__STMT_0007",
+        "02_SIMPLE_UPDATE_DORMANT_ACCOUNT_STATUS__D2070F06__PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS__STMT_0008",
+        "02_SIMPLE_UPDATE_DORMANT_ACCOUNT_STATUS__D2070F06__PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS__STMT_0010",
+        "02_SIMPLE_UPDATE_DORMANT_ACCOUNT_STATUS__D2070F06__PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS__STMT_0011",
+        "02_SIMPLE_UPDATE_DORMANT_ACCOUNT_STATUS__D2070F06__PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS__STMT_0012",
+        "02_SIMPLE_UPDATE_DORMANT_ACCOUNT_STATUS__D2070F06__PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS__STMT_0014"
+      ],
+      "statement_count": 8,
+      "depends_on_variables": [
+        "ACCOUNT_MARKED_DORMANT",
+        "ACCOUNT_NOT_FOUND",
+        "ACCOUNT_REACTIVATED",
+        "ERROR",
+        "NO_STATUS_CHANGE_REQUIRED",
+        "SQLERRM"
+      ],
+      "source_lines": [
+        27,
+        35,
+        46,
+        49,
+        55,
+        56,
+        57,
+        59
+      ]
+    }
+  ],
+  "transactions": {
+    "commits": [
+      {
+        "statement_id": "02_SIMPLE_UPDATE_DORMANT_ACCOUNT_STATUS__D2070F06__PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS__STMT_0009",
+        "line": 52
+      }
+    ],
+    "rollbacks": [
+      {
+        "statement_id": "02_SIMPLE_UPDATE_DORMANT_ACCOUNT_STATUS__D2070F06__PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS__STMT_0013",
+        "line": 58
+      }
+    ],
+    "savepoints": [],
+    "commit_inside_loop": [],
+    "rollback_in_exception_handler": [
+      {
+        "statement_id": "02_SIMPLE_UPDATE_DORMANT_ACCOUNT_STATUS__D2070F06__PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS__STMT_0013",
+        "line": 58
+      }
+    ],
+    "transaction_segments": [
+      {
+        "ends_at_line": 52,
+        "statement_count": 9,
+        "tables_written": [
+          "accounts"
+        ]
+      },
+      {
+        "ends_at_line": null,
+        "statement_count": 6,
+        "tables_written": [],
+        "note": "no COMMIT — transaction left open to the caller"
+      }
+    ],
+    "hazards": [],
+    "is_atomic": true
+  },
+  "crud_matrix": {
+    "ACCOUNTS": "RU"
+  },
+  "loops": [],
+  "statement_count": 15
+}

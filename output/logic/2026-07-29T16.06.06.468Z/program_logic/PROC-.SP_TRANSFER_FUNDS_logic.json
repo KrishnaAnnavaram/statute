@@ -1,0 +1,410 @@
+{
+  "object_id": "PROC-.SP_TRANSFER_FUNDS",
+  "type": "PROCEDURE",
+  "file_id": "05_MEDIUM_FUND_TRANSFER_WITH_VALIDATION__5E3A3BBB",
+  "narrative": "PROC-.SP_TRANSFER_FUNDS is a procedure classified as SINGLE_RECORD_TRANSACTION. Reads and writes a small, bounded set of rows in one pass — maps to a single transactional operation. It accesses: accounts, transaction_ledger. It handles 8 error condition(s), including NO_DATA_FOUND, E_INVALID_AMOUNT, E_ACCOUNT_NOT_FOUND. Testability (cyclomatic) 16 — moderate risk; understandability (cognitive) 15 — hard to understand. Migration hazard: SAVEPOINT_PARTIAL_ROLLBACK.",
+  "shape": {
+    "shape": "SINGLE_RECORD_TRANSACTION",
+    "rationale": "Reads and writes a small, bounded set of rows in one pass — maps to a single transactional operation.",
+    "has_loop": false,
+    "has_dml": true,
+    "dml_inside_loop": false
+  },
+  "complexity": {
+    "cyclomatic": {
+      "score": 16,
+      "decision_points": 15,
+      "breakdown": {
+        "if": 6,
+        "elsif": 0,
+        "case_when": 0,
+        "loop": 0,
+        "exception_handler": 8,
+        "logical_operators": 1
+      },
+      "threshold": 10,
+      "exceeds_threshold": true,
+      "interpretation": "moderate risk",
+      "means": "Minimum number of test cases needed for full branch coverage."
+    },
+    "cognitive": {
+      "score": 15,
+      "breakdown": {
+        "structural": 14,
+        "nesting": 0,
+        "hybrid_else_elsif": 0,
+        "logical_sequences": 1,
+        "goto": 0
+      },
+      "threshold": 15,
+      "exceeds_threshold": false,
+      "interpretation": "hard to understand",
+      "means": "Relative mental effort to understand this code. Penalises nesting; ignores shorthand. Not a test-case count."
+    }
+  },
+  "pseudocode": [
+    "SET p_status := 'FAILED'",
+    "IF p_amount IS NULL OR p_amount <= 0 THEN",
+    "  RAISE e_invalid_amount",
+    "END IF",
+    "IF p_from_account = p_to_account THEN",
+    "  SET p_status := 'FAILED'",
+    "  SET p_message := 'Source and destination accounts cannot be the same.'",
+    "  RETURN",
+    "END IF",
+    "SET a SAVEPOINT (partial-rollback marker)",
+    "-- nested block",
+    "  LOOK UP account_number, account_status, balance, daily_transfer_limit, p_from_account FROM accounts",
+    "IF v_from_status <> 'ACTIVE' THEN",
+    "  RAISE e_account_inactive",
+    "END IF",
+    "-- nested block",
+    "  LOOK UP account_number, account_status, p_to_account FROM accounts",
+    "IF v_to_status <> 'ACTIVE' THEN",
+    "  RAISE e_account_inactive",
+    "END IF",
+    "IF v_from_balance < p_amount THEN",
+    "  RAISE e_insufficient_balance",
+    "END IF",
+    "LOOK UP account_number, p_from_account, txn_amount, txn_date, txn_type FROM transaction_ledger",
+    "IF (v_today_txn_total + p_amount) > v_daily_limit THEN",
+    "  RAISE e_daily_limit_exceeded",
+    "END IF",
+    "UPDATE accounts: SET balance, last_transaction_date WHERE account_number = p_from_account",
+    "INSERT a new row INTO transaction_ledger",
+    "UPDATE accounts: SET balance, last_transaction_date WHERE account_number = p_to_account",
+    "INSERT a new row INTO accounts, transaction_ledger",
+    "SET p_status := 'SUCCESS'",
+    "SET p_message := 'Transfer completed successfully.'",
+    "COMMIT the transaction",
+    "EXCEPTION HANDLING:",
+    "  IF an error 'NO_DATA_FOUND' occurs THEN",
+    "    RAISE e_account_not_found",
+    "  IF an error 'NO_DATA_FOUND' occurs THEN",
+    "    RAISE e_account_not_found",
+    "IF an error 'E_INVALID_AMOUNT' occurs THEN",
+    "  SET p_status := 'FAILED'; p_message := 'Transfer amount must be greater than zero.'",
+    "  SET p_status := 'FAILED'; p_message := 'Transfer amount must be greater than zero.'",
+    "IF an error 'E_ACCOUNT_NOT_FOUND' occurs THEN",
+    "  ROLL BACK the transaction",
+    "  SET p_status := 'FAILED'; p_message := 'One or both accounts do not exist.'",
+    "  SET p_status := 'FAILED'; p_message := 'One or both accounts do not exist.'",
+    "IF an error 'E_ACCOUNT_INACTIVE' occurs THEN",
+    "  ROLL BACK the transaction",
+    "  SET p_status := 'FAILED'; p_message := 'One or both accounts are not active.'",
+    "  SET p_status := 'FAILED'; p_message := 'One or both accounts are not active.'",
+    "IF an error 'E_INSUFFICIENT_BALANCE' occurs THEN",
+    "  ROLL BACK the transaction",
+    "  SET p_status := 'FAILED'; p_message := 'Insufficient balance in source account.'",
+    "  SET p_status := 'FAILED'; p_message := 'Insufficient balance in source account.'",
+    "IF an error 'E_DAILY_LIMIT_EXCEEDED' occurs THEN",
+    "  ROLL BACK the transaction",
+    "  SET p_status := 'FAILED'; p_message := 'Daily transfer limit exceeded.'",
+    "  SET p_status := 'FAILED'; p_message := 'Daily transfer limit exceeded.'",
+    "IF an error 'OTHERS' occurs THEN",
+    "  ROLL BACK the transaction",
+    "  SET p_status := 'FAILED'; p_message := 'Unexpected error: ' || SQLERRM",
+    "  SET p_status := 'FAILED'; p_message := 'Unexpected error: ' || SQLERRM",
+    "  RAISE"
+  ],
+  "variable_slices": [
+    {
+      "variable": "V_FROM_BALANCE",
+      "determined_by_statements": [
+        "05_MEDIUM_FUND_TRANSFER_WITH_VALIDATION__5E3A3BBB__PROC-.SP_TRANSFER_FUNDS__STMT_0009",
+        "05_MEDIUM_FUND_TRANSFER_WITH_VALIDATION__5E3A3BBB__PROC-.SP_TRANSFER_FUNDS__STMT_0010"
+      ],
+      "statement_count": 2,
+      "depends_on_variables": [
+        "ACCOUNT_NUMBER",
+        "ACCOUNT_STATUS",
+        "BALANCE",
+        "DAILY_TRANSFER_LIMIT",
+        "P_FROM_ACCOUNT"
+      ],
+      "source_lines": [
+        48,
+        49
+      ]
+    },
+    {
+      "variable": "V_FROM_STATUS",
+      "determined_by_statements": [
+        "05_MEDIUM_FUND_TRANSFER_WITH_VALIDATION__5E3A3BBB__PROC-.SP_TRANSFER_FUNDS__STMT_0009",
+        "05_MEDIUM_FUND_TRANSFER_WITH_VALIDATION__5E3A3BBB__PROC-.SP_TRANSFER_FUNDS__STMT_0010"
+      ],
+      "statement_count": 2,
+      "depends_on_variables": [
+        "ACCOUNT_NUMBER",
+        "ACCOUNT_STATUS",
+        "BALANCE",
+        "DAILY_TRANSFER_LIMIT",
+        "P_FROM_ACCOUNT"
+      ],
+      "source_lines": [
+        48,
+        49
+      ]
+    },
+    {
+      "variable": "V_TO_STATUS",
+      "determined_by_statements": [
+        "05_MEDIUM_FUND_TRANSFER_WITH_VALIDATION__5E3A3BBB__PROC-.SP_TRANSFER_FUNDS__STMT_0015",
+        "05_MEDIUM_FUND_TRANSFER_WITH_VALIDATION__5E3A3BBB__PROC-.SP_TRANSFER_FUNDS__STMT_0016"
+      ],
+      "statement_count": 2,
+      "depends_on_variables": [
+        "ACCOUNT_NUMBER",
+        "ACCOUNT_STATUS",
+        "P_TO_ACCOUNT"
+      ],
+      "source_lines": [
+        64,
+        65
+      ]
+    },
+    {
+      "variable": "V_DAILY_LIMIT",
+      "determined_by_statements": [
+        "05_MEDIUM_FUND_TRANSFER_WITH_VALIDATION__5E3A3BBB__PROC-.SP_TRANSFER_FUNDS__STMT_0009",
+        "05_MEDIUM_FUND_TRANSFER_WITH_VALIDATION__5E3A3BBB__PROC-.SP_TRANSFER_FUNDS__STMT_0010"
+      ],
+      "statement_count": 2,
+      "depends_on_variables": [
+        "ACCOUNT_NUMBER",
+        "ACCOUNT_STATUS",
+        "BALANCE",
+        "DAILY_TRANSFER_LIMIT",
+        "P_FROM_ACCOUNT"
+      ],
+      "source_lines": [
+        48,
+        49
+      ]
+    },
+    {
+      "variable": "V_TODAY_TXN_TOTAL",
+      "determined_by_statements": [
+        "05_MEDIUM_FUND_TRANSFER_WITH_VALIDATION__5E3A3BBB__PROC-.SP_TRANSFER_FUNDS__STMT_0023"
+      ],
+      "statement_count": 1,
+      "depends_on_variables": [
+        "ACCOUNT_NUMBER",
+        "P_FROM_ACCOUNT",
+        "TRANSFER_OUT",
+        "TXN_AMOUNT",
+        "TXN_DATE",
+        "TXN_TYPE"
+      ],
+      "source_lines": [
+        83
+      ]
+    },
+    {
+      "variable": "P_STATUS",
+      "determined_by_statements": [
+        "05_MEDIUM_FUND_TRANSFER_WITH_VALIDATION__5E3A3BBB__PROC-.SP_TRANSFER_FUNDS__STMT_0001",
+        "05_MEDIUM_FUND_TRANSFER_WITH_VALIDATION__5E3A3BBB__PROC-.SP_TRANSFER_FUNDS__STMT_0004",
+        "05_MEDIUM_FUND_TRANSFER_WITH_VALIDATION__5E3A3BBB__PROC-.SP_TRANSFER_FUNDS__STMT_0005",
+        "05_MEDIUM_FUND_TRANSFER_WITH_VALIDATION__5E3A3BBB__PROC-.SP_TRANSFER_FUNDS__STMT_0006",
+        "05_MEDIUM_FUND_TRANSFER_WITH_VALIDATION__5E3A3BBB__PROC-.SP_TRANSFER_FUNDS__STMT_0030",
+        "05_MEDIUM_FUND_TRANSFER_WITH_VALIDATION__5E3A3BBB__PROC-.SP_TRANSFER_FUNDS__STMT_0031",
+        "05_MEDIUM_FUND_TRANSFER_WITH_VALIDATION__5E3A3BBB__PROC-.SP_TRANSFER_FUNDS__STMT_0033",
+        "05_MEDIUM_FUND_TRANSFER_WITH_VALIDATION__5E3A3BBB__PROC-.SP_TRANSFER_FUNDS__STMT_0034",
+        "05_MEDIUM_FUND_TRANSFER_WITH_VALIDATION__5E3A3BBB__PROC-.SP_TRANSFER_FUNDS__STMT_0035",
+        "05_MEDIUM_FUND_TRANSFER_WITH_VALIDATION__5E3A3BBB__PROC-.SP_TRANSFER_FUNDS__STMT_0036",
+        "05_MEDIUM_FUND_TRANSFER_WITH_VALIDATION__5E3A3BBB__PROC-.SP_TRANSFER_FUNDS__STMT_0038",
+        "05_MEDIUM_FUND_TRANSFER_WITH_VALIDATION__5E3A3BBB__PROC-.SP_TRANSFER_FUNDS__STMT_0039",
+        "05_MEDIUM_FUND_TRANSFER_WITH_VALIDATION__5E3A3BBB__PROC-.SP_TRANSFER_FUNDS__STMT_0040",
+        "05_MEDIUM_FUND_TRANSFER_WITH_VALIDATION__5E3A3BBB__PROC-.SP_TRANSFER_FUNDS__STMT_0042",
+        "05_MEDIUM_FUND_TRANSFER_WITH_VALIDATION__5E3A3BBB__PROC-.SP_TRANSFER_FUNDS__STMT_0043",
+        "05_MEDIUM_FUND_TRANSFER_WITH_VALIDATION__5E3A3BBB__PROC-.SP_TRANSFER_FUNDS__STMT_0044",
+        "05_MEDIUM_FUND_TRANSFER_WITH_VALIDATION__5E3A3BBB__PROC-.SP_TRANSFER_FUNDS__STMT_0046",
+        "05_MEDIUM_FUND_TRANSFER_WITH_VALIDATION__5E3A3BBB__PROC-.SP_TRANSFER_FUNDS__STMT_0047",
+        "05_MEDIUM_FUND_TRANSFER_WITH_VALIDATION__5E3A3BBB__PROC-.SP_TRANSFER_FUNDS__STMT_0048",
+        "05_MEDIUM_FUND_TRANSFER_WITH_VALIDATION__5E3A3BBB__PROC-.SP_TRANSFER_FUNDS__STMT_0050",
+        "05_MEDIUM_FUND_TRANSFER_WITH_VALIDATION__5E3A3BBB__PROC-.SP_TRANSFER_FUNDS__STMT_0051",
+        "05_MEDIUM_FUND_TRANSFER_WITH_VALIDATION__5E3A3BBB__PROC-.SP_TRANSFER_FUNDS__STMT_0052",
+        "05_MEDIUM_FUND_TRANSFER_WITH_VALIDATION__5E3A3BBB__PROC-.SP_TRANSFER_FUNDS__STMT_0054",
+        "05_MEDIUM_FUND_TRANSFER_WITH_VALIDATION__5E3A3BBB__PROC-.SP_TRANSFER_FUNDS__STMT_0055"
+      ],
+      "statement_count": 24,
+      "depends_on_variables": [
+        "ACCOUNT",
+        "ACCOUNTS",
+        "ACTIVE",
+        "AMOUNT",
+        "ARE",
+        "BALANCE",
+        "BE",
+        "BOTH",
+        "CANNOT",
+        "COMPLETED",
+        "DAILY",
+        "DESTINATION",
+        "DO",
+        "ERROR",
+        "EXCEEDED",
+        "EXIST",
+        "FAILED",
+        "GREATER",
+        "INSUFFICIENT",
+        "LIMIT",
+        "MUST",
+        "ONE",
+        "P_MESSAGE",
+        "SAME",
+        "SOURCE",
+        "SQLERRM",
+        "SUCCESS",
+        "SUCCESSFULLY",
+        "THAN",
+        "THE",
+        "TRANSFER",
+        "UNEXPECTED",
+        "ZERO"
+      ],
+      "source_lines": [
+        33,
+        39,
+        40,
+        41,
+        123,
+        124,
+        128,
+        129,
+        130,
+        132,
+        133,
+        135,
+        136,
+        138,
+        139,
+        141,
+        142,
+        144
+      ]
+    },
+    {
+      "variable": "P_MESSAGE",
+      "determined_by_statements": [
+        "05_MEDIUM_FUND_TRANSFER_WITH_VALIDATION__5E3A3BBB__PROC-.SP_TRANSFER_FUNDS__STMT_0004",
+        "05_MEDIUM_FUND_TRANSFER_WITH_VALIDATION__5E3A3BBB__PROC-.SP_TRANSFER_FUNDS__STMT_0006",
+        "05_MEDIUM_FUND_TRANSFER_WITH_VALIDATION__5E3A3BBB__PROC-.SP_TRANSFER_FUNDS__STMT_0031"
+      ],
+      "statement_count": 3,
+      "depends_on_variables": [
+        "ACCOUNTS",
+        "BE",
+        "CANNOT",
+        "COMPLETED",
+        "DESTINATION",
+        "SAME",
+        "SOURCE",
+        "SUCCESSFULLY",
+        "THE",
+        "TRANSFER"
+      ],
+      "source_lines": [
+        39,
+        41,
+        124
+      ]
+    }
+  ],
+  "transactions": {
+    "commits": [
+      {
+        "statement_id": "05_MEDIUM_FUND_TRANSFER_WITH_VALIDATION__5E3A3BBB__PROC-.SP_TRANSFER_FUNDS__STMT_0032",
+        "line": 125
+      }
+    ],
+    "rollbacks": [
+      {
+        "statement_id": "05_MEDIUM_FUND_TRANSFER_WITH_VALIDATION__5E3A3BBB__PROC-.SP_TRANSFER_FUNDS__STMT_0037",
+        "line": 131
+      },
+      {
+        "statement_id": "05_MEDIUM_FUND_TRANSFER_WITH_VALIDATION__5E3A3BBB__PROC-.SP_TRANSFER_FUNDS__STMT_0041",
+        "line": 134
+      },
+      {
+        "statement_id": "05_MEDIUM_FUND_TRANSFER_WITH_VALIDATION__5E3A3BBB__PROC-.SP_TRANSFER_FUNDS__STMT_0045",
+        "line": 137
+      },
+      {
+        "statement_id": "05_MEDIUM_FUND_TRANSFER_WITH_VALIDATION__5E3A3BBB__PROC-.SP_TRANSFER_FUNDS__STMT_0049",
+        "line": 140
+      },
+      {
+        "statement_id": "05_MEDIUM_FUND_TRANSFER_WITH_VALIDATION__5E3A3BBB__PROC-.SP_TRANSFER_FUNDS__STMT_0053",
+        "line": 143
+      }
+    ],
+    "savepoints": [
+      {
+        "statement_id": "05_MEDIUM_FUND_TRANSFER_WITH_VALIDATION__5E3A3BBB__PROC-.SP_TRANSFER_FUNDS__STMT_0008",
+        "line": 45
+      }
+    ],
+    "commit_inside_loop": [],
+    "rollback_in_exception_handler": [
+      {
+        "statement_id": "05_MEDIUM_FUND_TRANSFER_WITH_VALIDATION__5E3A3BBB__PROC-.SP_TRANSFER_FUNDS__STMT_0037",
+        "line": 131
+      },
+      {
+        "statement_id": "05_MEDIUM_FUND_TRANSFER_WITH_VALIDATION__5E3A3BBB__PROC-.SP_TRANSFER_FUNDS__STMT_0041",
+        "line": 134
+      },
+      {
+        "statement_id": "05_MEDIUM_FUND_TRANSFER_WITH_VALIDATION__5E3A3BBB__PROC-.SP_TRANSFER_FUNDS__STMT_0045",
+        "line": 137
+      },
+      {
+        "statement_id": "05_MEDIUM_FUND_TRANSFER_WITH_VALIDATION__5E3A3BBB__PROC-.SP_TRANSFER_FUNDS__STMT_0049",
+        "line": 140
+      },
+      {
+        "statement_id": "05_MEDIUM_FUND_TRANSFER_WITH_VALIDATION__5E3A3BBB__PROC-.SP_TRANSFER_FUNDS__STMT_0053",
+        "line": 143
+      }
+    ],
+    "transaction_segments": [
+      {
+        "ends_at_line": 125,
+        "statement_count": 32,
+        "tables_written": [
+          "accounts",
+          "transaction_ledger"
+        ]
+      },
+      {
+        "ends_at_line": null,
+        "statement_count": 24,
+        "tables_written": [],
+        "note": "no COMMIT — transaction left open to the caller"
+      }
+    ],
+    "hazards": [
+      {
+        "hazard": "SAVEPOINT_PARTIAL_ROLLBACK",
+        "severity": "high",
+        "occurrences": [
+          {
+            "statement_id": "05_MEDIUM_FUND_TRANSFER_WITH_VALIDATION__5E3A3BBB__PROC-.SP_TRANSFER_FUNDS__STMT_0008",
+            "line": 45
+          }
+        ],
+        "explanation": "SAVEPOINT enables partial rollback within a transaction. Spark has no equivalent; the compensating logic must be made explicit in the rewrite."
+      }
+    ],
+    "is_atomic": true
+  },
+  "crud_matrix": {
+    "ACCOUNTS": "CRU",
+    "TRANSACTION_LEDGER": "CR"
+  },
+  "loops": [],
+  "statement_count": 56
+}

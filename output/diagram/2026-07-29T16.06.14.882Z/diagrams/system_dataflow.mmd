@@ -1,0 +1,21 @@
+flowchart LR
+    N1["FN_CALCULATE_SIMPLE_INTEREST<br/>6 rules · CC 9 · Calculation"]
+    N2["SP_UPDATE_DORMANT_ACCOUNT_STATUS<br/>5 rules · CC 7 · Single Record Transaction"]
+    N3["SP_CHECK_MINIMUM_BALANCE<br/>10 rules · CC 4 · Query Only"]
+    N4["SP_PROCESS_MONTHLY_INTEREST_CREDIT<br/>10 rules · CC 8 · Batch Processor"]
+    N5["SP_TRANSFER_FUNDS<br/>9 rules · CC 16 · Single Record Transaction"]:::warning
+    N6[("ACCOUNTS")]:::dataNode
+    N7[("BATCH_ERROR_LOG")]:::dataNode
+    N8[("TRANSACTION_LEDGER")]:::dataNode
+    N2 -->|"RU"| N6
+    N3 -->|"R"| N6
+    N4 -->|"U"| N6
+    N4 -->|"C"| N7
+    N4 -->|"C"| N8
+    N5 -->|"CRU"| N6
+    N5 -->|"CR"| N8
+    classDef warning fill:#fff4e5,stroke:#d97706,stroke-width:2px
+    classDef external fill:#f5f5f5,stroke:#999,stroke-dasharray: 4 2
+    classDef inferred fill:#f5f5f5,stroke:#999,stroke-dasharray: 4 2
+    classDef errorNode fill:#fdecea,stroke:#c0392b
+    classDef dataNode fill:#eaf3fb,stroke:#2c6fad

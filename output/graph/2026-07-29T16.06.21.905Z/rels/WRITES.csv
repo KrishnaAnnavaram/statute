@@ -1,0 +1,7 @@
+from_label,from_key,to_label,to_key,properties
+Object,PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS,Table,ACCOUNTS,"{""operations"": ""RU""}"
+Object,PROC-.SP_PROCESS_MONTHLY_INTEREST_CREDIT,Table,ACCOUNTS,"{""operations"": ""U""}"
+Object,PROC-.SP_PROCESS_MONTHLY_INTEREST_CREDIT,Table,BATCH_ERROR_LOG,"{""operations"": ""C""}"
+Object,PROC-.SP_PROCESS_MONTHLY_INTEREST_CREDIT,Table,TRANSACTION_LEDGER,"{""operations"": ""C""}"
+Object,PROC-.SP_TRANSFER_FUNDS,Table,ACCOUNTS,"{""operations"": ""CRU""}"
+Object,PROC-.SP_TRANSFER_FUNDS,Table,TRANSACTION_LEDGER,"{""operations"": ""CR""}"

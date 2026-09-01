@@ -1,0 +1,9 @@
+stateDiagram-v2
+    S1 : ACTIVE
+    S2 : DORMANT
+    S3 : CLOSED
+    S1 --> S2 : BR-028 · days_inactive > 365 AND current_status = 'ACTIVE'
+    S2 --> S1 : BR-029 · days_inactive <= 365 AND current_status = 'DORMANT'
+    note right of S3
+        Permitted by CK_ACCOUNTS_STATUS but no code in this repository transitions into it.
+    end note

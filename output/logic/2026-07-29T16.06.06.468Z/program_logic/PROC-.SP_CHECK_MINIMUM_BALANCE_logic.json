@@ -1,0 +1,261 @@
+{
+  "object_id": "PROC-.SP_CHECK_MINIMUM_BALANCE",
+  "type": "PROCEDURE",
+  "file_id": "03_SIMPLE_CHECK_MINIMUM_BALANCE__C83B3807",
+  "narrative": "PROC-.SP_CHECK_MINIMUM_BALANCE is a procedure classified as QUERY_ONLY. Reads only; no persistent state change. It accesses: accounts. It handles 2 error condition(s), including NO_DATA_FOUND. Testability (cyclomatic) 4 — simple, minimal risk; understandability (cognitive) 4 — easy to understand.",
+  "shape": {
+    "shape": "QUERY_ONLY",
+    "rationale": "Reads only; no persistent state change.",
+    "has_loop": false,
+    "has_dml": false,
+    "dml_inside_loop": false
+  },
+  "complexity": {
+    "cyclomatic": {
+      "score": 4,
+      "decision_points": 3,
+      "breakdown": {
+        "if": 1,
+        "elsif": 0,
+        "case_when": 0,
+        "loop": 0,
+        "exception_handler": 2,
+        "logical_operators": 0
+      },
+      "threshold": 10,
+      "exceeds_threshold": false,
+      "interpretation": "simple, minimal risk",
+      "means": "Minimum number of test cases needed for full branch coverage."
+    },
+    "cognitive": {
+      "score": 4,
+      "breakdown": {
+        "structural": 3,
+        "nesting": 0,
+        "hybrid_else_elsif": 1,
+        "logical_sequences": 0,
+        "goto": 0
+      },
+      "threshold": 15,
+      "exceeds_threshold": false,
+      "interpretation": "easy to understand",
+      "means": "Relative mental effort to understand this code. Penalises nesting; ignores shorthand. Not a test-case count."
+    }
+  },
+  "pseudocode": [
+    "LOOK UP account_number, account_type, balance, p_account_number FROM accounts",
+    "SET v_min_balance_req := CASE v_account_type WHEN 'SAVINGS_REGULAR' THEN 1000 WHEN 'SAVINGS_PREMIUM' THEN 10000 WHEN 'SAVINGS_ZERO_BAL' THEN 0 WHEN 'CURRENT_REGULAR' THEN 5000 WHEN 'CURRENT_PREMIUM' THEN 25000 ELSE 1000 END",
+    "IF v_current_balance >= v_min_balance_req THEN",
+    "  SET p_shortfall_amount := 0",
+    "  SET p_penalty_amount := 0",
+    "  SET p_message := 'BALANCE_OK'",
+    "ELSE",
+    "  SET p_shortfall_amount := v_min_balance_req - v_current_balance",
+    "  SET p_penalty_amount := LEAST(500, GREATEST(50, ROUND(p_shortfall_amount * 0.05, 2)))",
+    "  SET p_message := 'BELOW_MINIMUM_BALANCE'",
+    "END IF",
+    "EXCEPTION HANDLING:",
+    "IF an error 'NO_DATA_FOUND' occurs THEN",
+    "  SET p_message := 'ACCOUNT_NOT_FOUND'",
+    "  SET p_penalty_amount := NULL",
+    "  SET p_shortfall_amount := NULL",
+    "IF an error 'OTHERS' occurs THEN",
+    "  SET p_message := 'ERROR: ' || SQLERRM",
+    "  RAISE"
+  ],
+  "variable_slices": [
+    {
+      "variable": "V_CURRENT_BALANCE",
+      "determined_by_statements": [
+        "03_SIMPLE_CHECK_MINIMUM_BALANCE__C83B3807__PROC-.SP_CHECK_MINIMUM_BALANCE__STMT_0001"
+      ],
+      "statement_count": 1,
+      "depends_on_variables": [
+        "ACCOUNT_NUMBER",
+        "ACCOUNT_TYPE",
+        "BALANCE",
+        "P_ACCOUNT_NUMBER"
+      ],
+      "source_lines": [
+        21
+      ]
+    },
+    {
+      "variable": "V_ACCOUNT_TYPE",
+      "determined_by_statements": [
+        "03_SIMPLE_CHECK_MINIMUM_BALANCE__C83B3807__PROC-.SP_CHECK_MINIMUM_BALANCE__STMT_0001"
+      ],
+      "statement_count": 1,
+      "depends_on_variables": [
+        "ACCOUNT_NUMBER",
+        "ACCOUNT_TYPE",
+        "BALANCE",
+        "P_ACCOUNT_NUMBER"
+      ],
+      "source_lines": [
+        21
+      ]
+    },
+    {
+      "variable": "V_MIN_BALANCE_REQ",
+      "determined_by_statements": [
+        "03_SIMPLE_CHECK_MINIMUM_BALANCE__C83B3807__PROC-.SP_CHECK_MINIMUM_BALANCE__STMT_0001",
+        "03_SIMPLE_CHECK_MINIMUM_BALANCE__C83B3807__PROC-.SP_CHECK_MINIMUM_BALANCE__STMT_0002"
+      ],
+      "statement_count": 2,
+      "depends_on_variables": [
+        "ACCOUNT_NUMBER",
+        "ACCOUNT_TYPE",
+        "BALANCE",
+        "CURRENT_PREMIUM",
+        "CURRENT_REGULAR",
+        "P_ACCOUNT_NUMBER",
+        "SAVINGS_PREMIUM",
+        "SAVINGS_REGULAR",
+        "SAVINGS_ZERO_BAL",
+        "V_ACCOUNT_TYPE"
+      ],
+      "source_lines": [
+        21,
+        27
+      ]
+    },
+    {
+      "variable": "P_PENALTY_AMOUNT",
+      "determined_by_statements": [
+        "03_SIMPLE_CHECK_MINIMUM_BALANCE__C83B3807__PROC-.SP_CHECK_MINIMUM_BALANCE__STMT_0001",
+        "03_SIMPLE_CHECK_MINIMUM_BALANCE__C83B3807__PROC-.SP_CHECK_MINIMUM_BALANCE__STMT_0002",
+        "03_SIMPLE_CHECK_MINIMUM_BALANCE__C83B3807__PROC-.SP_CHECK_MINIMUM_BALANCE__STMT_0003",
+        "03_SIMPLE_CHECK_MINIMUM_BALANCE__C83B3807__PROC-.SP_CHECK_MINIMUM_BALANCE__STMT_0004",
+        "03_SIMPLE_CHECK_MINIMUM_BALANCE__C83B3807__PROC-.SP_CHECK_MINIMUM_BALANCE__STMT_0005",
+        "03_SIMPLE_CHECK_MINIMUM_BALANCE__C83B3807__PROC-.SP_CHECK_MINIMUM_BALANCE__STMT_0007",
+        "03_SIMPLE_CHECK_MINIMUM_BALANCE__C83B3807__PROC-.SP_CHECK_MINIMUM_BALANCE__STMT_0008",
+        "03_SIMPLE_CHECK_MINIMUM_BALANCE__C83B3807__PROC-.SP_CHECK_MINIMUM_BALANCE__STMT_0010",
+        "03_SIMPLE_CHECK_MINIMUM_BALANCE__C83B3807__PROC-.SP_CHECK_MINIMUM_BALANCE__STMT_0012",
+        "03_SIMPLE_CHECK_MINIMUM_BALANCE__C83B3807__PROC-.SP_CHECK_MINIMUM_BALANCE__STMT_0013"
+      ],
+      "statement_count": 10,
+      "depends_on_variables": [
+        "ACCOUNT_NUMBER",
+        "ACCOUNT_TYPE",
+        "BALANCE",
+        "CURRENT_PREMIUM",
+        "CURRENT_REGULAR",
+        "P_ACCOUNT_NUMBER",
+        "P_SHORTFALL_AMOUNT",
+        "SAVINGS_PREMIUM",
+        "SAVINGS_REGULAR",
+        "SAVINGS_ZERO_BAL",
+        "V_ACCOUNT_TYPE",
+        "V_CURRENT_BALANCE",
+        "V_MIN_BALANCE_REQ"
+      ],
+      "source_lines": [
+        21,
+        27,
+        37,
+        38,
+        39,
+        42,
+        45,
+        50,
+        52,
+        53
+      ]
+    },
+    {
+      "variable": "P_SHORTFALL_AMOUNT",
+      "determined_by_statements": [
+        "03_SIMPLE_CHECK_MINIMUM_BALANCE__C83B3807__PROC-.SP_CHECK_MINIMUM_BALANCE__STMT_0001",
+        "03_SIMPLE_CHECK_MINIMUM_BALANCE__C83B3807__PROC-.SP_CHECK_MINIMUM_BALANCE__STMT_0002",
+        "03_SIMPLE_CHECK_MINIMUM_BALANCE__C83B3807__PROC-.SP_CHECK_MINIMUM_BALANCE__STMT_0003",
+        "03_SIMPLE_CHECK_MINIMUM_BALANCE__C83B3807__PROC-.SP_CHECK_MINIMUM_BALANCE__STMT_0004",
+        "03_SIMPLE_CHECK_MINIMUM_BALANCE__C83B3807__PROC-.SP_CHECK_MINIMUM_BALANCE__STMT_0007",
+        "03_SIMPLE_CHECK_MINIMUM_BALANCE__C83B3807__PROC-.SP_CHECK_MINIMUM_BALANCE__STMT_0010",
+        "03_SIMPLE_CHECK_MINIMUM_BALANCE__C83B3807__PROC-.SP_CHECK_MINIMUM_BALANCE__STMT_0013"
+      ],
+      "statement_count": 7,
+      "depends_on_variables": [
+        "ACCOUNT_NUMBER",
+        "ACCOUNT_TYPE",
+        "BALANCE",
+        "CURRENT_PREMIUM",
+        "CURRENT_REGULAR",
+        "P_ACCOUNT_NUMBER",
+        "SAVINGS_PREMIUM",
+        "SAVINGS_REGULAR",
+        "SAVINGS_ZERO_BAL",
+        "V_ACCOUNT_TYPE",
+        "V_CURRENT_BALANCE",
+        "V_MIN_BALANCE_REQ"
+      ],
+      "source_lines": [
+        21,
+        27,
+        37,
+        38,
+        42,
+        50,
+        53
+      ]
+    },
+    {
+      "variable": "P_MESSAGE",
+      "determined_by_statements": [
+        "03_SIMPLE_CHECK_MINIMUM_BALANCE__C83B3807__PROC-.SP_CHECK_MINIMUM_BALANCE__STMT_0003",
+        "03_SIMPLE_CHECK_MINIMUM_BALANCE__C83B3807__PROC-.SP_CHECK_MINIMUM_BALANCE__STMT_0006",
+        "03_SIMPLE_CHECK_MINIMUM_BALANCE__C83B3807__PROC-.SP_CHECK_MINIMUM_BALANCE__STMT_0009",
+        "03_SIMPLE_CHECK_MINIMUM_BALANCE__C83B3807__PROC-.SP_CHECK_MINIMUM_BALANCE__STMT_0010",
+        "03_SIMPLE_CHECK_MINIMUM_BALANCE__C83B3807__PROC-.SP_CHECK_MINIMUM_BALANCE__STMT_0011",
+        "03_SIMPLE_CHECK_MINIMUM_BALANCE__C83B3807__PROC-.SP_CHECK_MINIMUM_BALANCE__STMT_0014",
+        "03_SIMPLE_CHECK_MINIMUM_BALANCE__C83B3807__PROC-.SP_CHECK_MINIMUM_BALANCE__STMT_0015"
+      ],
+      "statement_count": 7,
+      "depends_on_variables": [
+        "ACCOUNT_NOT_FOUND",
+        "BALANCE_OK",
+        "BELOW_MINIMUM_BALANCE",
+        "ERROR",
+        "SQLERRM"
+      ],
+      "source_lines": [
+        37,
+        40,
+        46,
+        50,
+        51,
+        54,
+        55
+      ]
+    }
+  ],
+  "transactions": {
+    "commits": [],
+    "rollbacks": [],
+    "savepoints": [],
+    "commit_inside_loop": [],
+    "rollback_in_exception_handler": [],
+    "transaction_segments": [
+      {
+        "ends_at_line": null,
+        "statement_count": 16,
+        "tables_written": [],
+        "note": "no COMMIT — transaction left open to the caller"
+      }
+    ],
+    "hazards": [
+      {
+        "hazard": "NO_TRANSACTION_CONTROL",
+        "severity": "info",
+        "occurrences": [],
+        "explanation": "This object issues no COMMIT or ROLLBACK — the transaction boundary is owned by its caller. Confirm the caller's boundary before migrating."
+      }
+    ],
+    "is_atomic": true
+  },
+  "crud_matrix": {
+    "ACCOUNTS": "R"
+  },
+  "loops": [],
+  "statement_count": 16
+}

@@ -1,0 +1,163 @@
+{
+  "pipeline_stage": "8_graph",
+  "schema_version": "2.0",
+  "generated_at": "2026-07-29T16:06:21.915011+00:00",
+  "upstream": {
+    "run_selector": "latest"
+  },
+  "design_references": [
+    {
+      "work": "Yamaguchi, Golde, Arp & Rieck (2014), Code Property Graphs, IEEE S&P",
+      "applied": "Statement nodes joined by control-flow and dependence edges, so queries can span syntax, flow and data dependence at once."
+    },
+    {
+      "work": "jQAssistant (scan -> Neo4j -> concepts + constraints)",
+      "applied": "The export ships derived-view Cypher and validation Cypher so the graph can be extended without changing the extractor."
+    },
+    {
+      "work": "Lehnert, A review of software change impact analysis",
+      "applied": "Blind spots are exported as nodes; no automated impact analysis is complete and the graph says so."
+    },
+    {
+      "work": "Neo4j property-graph modelling guidance",
+      "applied": "Column, Statement and Parameter are nodes because each takes part in several independent relationships; relationship properties minimised."
+    }
+  ],
+  "stats": {
+    "nodes": {
+      "BlindSpot": 4,
+      "BusinessRule": 41,
+      "Column": 105,
+      "File": 7,
+      "Gap": 21,
+      "Index": 1,
+      "Object": 5,
+      "Parameter": 20,
+      "RuleSet": 4,
+      "Sequence": 3,
+      "State": 3,
+      "Statement": 124,
+      "Table": 15
+    },
+    "relationships": {
+      "AFFECTS": 7,
+      "BELONGS_TO": 41,
+      "BRANCHES_TO": 40,
+      "CONSTRAINS_TABLE": 1,
+      "CONTAINS": 5,
+      "CONTAINS_STATEMENT": 124,
+      "COVERS": 2,
+      "DETERMINES": 119,
+      "ENFORCED_IN": 40,
+      "FOLLOWS": 86,
+      "FOREIGN_KEY_ON": 7,
+      "HAS_COLUMN": 105,
+      "HAS_PARAMETER": 20,
+      "HAS_STATE": 3,
+      "IMPLEMENTED_AT": 39,
+      "LOOPS_BACK_TO": 1,
+      "READS": 4,
+      "READS_COLUMN": 36,
+      "REFERENCES": 7,
+      "TOUCHES": 7,
+      "WRITES": 6,
+      "WRITES_COLUMN": 69
+    }
+  },
+  "supported_questions": [
+    {
+      "intent": "impact_of_column",
+      "question": "What breaks if I change a given column?"
+    },
+    {
+      "intent": "rules_of",
+      "question": "Which business rules apply to a program unit, table or column?"
+    },
+    {
+      "intent": "where_is_rule",
+      "question": "Where does a given rule live in the source?"
+    },
+    {
+      "intent": "who_touches_table",
+      "question": "Which program units read or write a given table?"
+    },
+    {
+      "intent": "interface_of",
+      "question": "What is the calling interface of a program unit?"
+    },
+    {
+      "intent": "needs_review",
+      "question": "Which rules still need a person to confirm them?"
+    },
+    {
+      "intent": "unenforced",
+      "question": "Which rules are recorded but not enforced by the database?"
+    },
+    {
+      "intent": "most_complex",
+      "question": "Which program units are most complex?"
+    },
+    {
+      "intent": "hot_columns",
+      "question": "Which columns are used most widely?"
+    },
+    {
+      "intent": "orphan_tables",
+      "question": "Which tables are never touched by any program unit?"
+    },
+    {
+      "intent": "open_gaps",
+      "question": "What open questions remain for the business?"
+    },
+    {
+      "intent": "blind_spots",
+      "question": "What can this graph NOT see?"
+    }
+  ],
+  "concepts": [
+    {
+      "name": "Hot column",
+      "purpose": "A column read or written by more than two program units — change last."
+    },
+    {
+      "name": "Rule-bearing statement",
+      "purpose": "A statement that implements at least one business rule."
+    },
+    {
+      "name": "Write path",
+      "purpose": "Statements on a control-flow path that ends in a write."
+    }
+  ],
+  "constraints": [
+    {
+      "name": "Every rule traces to source",
+      "purpose": "A rule with no program unit and no table cannot be verified."
+    },
+    {
+      "name": "No orphan columns in rules",
+      "purpose": "A rule constraining a column that does not exist indicates a join error."
+    },
+    {
+      "name": "Unenforced constraints are visible",
+      "purpose": "Any rule the database does not enforce must be flagged for review."
+    }
+  ],
+  "blind_spots": [
+    {
+      "kind": "DYNAMIC_SQL",
+      "detail": "0 dynamic SQL block(s). Tables and columns referenced only in strings assembled at runtime are invisible to static analysis."
+    },
+    {
+      "kind": "EXTERNAL_CALLERS",
+      "detail": "Schedulers, screens, batch wrappers and other systems that invoke these objects are outside the analysed source, so no inbound edge exists."
+    },
+    {
+      "kind": "UNRESOLVED_CALLS",
+      "detail": "0 call(s) to routines outside this codebase. Their effects are unknown and absent from the graph."
+    },
+    {
+      "kind": "TRIGGER_SIDE_EFFECTS",
+      "detail": "Database triggers fire on DML without an explicit call edge; any such effect is not represented as a dependency."
+    }
+  ]
+}

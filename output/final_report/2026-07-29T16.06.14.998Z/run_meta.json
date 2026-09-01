@@ -1,0 +1,20 @@
+{
+  "stage": "7_synthesis",
+  "run_version": "2026-07-29T16.06.14.998Z",
+  "status": "success",
+  "generated_at": "2026-07-29T16:06:14.998597+00:00",
+  "upstream": {
+    "inventory_run_version": "2026-07-29T16.05.30.018Z",
+    "parser_run_version": "2026-07-29T16.05.37.101Z",
+    "data_run_version": "2026-07-29T16.05.52.383Z",
+    "logic_run_version": "2026-07-29T16.06.06.468Z",
+    "rules_run_version": "2026-07-29T16.06.06.566Z",
+    "diagram_run_version": "2026-07-29T16.06.14.882Z"
+  },
+  "counts": {
+    "requirements": 41,
+    "gaps": 21,
+    "capabilities": 5,
+    "annotations_applied": 0
+  }
+}

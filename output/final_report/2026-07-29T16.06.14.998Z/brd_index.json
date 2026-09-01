@@ -1,0 +1,1547 @@
+{
+  "document": "Business Requirements Document",
+  "schema_version": "2.0",
+  "system": "PL/SQL Banking System",
+  "generated_at": "2026-07-29T16:06:14.998597+00:00",
+  "upstream": {
+    "inventory_run_version": "2026-07-29T16.05.30.018Z",
+    "parser_run_version": "2026-07-29T16.05.37.101Z",
+    "data_run_version": "2026-07-29T16.05.52.383Z",
+    "logic_run_version": "2026-07-29T16.06.06.468Z",
+    "rules_run_version": "2026-07-29T16.06.06.566Z",
+    "diagram_run_version": "2026-07-29T16.06.14.882Z"
+  },
+  "capabilities": [
+    {
+      "id": "PROC-.SP_CHECK_MINIMUM_BALANCE",
+      "title": "Check Minimum Balance",
+      "style": "Enquiry",
+      "rule_ids": [
+        "BR-003",
+        "BR-004",
+        "BR-005",
+        "BR-006",
+        "BR-007",
+        "BR-010",
+        "BR-023",
+        "BR-025",
+        "BR-026",
+        "BR-036"
+      ],
+      "records": "Accounts"
+    },
+    {
+      "id": "PROC-.SP_PROCESS_MONTHLY_INTEREST_CREDIT",
+      "title": "Process Monthly Interest Credit",
+      "style": "Batch process",
+      "rule_ids": [
+        "BR-008",
+        "BR-011",
+        "BR-015",
+        "BR-019",
+        "BR-022",
+        "BR-032",
+        "BR-035",
+        "BR-039",
+        "BR-040",
+        "BR-041"
+      ],
+      "records": "Accounts, Batch Error Log, Transaction Ledger"
+    },
+    {
+      "id": "PROC-.SP_TRANSFER_FUNDS",
+      "title": "Transfer Funds",
+      "style": "Single transaction",
+      "rule_ids": [
+        "BR-001",
+        "BR-002",
+        "BR-012",
+        "BR-013",
+        "BR-016",
+        "BR-017",
+        "BR-018",
+        "BR-024",
+        "BR-031"
+      ],
+      "records": "Accounts, Transaction Ledger"
+    },
+    {
+      "id": "FUNC-.FN_CALCULATE_SIMPLE_INTEREST",
+      "title": "Calculate Simple Interest",
+      "style": "Calculation",
+      "rule_ids": [
+        "BR-021",
+        "BR-027",
+        "BR-030",
+        "BR-033",
+        "BR-034",
+        "BR-038"
+      ],
+      "records": "no stored records"
+    },
+    {
+      "id": "PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS",
+      "title": "Update Dormant Account Status",
+      "style": "Single transaction",
+      "rule_ids": [
+        "BR-009",
+        "BR-020",
+        "BR-028",
+        "BR-029",
+        "BR-037"
+      ],
+      "records": "Accounts"
+    }
+  ],
+  "requirements": [
+    {
+      "id": "BR-014",
+      "heading": "Restrict Account Status to allowed values",
+      "text": "The database defines: account_status IN ('ACTIVE','DORMANT','CLOSED') (table Accounts). Constraint is ENABLED and VALIDATED — enforced by the database for all data.",
+      "formal": "It is necessary that account_status IN ('ACTIVE','DORMANT','CLOSED').",
+      "modality": "alethic",
+      "type": "Functional — validation",
+      "confidence": "confirmed",
+      "verification_method": "Inspection (database schema)",
+      "source": {
+        "kind": "ddl_check_constraint",
+        "table": "ACCOUNTS",
+        "constraint_name": "CK_ACCOUNTS_STATUS"
+      },
+      "needs_review": false,
+      "owner": null,
+      "priority": null
+    },
+    {
+      "id": "BR-033",
+      "heading": "Validate Principal",
+      "text": "When Principal IS NULL OR Principal <= 0, the system applies the corresponding handling.",
+      "formal": "When p_principal IS NULL OR p_principal <= 0, it is obligatory that the system reject the operation with error -20001: Principal amount must be greater than zero..",
+      "modality": "deontic",
+      "type": "Functional — validation",
+      "confidence": "high",
+      "verification_method": "Test (exercise the code path)",
+      "source": {
+        "kind": "conditional_branch",
+        "object_id": "FUNC-.FN_CALCULATE_SIMPLE_INTEREST",
+        "statement_id": "01_SIMPLE_CALCULATE_SIMPLE_INTEREST__4CCD8A69__FUNC-.FN_CALCULATE_SIMPLE_INTEREST__STMT_0001",
+        "line": 19
+      },
+      "needs_review": false,
+      "owner": null,
+      "priority": null
+    },
+    {
+      "id": "BR-027",
+      "heading": "Validate Annual Rate",
+      "text": "When Annual Rate IS NULL OR Annual Rate < 0, the system applies the corresponding handling.",
+      "formal": "When p_annual_rate IS NULL OR p_annual_rate < 0, it is obligatory that the system reject the operation with error -20002: Interest rate cannot be negative..",
+      "modality": "deontic",
+      "type": "Functional — validation",
+      "confidence": "high",
+      "verification_method": "Test (exercise the code path)",
+      "source": {
+        "kind": "conditional_branch",
+        "object_id": "FUNC-.FN_CALCULATE_SIMPLE_INTEREST",
+        "statement_id": "01_SIMPLE_CALCULATE_SIMPLE_INTEREST__4CCD8A69__FUNC-.FN_CALCULATE_SIMPLE_INTEREST__STMT_0003",
+        "line": 23
+      },
+      "needs_review": false,
+      "owner": null,
+      "priority": null
+    },
+    {
+      "id": "BR-034",
+      "heading": "Validate Tenure Days",
+      "text": "When Tenure Days IS NULL OR Tenure Days <= 0, the system applies the corresponding handling.",
+      "formal": "When p_tenure_days IS NULL OR p_tenure_days <= 0, it is obligatory that the system reject the operation with error -20003: Tenure in days must be greater than zero..",
+      "modality": "deontic",
+      "type": "Functional — validation",
+      "confidence": "high",
+      "verification_method": "Test (exercise the code path)",
+      "source": {
+        "kind": "conditional_branch",
+        "object_id": "FUNC-.FN_CALCULATE_SIMPLE_INTEREST",
+        "statement_id": "01_SIMPLE_CALCULATE_SIMPLE_INTEREST__4CCD8A69__FUNC-.FN_CALCULATE_SIMPLE_INTEREST__STMT_0005",
+        "line": 27
+      },
+      "needs_review": false,
+      "owner": null,
+      "priority": null
+    },
+    {
+      "id": "BR-030",
+      "heading": "Validate Day Count Basis is 360",
+      "text": "When Day Count Basis = '360', the system applies the corresponding handling.",
+      "formal": "When p_day_count_basis = '360', it is obligatory that the system set Basis Days to 360.",
+      "modality": "deontic",
+      "type": "Functional — validation",
+      "confidence": "high",
+      "verification_method": "Test (exercise the code path)",
+      "source": {
+        "kind": "conditional_branch",
+        "object_id": "FUNC-.FN_CALCULATE_SIMPLE_INTEREST",
+        "statement_id": "01_SIMPLE_CALCULATE_SIMPLE_INTEREST__4CCD8A69__FUNC-.FN_CALCULATE_SIMPLE_INTEREST__STMT_0007",
+        "line": 32
+      },
+      "needs_review": false,
+      "owner": null,
+      "priority": null
+    },
+    {
+      "id": "BR-038",
+      "heading": "Apply default Day Count Basis handling",
+      "text": "When none of the preceding Day Count Basis conditions hold, the system applies its default handling.",
+      "formal": "When no preceding condition matched, it is obligatory that the system set Basis Days to 365.",
+      "modality": "deontic",
+      "type": "Functional — validation",
+      "confidence": "medium",
+      "verification_method": "Test (exercise the code path)",
+      "source": {
+        "kind": "conditional_branch",
+        "object_id": "FUNC-.FN_CALCULATE_SIMPLE_INTEREST",
+        "statement_id": "01_SIMPLE_CALCULATE_SIMPLE_INTEREST__4CCD8A69__FUNC-.FN_CALCULATE_SIMPLE_INTEREST__STMT_0007",
+        "line": 35
+      },
+      "needs_review": false,
+      "owner": null,
+      "priority": null
+    },
+    {
+      "id": "BR-028",
+      "heading": "Validate Current Status is ACTIVE",
+      "text": "When v_days_inactive > 365 AND v_current_status = 'ACTIVE', the system applies the corresponding handling.",
+      "formal": "When v_days_inactive > 365 AND v_current_status = 'ACTIVE', it is obligatory that the system update accounts and set Result to 'Account Marked Dormant'.",
+      "modality": "deontic",
+      "type": "Functional — validation",
+      "confidence": "high",
+      "verification_method": "Test (exercise the code path)",
+      "source": {
+        "kind": "conditional_branch",
+        "object_id": "PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS",
+        "statement_id": "02_SIMPLE_UPDATE_DORMANT_ACCOUNT_STATUS__D2070F06__PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS__STMT_0003",
+        "line": 27
+      },
+      "needs_review": false,
+      "owner": null,
+      "priority": null
+    },
+    {
+      "id": "BR-029",
+      "heading": "Validate Current Status is DORMANT",
+      "text": "When v_days_inactive <= 365 AND v_current_status = 'DORMANT', the system applies the corresponding handling (ELSIF branch 1).",
+      "formal": "When v_days_inactive <= 365 AND v_current_status = 'DORMANT', it is obligatory that the system update accounts and set Result to 'Account Reactivated'.",
+      "modality": "deontic",
+      "type": "Functional — validation",
+      "confidence": "high",
+      "verification_method": "Test (exercise the code path)",
+      "source": {
+        "kind": "conditional_branch",
+        "object_id": "PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS",
+        "statement_id": "02_SIMPLE_UPDATE_DORMANT_ACCOUNT_STATUS__D2070F06__PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS__STMT_0003",
+        "line": 40
+      },
+      "needs_review": false,
+      "owner": null,
+      "priority": null
+    },
+    {
+      "id": "BR-037",
+      "heading": "Apply default Current Status handling",
+      "text": "When none of the preceding Current Status conditions hold, the system applies its default handling.",
+      "formal": "When no preceding condition matched, it is obligatory that the system set Result to 'No Status Change Required'.",
+      "modality": "deontic",
+      "type": "Functional — validation",
+      "confidence": "medium",
+      "verification_method": "Test (exercise the code path)",
+      "source": {
+        "kind": "conditional_branch",
+        "object_id": "PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS",
+        "statement_id": "02_SIMPLE_UPDATE_DORMANT_ACCOUNT_STATUS__D2070F06__PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS__STMT_0003",
+        "line": 49
+      },
+      "needs_review": false,
+      "owner": null,
+      "priority": null
+    },
+    {
+      "id": "BR-009",
+      "heading": "Report missing Accounts record",
+      "text": "When the database reports NO_DATA_FOUND — the requested record does not exist or the query returned no row — the system responds with: Result := 'ACCOUNT_NOT_FOUND'.",
+      "formal": "When NO_DATA_FOUND, it is obligatory that the system Result := 'Account Not Found'.",
+      "modality": "deontic",
+      "type": "Non-functional — resilience",
+      "confidence": "confirmed",
+      "verification_method": "Test (exercise the code path)",
+      "source": {
+        "kind": "predefined_exception",
+        "object_id": "PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS",
+        "statement_id": "02_SIMPLE_UPDATE_DORMANT_ACCOUNT_STATUS__D2070F06__PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS__STMT_0010",
+        "line": 55
+      },
+      "needs_review": false,
+      "owner": null,
+      "priority": null
+    },
+    {
+      "id": "BR-006",
+      "heading": "Enforce Minimum Balance Req for SAVINGS_REGULAR",
+      "text": "When v_account_type = 'SAVINGS_REGULAR', Minimum Balance Req is 1000.",
+      "formal": "When v_account_type = 'SAVINGS_REGULAR', it is obligatory that the system set Minimum Balance Req to 1000.",
+      "modality": "deontic",
+      "type": "Functional — threshold",
+      "confidence": "confirmed",
+      "verification_method": "Test (exercise the code path)",
+      "source": {
+        "kind": "case_branch",
+        "object_id": "PROC-.SP_CHECK_MINIMUM_BALANCE",
+        "statement_id": "03_SIMPLE_CHECK_MINIMUM_BALANCE__C83B3807__PROC-.SP_CHECK_MINIMUM_BALANCE__STMT_0002",
+        "line": 29
+      },
+      "needs_review": false,
+      "owner": null,
+      "priority": null
+    },
+    {
+      "id": "BR-005",
+      "heading": "Enforce Minimum Balance Req for SAVINGS_PREMIUM",
+      "text": "When v_account_type = 'SAVINGS_PREMIUM', Minimum Balance Req is 10000.",
+      "formal": "When v_account_type = 'SAVINGS_PREMIUM', it is obligatory that the system set Minimum Balance Req to 10000.",
+      "modality": "deontic",
+      "type": "Functional — threshold",
+      "confidence": "confirmed",
+      "verification_method": "Test (exercise the code path)",
+      "source": {
+        "kind": "case_branch",
+        "object_id": "PROC-.SP_CHECK_MINIMUM_BALANCE",
+        "statement_id": "03_SIMPLE_CHECK_MINIMUM_BALANCE__C83B3807__PROC-.SP_CHECK_MINIMUM_BALANCE__STMT_0002",
+        "line": 30
+      },
+      "needs_review": false,
+      "owner": null,
+      "priority": null
+    },
+    {
+      "id": "BR-007",
+      "heading": "Enforce Minimum Balance Req for SAVINGS_ZERO_BAL",
+      "text": "When v_account_type = 'SAVINGS_ZERO_BAL', Minimum Balance Req is 0.",
+      "formal": "When v_account_type = 'SAVINGS_ZERO_BAL', it is obligatory that the system set Minimum Balance Req to 0.",
+      "modality": "deontic",
+      "type": "Functional — threshold",
+      "confidence": "confirmed",
+      "verification_method": "Test (exercise the code path)",
+      "source": {
+        "kind": "case_branch",
+        "object_id": "PROC-.SP_CHECK_MINIMUM_BALANCE",
+        "statement_id": "03_SIMPLE_CHECK_MINIMUM_BALANCE__C83B3807__PROC-.SP_CHECK_MINIMUM_BALANCE__STMT_0002",
+        "line": 31
+      },
+      "needs_review": false,
+      "owner": null,
+      "priority": null
+    },
+    {
+      "id": "BR-004",
+      "heading": "Enforce Minimum Balance Req for CURRENT_REGULAR",
+      "text": "When v_account_type = 'CURRENT_REGULAR', Minimum Balance Req is 5000.",
+      "formal": "When v_account_type = 'CURRENT_REGULAR', it is obligatory that the system set Minimum Balance Req to 5000.",
+      "modality": "deontic",
+      "type": "Functional — threshold",
+      "confidence": "confirmed",
+      "verification_method": "Test (exercise the code path)",
+      "source": {
+        "kind": "case_branch",
+        "object_id": "PROC-.SP_CHECK_MINIMUM_BALANCE",
+        "statement_id": "03_SIMPLE_CHECK_MINIMUM_BALANCE__C83B3807__PROC-.SP_CHECK_MINIMUM_BALANCE__STMT_0002",
+        "line": 32
+      },
+      "needs_review": false,
+      "owner": null,
+      "priority": null
+    },
+    {
+      "id": "BR-003",
+      "heading": "Enforce Minimum Balance Req for CURRENT_PREMIUM",
+      "text": "When v_account_type = 'CURRENT_PREMIUM', Minimum Balance Req is 25000.",
+      "formal": "When v_account_type = 'CURRENT_PREMIUM', it is obligatory that the system set Minimum Balance Req to 25000.",
+      "modality": "deontic",
+      "type": "Functional — threshold",
+      "confidence": "confirmed",
+      "verification_method": "Test (exercise the code path)",
+      "source": {
+        "kind": "case_branch",
+        "object_id": "PROC-.SP_CHECK_MINIMUM_BALANCE",
+        "statement_id": "03_SIMPLE_CHECK_MINIMUM_BALANCE__C83B3807__PROC-.SP_CHECK_MINIMUM_BALANCE__STMT_0002",
+        "line": 33
+      },
+      "needs_review": false,
+      "owner": null,
+      "priority": null
+    },
+    {
+      "id": "BR-026",
+      "heading": "Enforce default Minimum Balance Req",
+      "text": "When no other case matches, Minimum Balance Req defaults to 1000.",
+      "formal": "When no preceding case matched, it is obligatory that the system default Minimum Balance Req to 1000.",
+      "modality": "deontic",
+      "type": "Functional — threshold",
+      "confidence": "high",
+      "verification_method": "Test (exercise the code path)",
+      "source": {
+        "kind": "case_branch",
+        "object_id": "PROC-.SP_CHECK_MINIMUM_BALANCE",
+        "statement_id": "03_SIMPLE_CHECK_MINIMUM_BALANCE__C83B3807__PROC-.SP_CHECK_MINIMUM_BALANCE__STMT_0002",
+        "line": 34
+      },
+      "needs_review": false,
+      "owner": null,
+      "priority": null
+    },
+    {
+      "id": "BR-025",
+      "heading": "Enforce Current Balance at or above Minimum Balance Req",
+      "text": "When v_current_balance >= v_min_balancReq, the system applies the corresponding handling.",
+      "formal": "When v_current_balance >= v_min_balance_req, it is obligatory that the system set Shortfall Amount to 0 and set Penalty Amount to 0.",
+      "modality": "deontic",
+      "type": "Functional — threshold",
+      "confidence": "high",
+      "verification_method": "Test (exercise the code path)",
+      "source": {
+        "kind": "conditional_branch",
+        "object_id": "PROC-.SP_CHECK_MINIMUM_BALANCE",
+        "statement_id": "03_SIMPLE_CHECK_MINIMUM_BALANCE__C83B3807__PROC-.SP_CHECK_MINIMUM_BALANCE__STMT_0003",
+        "line": 37
+      },
+      "needs_review": false,
+      "owner": null,
+      "priority": null
+    },
+    {
+      "id": "BR-036",
+      "heading": "Apply default Current Balance handling",
+      "text": "When none of the preceding Current Balance conditions hold, the system applies its default handling.",
+      "formal": "When no preceding condition matched, it is obligatory that the system set Shortfall Amount to Minimum Balance Req - Current Balance and set Penalty Amount to LEAST(500, GREATEST(50, ROUND(Shortfall Amount * 0.05, 2))).",
+      "modality": "deontic",
+      "type": "Functional — validation",
+      "confidence": "medium",
+      "verification_method": "Test (exercise the code path)",
+      "source": {
+        "kind": "conditional_branch",
+        "object_id": "PROC-.SP_CHECK_MINIMUM_BALANCE",
+        "statement_id": "03_SIMPLE_CHECK_MINIMUM_BALANCE__C83B3807__PROC-.SP_CHECK_MINIMUM_BALANCE__STMT_0003",
+        "line": 42
+      },
+      "needs_review": false,
+      "owner": null,
+      "priority": null
+    },
+    {
+      "id": "BR-010",
+      "heading": "Report missing Accounts record",
+      "text": "When the database reports NO_DATA_FOUND — the requested record does not exist or the query returned no row — the system responds with: Message := 'ACCOUNT_NOT_FOUND'; Penalty Amount := NULL.",
+      "formal": "When NO_DATA_FOUND, it is obligatory that the system Message := 'Account Not Found'; Penalty Amount := NULL.",
+      "modality": "deontic",
+      "type": "Non-functional — resilience",
+      "confidence": "confirmed",
+      "verification_method": "Test (exercise the code path)",
+      "source": {
+        "kind": "predefined_exception",
+        "object_id": "PROC-.SP_CHECK_MINIMUM_BALANCE",
+        "statement_id": "03_SIMPLE_CHECK_MINIMUM_BALANCE__C83B3807__PROC-.SP_CHECK_MINIMUM_BALANCE__STMT_0010",
+        "line": 50
+      },
+      "needs_review": false,
+      "owner": null,
+      "priority": null
+    },
+    {
+      "id": "BR-015",
+      "heading": "Restrict processing to eligible Accounts records",
+      "text": "This process applies only to rows of Accounts where account_status = 'ACTIVE' AND account_type LIKE 'SAVINGS%'. Records outside this population are not processed. Defined by cursor c_savings_accounts in Process Monthly Interest Credit, line 17.",
+      "formal": "It is obligatory that only records where account_status = 'ACTIVE' AND account_type LIKE 'SAVINGS%' are processed.",
+      "modality": "deontic",
+      "type": "Functional — validation",
+      "confidence": "confirmed",
+      "verification_method": "Test (exercise the code path)",
+      "source": {
+        "kind": "cursor_eligibility",
+        "object_id": "PROC-.SP_PROCESS_MONTHLY_INTEREST_CREDIT",
+        "statement_id": null,
+        "line": 17
+      },
+      "needs_review": false,
+      "owner": null,
+      "priority": null
+    },
+    {
+      "id": "BR-041",
+      "heading": "Enforce Balance below 100,000",
+      "text": "When rec.balance < 100000, the system applies the corresponding handling.",
+      "formal": "When rec.balance < 100000, it is obligatory that the system set Interest Rate to 3.0.",
+      "modality": "deontic",
+      "type": "Functional — threshold",
+      "confidence": "low",
+      "verification_method": "Test (exercise the code path)",
+      "source": {
+        "kind": "conditional_branch",
+        "object_id": "PROC-.SP_PROCESS_MONTHLY_INTEREST_CREDIT",
+        "statement_id": "04_MEDIUM_PROCESS_MONTHLY_INTEREST_CREDIT__B115DB87__PROC-.SP_PROCESS_MONTHLY_INTEREST_CREDIT__STMT_0006",
+        "line": 38
+      },
+      "needs_review": true,
+      "owner": null,
+      "priority": null
+    },
+    {
+      "id": "BR-039",
+      "heading": "Enforce Balance below 1,000,000",
+      "text": "When rec.balance < 1000000, the system applies the corresponding handling (ELSIF branch 1).",
+      "formal": "When rec.balance < 1000000, it is obligatory that the system set Interest Rate to 3.5.",
+      "modality": "deontic",
+      "type": "Functional — threshold",
+      "confidence": "low",
+      "verification_method": "Test (exercise the code path)",
+      "source": {
+        "kind": "conditional_branch",
+        "object_id": "PROC-.SP_PROCESS_MONTHLY_INTEREST_CREDIT",
+        "statement_id": "04_MEDIUM_PROCESS_MONTHLY_INTEREST_CREDIT__B115DB87__PROC-.SP_PROCESS_MONTHLY_INTEREST_CREDIT__STMT_0006",
+        "line": 41
+      },
+      "needs_review": true,
+      "owner": null,
+      "priority": null
+    },
+    {
+      "id": "BR-040",
+      "heading": "Enforce Balance below 10,000,000",
+      "text": "When rec.balance < 10000000, the system applies the corresponding handling (ELSIF branch 2).",
+      "formal": "When rec.balance < 10000000, it is obligatory that the system set Interest Rate to 4.0.",
+      "modality": "deontic",
+      "type": "Functional — threshold",
+      "confidence": "low",
+      "verification_method": "Test (exercise the code path)",
+      "source": {
+        "kind": "conditional_branch",
+        "object_id": "PROC-.SP_PROCESS_MONTHLY_INTEREST_CREDIT",
+        "statement_id": "04_MEDIUM_PROCESS_MONTHLY_INTEREST_CREDIT__B115DB87__PROC-.SP_PROCESS_MONTHLY_INTEREST_CREDIT__STMT_0006",
+        "line": 43
+      },
+      "needs_review": true,
+      "owner": null,
+      "priority": null
+    },
+    {
+      "id": "BR-035",
+      "heading": "Apply default Balance handling",
+      "text": "When none of the preceding Balance conditions hold, the system applies its default handling.",
+      "formal": "When no preceding condition matched, it is obligatory that the system set Interest Rate to 4.5.",
+      "modality": "deontic",
+      "type": "Functional — validation",
+      "confidence": "medium",
+      "verification_method": "Test (exercise the code path)",
+      "source": {
+        "kind": "conditional_branch",
+        "object_id": "PROC-.SP_PROCESS_MONTHLY_INTEREST_CREDIT",
+        "statement_id": "04_MEDIUM_PROCESS_MONTHLY_INTEREST_CREDIT__B115DB87__PROC-.SP_PROCESS_MONTHLY_INTEREST_CREDIT__STMT_0006",
+        "line": 45
+      },
+      "needs_review": false,
+      "owner": null,
+      "priority": null
+    },
+    {
+      "id": "BR-032",
+      "heading": "Validate Interest Amount above 0",
+      "text": "When v_interest_amount > 0, the system applies the corresponding handling.",
+      "formal": "When v_interest_amount > 0, it is obligatory that the system set New Balance to Balance + Interest Amount and update accounts.",
+      "modality": "deontic",
+      "type": "Functional — validation",
+      "confidence": "high",
+      "verification_method": "Test (exercise the code path)",
+      "source": {
+        "kind": "conditional_branch",
+        "object_id": "PROC-.SP_PROCESS_MONTHLY_INTEREST_CREDIT",
+        "statement_id": "04_MEDIUM_PROCESS_MONTHLY_INTEREST_CREDIT__B115DB87__PROC-.SP_PROCESS_MONTHLY_INTEREST_CREDIT__STMT_0012",
+        "line": 54
+      },
+      "needs_review": false,
+      "owner": null,
+      "priority": null
+    },
+    {
+      "id": "BR-008",
+      "heading": "Isolate per-record failures from the batch",
+      "text": "A failure while processing one record is recorded and the run continues; a single bad record must not abort the batch.",
+      "formal": "When unhandled error on a single record, it is obligatory that the system record the failure and continue with the remaining records.",
+      "modality": "deontic",
+      "type": "Non-functional — resilience",
+      "confidence": "confirmed",
+      "verification_method": "Test (exercise the code path)",
+      "source": {
+        "kind": "failure_isolation",
+        "object_id": "PROC-.SP_PROCESS_MONTHLY_INTEREST_CREDIT",
+        "statement_id": "04_MEDIUM_PROCESS_MONTHLY_INTEREST_CREDIT__B115DB87__PROC-.SP_PROCESS_MONTHLY_INTEREST_CREDIT__STMT_0017",
+        "line": 76
+      },
+      "needs_review": false,
+      "owner": null,
+      "priority": null
+    },
+    {
+      "id": "BR-011",
+      "heading": "Report run failure as error -20010",
+      "text": "An unrecoverable failure rolls the run back and reports application error -20010 to the caller. Callers depend on this code.",
+      "formal": "When unrecoverable failure -> -20010, it is obligatory that the system roll back the run and report application error -20010 to the caller.",
+      "modality": "deontic",
+      "type": "Non-functional — resilience",
+      "confidence": "confirmed",
+      "verification_method": "Test (exercise the code path)",
+      "source": {
+        "kind": "error_contract",
+        "object_id": "PROC-.SP_PROCESS_MONTHLY_INTEREST_CREDIT",
+        "statement_id": "04_MEDIUM_PROCESS_MONTHLY_INTEREST_CREDIT__B115DB87__PROC-.SP_PROCESS_MONTHLY_INTEREST_CREDIT__STMT_0021",
+        "line": 92
+      },
+      "needs_review": false,
+      "owner": null,
+      "priority": null
+    },
+    {
+      "id": "BR-016",
+      "heading": "Validate Amount",
+      "text": "The operation must not proceed when Amount IS NULL OR Amount <= 0. Violation raises Invalid Amount.",
+      "formal": "It is obligatory that the operation is rejected when p_amount IS NULL OR p_amount <= 0, raising e_invalid_amount.",
+      "modality": "deontic",
+      "type": "Functional — validation",
+      "confidence": "confirmed",
+      "verification_method": "Test (exercise the code path)",
+      "source": {
+        "kind": "named_exception",
+        "object_id": "PROC-.SP_TRANSFER_FUNDS",
+        "statement_id": "05_MEDIUM_FUND_TRANSFER_WITH_VALIDATION__5E3A3BBB__PROC-.SP_TRANSFER_FUNDS__STMT_0003",
+        "line": 36
+      },
+      "needs_review": false,
+      "owner": null,
+      "priority": null
+    },
+    {
+      "id": "BR-031",
+      "heading": "Validate From Account is To Account",
+      "text": "When From Account = To Account, the system applies the corresponding handling.",
+      "formal": "When p_from_account = p_to_account, it is obligatory that the system set Status to 'FAILED' and set Message to 'Source and destination accounts cannot be the same.'.",
+      "modality": "deontic",
+      "type": "Functional — validation",
+      "confidence": "high",
+      "verification_method": "Test (exercise the code path)",
+      "source": {
+        "kind": "conditional_branch",
+        "object_id": "PROC-.SP_TRANSFER_FUNDS",
+        "statement_id": "05_MEDIUM_FUND_TRANSFER_WITH_VALIDATION__5E3A3BBB__PROC-.SP_TRANSFER_FUNDS__STMT_0004",
+        "line": 39
+      },
+      "needs_review": false,
+      "owner": null,
+      "priority": null
+    },
+    {
+      "id": "BR-012",
+      "heading": "Require the Accounts record for From Account to exist",
+      "text": "The referenced row in Accounts must exist. If the lookup returns no data the operation is rejected and Account Not Found is raised.",
+      "formal": "It is obligatory that the operation is rejected unless row must exist in accounts, raising e_account_not_found.",
+      "modality": "deontic",
+      "type": "Functional — validation",
+      "confidence": "confirmed",
+      "verification_method": "Test (exercise the code path)",
+      "source": {
+        "kind": "named_exception",
+        "object_id": "PROC-.SP_TRANSFER_FUNDS",
+        "statement_id": "05_MEDIUM_FUND_TRANSFER_WITH_VALIDATION__5E3A3BBB__PROC-.SP_TRANSFER_FUNDS__STMT_0012",
+        "line": 56
+      },
+      "needs_review": false,
+      "owner": null,
+      "priority": null
+    },
+    {
+      "id": "BR-017",
+      "heading": "Validate From Status is ACTIVE",
+      "text": "The operation must not proceed when v_from_status <> 'ACTIVE'. Violation raises Account Inactive.",
+      "formal": "It is obligatory that the operation is rejected when v_from_status <> 'ACTIVE', raising e_account_inactive.",
+      "modality": "deontic",
+      "type": "Functional — validation",
+      "confidence": "confirmed",
+      "verification_method": "Test (exercise the code path)",
+      "source": {
+        "kind": "named_exception",
+        "object_id": "PROC-.SP_TRANSFER_FUNDS",
+        "statement_id": "05_MEDIUM_FUND_TRANSFER_WITH_VALIDATION__5E3A3BBB__PROC-.SP_TRANSFER_FUNDS__STMT_0014",
+        "line": 60
+      },
+      "needs_review": false,
+      "owner": null,
+      "priority": null
+    },
+    {
+      "id": "BR-013",
+      "heading": "Require the Accounts record for To Account to exist",
+      "text": "The referenced row in Accounts must exist. If the lookup returns no data the operation is rejected and Account Not Found is raised.",
+      "formal": "It is obligatory that the operation is rejected unless row must exist in accounts, raising e_account_not_found.",
+      "modality": "deontic",
+      "type": "Functional — validation",
+      "confidence": "confirmed",
+      "verification_method": "Test (exercise the code path)",
+      "source": {
+        "kind": "named_exception",
+        "object_id": "PROC-.SP_TRANSFER_FUNDS",
+        "statement_id": "05_MEDIUM_FUND_TRANSFER_WITH_VALIDATION__5E3A3BBB__PROC-.SP_TRANSFER_FUNDS__STMT_0018",
+        "line": 71
+      },
+      "needs_review": false,
+      "owner": null,
+      "priority": null
+    },
+    {
+      "id": "BR-018",
+      "heading": "Validate To Status is ACTIVE",
+      "text": "The operation must not proceed when v_to_status <> 'ACTIVE'. Violation raises Account Inactive.",
+      "formal": "It is obligatory that the operation is rejected when v_to_status <> 'ACTIVE', raising e_account_inactive.",
+      "modality": "deontic",
+      "type": "Functional — validation",
+      "confidence": "confirmed",
+      "verification_method": "Test (exercise the code path)",
+      "source": {
+        "kind": "named_exception",
+        "object_id": "PROC-.SP_TRANSFER_FUNDS",
+        "statement_id": "05_MEDIUM_FUND_TRANSFER_WITH_VALIDATION__5E3A3BBB__PROC-.SP_TRANSFER_FUNDS__STMT_0020",
+        "line": 75
+      },
+      "needs_review": false,
+      "owner": null,
+      "priority": null
+    },
+    {
+      "id": "BR-002",
+      "heading": "Enforce From Balance at or above Amount",
+      "text": "The operation must not proceed when v_from_balance < Amount. Violation raises Insufficient Balance.",
+      "formal": "It is obligatory that the operation is rejected when v_from_balance < p_amount, raising e_insufficient_balance.",
+      "modality": "deontic",
+      "type": "Functional — threshold",
+      "confidence": "confirmed",
+      "verification_method": "Test (exercise the code path)",
+      "source": {
+        "kind": "named_exception",
+        "object_id": "PROC-.SP_TRANSFER_FUNDS",
+        "statement_id": "05_MEDIUM_FUND_TRANSFER_WITH_VALIDATION__5E3A3BBB__PROC-.SP_TRANSFER_FUNDS__STMT_0022",
+        "line": 79
+      },
+      "needs_review": false,
+      "owner": null,
+      "priority": null
+    },
+    {
+      "id": "BR-001",
+      "heading": "Enforce Amount",
+      "text": "The operation must not proceed when (v_today_txn_total + Amount) > v_daily_limit. Violation raises Daily Limit Exceeded.",
+      "formal": "It is obligatory that the operation is rejected when (v_today_txn_total + p_amount) > v_daily_limit, raising e_daily_limit_exceeded.",
+      "modality": "deontic",
+      "type": "Functional — threshold",
+      "confidence": "confirmed",
+      "verification_method": "Test (exercise the code path)",
+      "source": {
+        "kind": "named_exception",
+        "object_id": "PROC-.SP_TRANSFER_FUNDS",
+        "statement_id": "05_MEDIUM_FUND_TRANSFER_WITH_VALIDATION__5E3A3BBB__PROC-.SP_TRANSFER_FUNDS__STMT_0025",
+        "line": 91
+      },
+      "needs_review": false,
+      "owner": null,
+      "priority": null
+    },
+    {
+      "id": "BR-021",
+      "heading": "Determine Interest",
+      "text": "Interest is derived as: v_interest := ROUND( (Principal * Annual Rate * Tenure Days) / (100 * v_basis_days), 2 ). It depends on Annual Rate, Principal, Tenure Days, Basis Days.",
+      "formal": "It is obligatory that this value is calculated as: v_interest := ROUND( (p_principal * p_annual_rate * p_tenure_days) / (100 * v_basis_days), 2 ).",
+      "modality": "deontic",
+      "type": "Functional — calculation",
+      "confidence": "high",
+      "verification_method": "Test (exercise the code path)",
+      "source": {
+        "kind": "variable_derivation",
+        "object_id": "FUNC-.FN_CALCULATE_SIMPLE_INTEREST",
+        "statement_id": "01_SIMPLE_CALCULATE_SIMPLE_INTEREST__4CCD8A69__FUNC-.FN_CALCULATE_SIMPLE_INTEREST__STMT_0010",
+        "line": 39
+      },
+      "needs_review": false,
+      "owner": null,
+      "priority": null
+    },
+    {
+      "id": "BR-020",
+      "heading": "Determine Days Inactive",
+      "text": "Days Inactive is derived as: v_days_inactive := As of Date - NVL(v_last_txn_date, As of Date - 9999). It depends on Account Number, Account Status, Last Transaction Date, Account Number.",
+      "formal": "It is obligatory that this value is calculated as: v_days_inactive := p_as_of_date - NVL(v_last_txn_date, p_as_of_date - 9999).",
+      "modality": "deontic",
+      "type": "Functional — calculation",
+      "confidence": "high",
+      "verification_method": "Test (exercise the code path)",
+      "source": {
+        "kind": "variable_derivation",
+        "object_id": "PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS",
+        "statement_id": "02_SIMPLE_UPDATE_DORMANT_ACCOUNT_STATUS__D2070F06__PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS__STMT_0002",
+        "line": 25
+      },
+      "needs_review": false,
+      "owner": null,
+      "priority": null
+    },
+    {
+      "id": "BR-023",
+      "heading": "Determine Penalty Amount",
+      "text": "Penalty Amount is derived as: Penalty Amount := LEAST(500, GREATEST(50, ROUND(Shortfall Amount * 0.05, 2))). It depends on Account Number, Account Type, Balance, Current Premium.",
+      "formal": "It is obligatory that this value is calculated as: p_penalty_amount := LEAST(500, GREATEST(50, ROUND(p_shortfall_amount * 0.05, 2))).",
+      "modality": "deontic",
+      "type": "Functional — calculation",
+      "confidence": "high",
+      "verification_method": "Test (exercise the code path)",
+      "source": {
+        "kind": "variable_derivation",
+        "object_id": "PROC-.SP_CHECK_MINIMUM_BALANCE",
+        "statement_id": "03_SIMPLE_CHECK_MINIMUM_BALANCE__C83B3807__PROC-.SP_CHECK_MINIMUM_BALANCE__STMT_0008",
+        "line": 45
+      },
+      "needs_review": false,
+      "owner": null,
+      "priority": null
+    },
+    {
+      "id": "BR-019",
+      "heading": "Determine Days In Month",
+      "text": "Days In Month is derived as: v_days_in_month := EXTRACT(DAY FROM LAST_DAY(Run Date)). It depends on Day, Extract, Run Date.",
+      "formal": "It is obligatory that this value is calculated as: v_days_in_month := EXTRACT(DAY FROM LAST_DAY(p_run_date)).",
+      "modality": "deontic",
+      "type": "Functional — calculation",
+      "confidence": "high",
+      "verification_method": "Test (exercise the code path)",
+      "source": {
+        "kind": "variable_derivation",
+        "object_id": "PROC-.SP_PROCESS_MONTHLY_INTEREST_CREDIT",
+        "statement_id": "04_MEDIUM_PROCESS_MONTHLY_INTEREST_CREDIT__B115DB87__PROC-.SP_PROCESS_MONTHLY_INTEREST_CREDIT__STMT_0003",
+        "line": 32
+      },
+      "needs_review": false,
+      "owner": null,
+      "priority": null
+    },
+    {
+      "id": "BR-022",
+      "heading": "Determine Interest Amount",
+      "text": "Interest Amount is derived as: v_interest_amount := ROUND( rec.balance * (v_interest_rate / 100) * (v_days_in_month / 365), 2 ). It depends on Balance, Day, Extract, Run Date.",
+      "formal": "It is obligatory that this value is calculated as: v_interest_amount := ROUND( rec.balance * (v_interest_rate / 100) * (v_days_in_month / 365), 2 ).",
+      "modality": "deontic",
+      "type": "Functional — calculation",
+      "confidence": "high",
+      "verification_method": "Test (exercise the code path)",
+      "source": {
+        "kind": "variable_derivation",
+        "object_id": "PROC-.SP_PROCESS_MONTHLY_INTEREST_CREDIT",
+        "statement_id": "04_MEDIUM_PROCESS_MONTHLY_INTEREST_CREDIT__B115DB87__PROC-.SP_PROCESS_MONTHLY_INTEREST_CREDIT__STMT_0011",
+        "line": 49
+      },
+      "needs_review": false,
+      "owner": null,
+      "priority": null
+    },
+    {
+      "id": "BR-024",
+      "heading": "Determine Today Transaction Total",
+      "text": "Today Transaction Total is derived as: SELECT NVL(SUM(txn_amount), 0) INTO v_today_txn_total FROM Transaction Ledger WHERE account_number = From Account AND txn_type = 'TRANSFER_OUT' AND TRUNC(txn_date) = TRUNC(SYSDATE). It depends on Account Number, From Account, Transfer Out, Transaction Amount.",
+      "formal": "It is obligatory that this value is calculated as: SELECT NVL(SUM(txn_amount), 0) INTO v_today_txn_total FROM transaction_ledger WHERE account_number = p_from_account AND txn_type = 'TRANSFER_OUT' AND TRUNC(txn_date) = TRUNC(SYSDATE).",
+      "modality": "deontic",
+      "type": "Functional — calculation",
+      "confidence": "high",
+      "verification_method": "Test (exercise the code path)",
+      "source": {
+        "kind": "variable_derivation",
+        "object_id": "PROC-.SP_TRANSFER_FUNDS",
+        "statement_id": "05_MEDIUM_FUND_TRANSFER_WITH_VALIDATION__5E3A3BBB__PROC-.SP_TRANSFER_FUNDS__STMT_0023",
+        "line": 83
+      },
+      "needs_review": false,
+      "owner": null,
+      "priority": null
+    }
+  ],
+  "glossary": [
+    {
+      "key": "term:ACCOUNTS.ACCOUNT_NUMBER",
+      "term": "Account Number",
+      "identifier": "ACCOUNTS.ACCOUNT_NUMBER",
+      "type": "Text (up to 20 characters)",
+      "used_by": "Check Minimum Balance, Process Monthly Interest Credit, Transfer Funds, Update Dormant Account Status"
+    },
+    {
+      "key": "term:ACCOUNTS.LAST_TRANSACTION_DATE",
+      "term": "Last Transaction Date",
+      "identifier": "ACCOUNTS.LAST_TRANSACTION_DATE",
+      "type": "Date",
+      "used_by": "Process Monthly Interest Credit, Transfer Funds, Update Dormant Account Status"
+    },
+    {
+      "key": "term:ACCOUNTS.BALANCE",
+      "term": "Balance",
+      "identifier": "ACCOUNTS.BALANCE",
+      "type": "Decimal number (18 digits, 2 decimal places)",
+      "used_by": "Check Minimum Balance, Process Monthly Interest Credit, Transfer Funds"
+    },
+    {
+      "key": "term:TRANSACTION_LEDGER.ACCOUNT_NUMBER",
+      "term": "Account Number",
+      "identifier": "TRANSACTION_LEDGER.ACCOUNT_NUMBER",
+      "type": "Text (up to 20 characters)",
+      "used_by": "Process Monthly Interest Credit, Transfer Funds"
+    },
+    {
+      "key": "term:TRANSACTION_LEDGER.NARRATION",
+      "term": "Narration",
+      "identifier": "TRANSACTION_LEDGER.NARRATION",
+      "type": "Text (up to 200 characters)",
+      "used_by": "Process Monthly Interest Credit, Transfer Funds"
+    },
+    {
+      "key": "term:TRANSACTION_LEDGER.RUNNING_BALANCE",
+      "term": "Running Balance",
+      "identifier": "TRANSACTION_LEDGER.RUNNING_BALANCE",
+      "type": "Decimal number (18 digits, 2 decimal places)",
+      "used_by": "Process Monthly Interest Credit, Transfer Funds"
+    },
+    {
+      "key": "term:TRANSACTION_LEDGER.TXN_AMOUNT",
+      "term": "Transaction Amount",
+      "identifier": "TRANSACTION_LEDGER.TXN_AMOUNT",
+      "type": "Decimal number (18 digits, 2 decimal places)",
+      "used_by": "Process Monthly Interest Credit, Transfer Funds"
+    },
+    {
+      "key": "term:TRANSACTION_LEDGER.TXN_DATE",
+      "term": "Transaction Date",
+      "identifier": "TRANSACTION_LEDGER.TXN_DATE",
+      "type": "Date",
+      "used_by": "Process Monthly Interest Credit, Transfer Funds"
+    },
+    {
+      "key": "term:TRANSACTION_LEDGER.TXN_ID",
+      "term": "Transaction Identifier",
+      "identifier": "TRANSACTION_LEDGER.TXN_ID",
+      "type": "Number",
+      "used_by": "Process Monthly Interest Credit, Transfer Funds"
+    },
+    {
+      "key": "term:TRANSACTION_LEDGER.TXN_TYPE",
+      "term": "Transaction Type",
+      "identifier": "TRANSACTION_LEDGER.TXN_TYPE",
+      "type": "Text (up to 20 characters)",
+      "used_by": "Process Monthly Interest Credit, Transfer Funds"
+    },
+    {
+      "key": "term:ACCOUNTS.ACCOUNT_STATUS",
+      "term": "Account Status",
+      "identifier": "ACCOUNTS.ACCOUNT_STATUS",
+      "type": "Text (up to 20 characters)",
+      "used_by": "Transfer Funds, Update Dormant Account Status"
+    },
+    {
+      "key": "term:BATCH_ERROR_LOG.BATCH_NAME",
+      "term": "Batch Name",
+      "identifier": "BATCH_ERROR_LOG.BATCH_NAME",
+      "type": "Text (up to 50 characters)",
+      "used_by": "Process Monthly Interest Credit"
+    },
+    {
+      "key": "term:BATCH_ERROR_LOG.ENTITY_KEY",
+      "term": "Entity Key",
+      "identifier": "BATCH_ERROR_LOG.ENTITY_KEY",
+      "type": "Text (up to 50 characters)",
+      "used_by": "Process Monthly Interest Credit"
+    },
+    {
+      "key": "term:BATCH_ERROR_LOG.ERROR_MESSAGE",
+      "term": "Error Message",
+      "identifier": "BATCH_ERROR_LOG.ERROR_MESSAGE",
+      "type": "Text (up to 1000 characters)",
+      "used_by": "Process Monthly Interest Credit"
+    },
+    {
+      "key": "term:BATCH_ERROR_LOG.LOG_DATE",
+      "term": "Log Date",
+      "identifier": "BATCH_ERROR_LOG.LOG_DATE",
+      "type": "Date",
+      "used_by": "Process Monthly Interest Credit"
+    },
+    {
+      "key": "term:BATCH_ERROR_LOG.LOG_ID",
+      "term": "Log Identifier",
+      "identifier": "BATCH_ERROR_LOG.LOG_ID",
+      "type": "Number",
+      "used_by": "Process Monthly Interest Credit"
+    },
+    {
+      "key": "term:ACCOUNTS.LAST_MODIFIED_BY",
+      "term": "Last Modified by",
+      "identifier": "ACCOUNTS.LAST_MODIFIED_BY",
+      "type": "Text (up to 50 characters)",
+      "used_by": "Update Dormant Account Status"
+    },
+    {
+      "key": "term:ACCOUNTS.STATUS_CHANGE_DATE",
+      "term": "Status Change Date",
+      "identifier": "ACCOUNTS.STATUS_CHANGE_DATE",
+      "type": "Date",
+      "used_by": "Update Dormant Account Status"
+    },
+    {
+      "key": "term:ACCOUNTS.ACCOUNT_TYPE",
+      "term": "Account Type",
+      "identifier": "ACCOUNTS.ACCOUNT_TYPE",
+      "type": "Text (up to 20 characters)",
+      "used_by": "Check Minimum Balance"
+    },
+    {
+      "key": "term:ACCOUNTS.DAILY_TRANSFER_LIMIT",
+      "term": "Daily Transfer Limit",
+      "identifier": "ACCOUNTS.DAILY_TRANSFER_LIMIT",
+      "type": "Decimal number (18 digits, 2 decimal places)",
+      "used_by": "Transfer Funds"
+    },
+    {
+      "key": "term:TRANSACTION_LEDGER.REFERENCE_NUMBER",
+      "term": "Reference Number",
+      "identifier": "TRANSACTION_LEDGER.REFERENCE_NUMBER",
+      "type": "Text (up to 50 characters)",
+      "used_by": "Transfer Funds"
+    }
+  ],
+  "gaps": [
+    {
+      "gap_id": "GAP-001",
+      "gap_type": "UNDOCUMENTED_ENUM",
+      "severity": "medium",
+      "title": "Permitted values not enforced: Accounts — Account Type",
+      "description": "Valid values appear only in a source comment, not as a database rule: SAVINGS_REGULAR, SAVINGS_PREMIUM, SAVINGS_ZERO_BAL, CURRENT_REGULAR, CURRENT_PREMIUM, TERM_DEPOSIT, OVERDRAFT. Data may already violate them.",
+      "detected_in": [
+        "data"
+      ]
+    },
+    {
+      "gap_id": "GAP-002",
+      "gap_type": "UNDOCUMENTED_ENUM",
+      "severity": "medium",
+      "title": "Permitted values not enforced: Transaction Ledger — Transaction Type",
+      "description": "Valid values appear only in a source comment, not as a database rule: TRANSFER_IN, TRANSFER_OUT, INT_CREDIT, DEPOSIT, WITHDRAWAL, FEE, CHARGE, EMI_DEBIT, SALARY_CREDIT. Data may already violate them.",
+      "detected_in": [
+        "data"
+      ]
+    },
+    {
+      "gap_id": "GAP-003",
+      "gap_type": "UNDOCUMENTED_ENUM",
+      "severity": "medium",
+      "title": "Permitted values not enforced: Loan Master — Loan Type",
+      "description": "Valid values appear only in a source comment, not as a database rule: HOME_LOAN, AUTO_LOAN, PERSONAL_LOAN, EDUCATION_LOAN, MORTGAGE. Data may already violate them.",
+      "detected_in": [
+        "data"
+      ]
+    },
+    {
+      "gap_id": "GAP-004",
+      "gap_type": "UNDOCUMENTED_ENUM",
+      "severity": "medium",
+      "title": "Permitted values not enforced: Holiday Calendar — Calendar Type",
+      "description": "Valid values appear only in a source comment, not as a database rule: NATIONAL, REGIONAL. Data may already violate them.",
+      "detected_in": [
+        "data"
+      ]
+    },
+    {
+      "gap_id": "GAP-005",
+      "gap_type": "UNDOCUMENTED_ENUM",
+      "severity": "medium",
+      "title": "Permitted values not enforced: Non-Performing Asset Classification History — Classification",
+      "description": "Valid values appear only in a source comment, not as a database rule: STANDARD, SPECIAL_MENTION, SUBSTANDARD, DOUBTFUL, LOSS. Data may already violate them.",
+      "detected_in": [
+        "data"
+      ]
+    },
+    {
+      "gap_id": "GAP-006",
+      "gap_type": "UNDOCUMENTED_ENUM",
+      "severity": "medium",
+      "title": "Permitted values not enforced: Non-Performing Asset Classification History — Movement Type",
+      "description": "Valid values appear only in a source comment, not as a database rule: NEW, UNCHANGED, UPGRADED, DOWNGRADED. Data may already violate them.",
+      "detected_in": [
+        "data"
+      ]
+    },
+    {
+      "gap_id": "GAP-007",
+      "gap_type": "MEDIUM_CONFIDENCE_RULE",
+      "severity": "low",
+      "title": "Worth confirming: Apply default Day Count Basis handling (BR-038)",
+      "description": "This rule is likely correct but was inferred rather than stated outright.",
+      "detected_in": [
+        "rules"
+      ],
+      "related_rule_ids": [
+        "BR-038"
+      ]
+    },
+    {
+      "gap_id": "GAP-008",
+      "gap_type": "MEDIUM_CONFIDENCE_RULE",
+      "severity": "low",
+      "title": "Worth confirming: Apply default Current Status handling (BR-037)",
+      "description": "This rule is likely correct but was inferred rather than stated outright.",
+      "detected_in": [
+        "rules"
+      ],
+      "related_rule_ids": [
+        "BR-037"
+      ]
+    },
+    {
+      "gap_id": "GAP-009",
+      "gap_type": "MEDIUM_CONFIDENCE_RULE",
+      "severity": "low",
+      "title": "Worth confirming: Apply default Current Balance handling (BR-036)",
+      "description": "This rule is likely correct but was inferred rather than stated outright.",
+      "detected_in": [
+        "rules"
+      ],
+      "related_rule_ids": [
+        "BR-036"
+      ]
+    },
+    {
+      "gap_id": "GAP-010",
+      "gap_type": "SME_REVIEW_REQUIRED",
+      "severity": "high",
+      "title": "Needs business confirmation: Enforce Balance below 100,000 (BR-041)",
+      "description": "When rec.balance < 100000, the system applies the corresponding handling. Implemented in PROC-.SP_PROCESS_MONTHLY_INTEREST_CREDIT, line 38.",
+      "detected_in": [
+        "rules"
+      ],
+      "related_rule_ids": [
+        "BR-041"
+      ]
+    },
+    {
+      "gap_id": "GAP-011",
+      "gap_type": "SME_REVIEW_REQUIRED",
+      "severity": "high",
+      "title": "Needs business confirmation: Enforce Balance below 1,000,000 (BR-039)",
+      "description": "When rec.balance < 1000000, the system applies the corresponding handling (ELSIF branch 1). Implemented in PROC-.SP_PROCESS_MONTHLY_INTEREST_CREDIT, line 41.",
+      "detected_in": [
+        "rules"
+      ],
+      "related_rule_ids": [
+        "BR-039"
+      ]
+    },
+    {
+      "gap_id": "GAP-012",
+      "gap_type": "SME_REVIEW_REQUIRED",
+      "severity": "high",
+      "title": "Needs business confirmation: Enforce Balance below 10,000,000 (BR-040)",
+      "description": "When rec.balance < 10000000, the system applies the corresponding handling (ELSIF branch 2). Implemented in PROC-.SP_PROCESS_MONTHLY_INTEREST_CREDIT, line 43.",
+      "detected_in": [
+        "rules"
+      ],
+      "related_rule_ids": [
+        "BR-040"
+      ]
+    },
+    {
+      "gap_id": "GAP-013",
+      "gap_type": "MEDIUM_CONFIDENCE_RULE",
+      "severity": "low",
+      "title": "Worth confirming: Apply default Balance handling (BR-035)",
+      "description": "This rule is likely correct but was inferred rather than stated outright.",
+      "detected_in": [
+        "rules"
+      ],
+      "related_rule_ids": [
+        "BR-035"
+      ]
+    },
+    {
+      "gap_id": "GAP-014",
+      "gap_type": "TRANSACTION_HAZARD",
+      "severity": "low",
+      "title": "Transaction behaviour to preserve in Calculate Simple Interest: No Transaction Control",
+      "description": "This object issues no COMMIT or ROLLBACK — the transaction boundary is owned by its caller. Confirm the caller's boundary before migrating.",
+      "detected_in": [
+        "logic"
+      ]
+    },
+    {
+      "gap_id": "GAP-015",
+      "gap_type": "TRANSACTION_HAZARD",
+      "severity": "low",
+      "title": "Transaction behaviour to preserve in Check Minimum Balance: No Transaction Control",
+      "description": "This object issues no COMMIT or ROLLBACK — the transaction boundary is owned by its caller. Confirm the caller's boundary before migrating.",
+      "detected_in": [
+        "logic"
+      ]
+    },
+    {
+      "gap_id": "GAP-016",
+      "gap_type": "TRANSACTION_HAZARD",
+      "severity": "high",
+      "title": "Transaction behaviour to preserve in Transfer Funds: Savepoint Partial Rollback",
+      "description": "SAVEPOINT enables partial rollback within a transaction. Spark has no equivalent; the compensating logic must be made explicit in the rewrite.",
+      "detected_in": [
+        "logic"
+      ]
+    },
+    {
+      "gap_id": "GAP-017",
+      "gap_type": "HIGH_COMPLEXITY",
+      "severity": "medium",
+      "title": "Unusually complex process: Transfer Funds",
+      "description": "This process has 16 independent decision paths against a threshold of 10. It is harder to test exhaustively and is a candidate for being split up when rebuilt.",
+      "detected_in": [
+        "logic"
+      ]
+    },
+    {
+      "gap_id": "GAP-018",
+      "gap_type": "DIAGRAM_NOTE",
+      "severity": "low",
+      "title": "Observation from state_ACCOUNTS",
+      "description": "State CLOSED: Permitted by CK_ACCOUNTS_STATUS but no code in this repository transitions into it.",
+      "detected_in": [
+        "diagram"
+      ]
+    },
+    {
+      "gap_id": "GAP-019",
+      "gap_type": "DIAGRAM_NOTE",
+      "severity": "low",
+      "title": "Observation from flow_SP_TRANSFER_FUNDS",
+      "description": "This procedure needs 45 nodes to show its decisions and error paths, above the 40-node readability budget. Nothing was dropped; consider reviewing it in sections.",
+      "detected_in": [
+        "diagram"
+      ]
+    },
+    {
+      "gap_id": "GAP-020",
+      "gap_type": "DIAGRAM_DETAIL_COLLAPSED",
+      "severity": "low",
+      "title": "Diagram detail merged: flow_SP_TRANSFER_FUNDS",
+      "description": "2 statements collapsed (lines 40-41); 2 statements collapsed (lines 45-57); 6 statements collapsed (lines 95-124); 2 statements collapsed (lines 129-129); 2 statements collapsed (lines 132-132); 2 statements collapsed (lines 135-135); 2 statements collapsed (lines 138-138); 2 statements collapsed (lines 141-141); 2 statements collapsed (lines 144-144). Straight-line steps were merged for readability; decisions, loops and error paths are shown in full.",
+      "detected_in": [
+        "diagram"
+      ]
+    },
+    {
+      "gap_id": "GAP-021",
+      "gap_type": "DIAGRAM_OVERSIZE",
+      "severity": "medium",
+      "title": "Process too large to diagram comfortably: Transfer Funds",
+      "description": "45 nodes exceeds the 40-node readability budget. Every decision and error path is still shown — nothing was dropped — but this is a candidate for decomposition.",
+      "detected_in": [
+        "diagram"
+      ]
+    }
+  ],
+  "traceability": [
+    {
+      "rule_id": "BR-014",
+      "object_id": null,
+      "line": null,
+      "records": "Accounts",
+      "figure": null
+    },
+    {
+      "rule_id": "BR-033",
+      "object_id": "FUNC-.FN_CALCULATE_SIMPLE_INTEREST",
+      "line": 19,
+      "records": "—",
+      "figure": "Figure 4.4"
+    },
+    {
+      "rule_id": "BR-027",
+      "object_id": "FUNC-.FN_CALCULATE_SIMPLE_INTEREST",
+      "line": 23,
+      "records": "—",
+      "figure": "Figure 4.4"
+    },
+    {
+      "rule_id": "BR-034",
+      "object_id": "FUNC-.FN_CALCULATE_SIMPLE_INTEREST",
+      "line": 27,
+      "records": "—",
+      "figure": "Figure 4.4"
+    },
+    {
+      "rule_id": "BR-030",
+      "object_id": "FUNC-.FN_CALCULATE_SIMPLE_INTEREST",
+      "line": 32,
+      "records": "—",
+      "figure": "Figure 4.4"
+    },
+    {
+      "rule_id": "BR-038",
+      "object_id": "FUNC-.FN_CALCULATE_SIMPLE_INTEREST",
+      "line": 35,
+      "records": "—",
+      "figure": "Figure 4.4"
+    },
+    {
+      "rule_id": "BR-028",
+      "object_id": "PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS",
+      "line": 27,
+      "records": "Accounts",
+      "figure": "Figure 4.5"
+    },
+    {
+      "rule_id": "BR-029",
+      "object_id": "PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS",
+      "line": 40,
+      "records": "Accounts",
+      "figure": "Figure 4.5"
+    },
+    {
+      "rule_id": "BR-037",
+      "object_id": "PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS",
+      "line": 49,
+      "records": "Accounts",
+      "figure": "Figure 4.5"
+    },
+    {
+      "rule_id": "BR-009",
+      "object_id": "PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS",
+      "line": 55,
+      "records": "Accounts",
+      "figure": "Figure 4.5"
+    },
+    {
+      "rule_id": "BR-006",
+      "object_id": "PROC-.SP_CHECK_MINIMUM_BALANCE",
+      "line": 29,
+      "records": "Accounts",
+      "figure": "Figure 4.1"
+    },
+    {
+      "rule_id": "BR-005",
+      "object_id": "PROC-.SP_CHECK_MINIMUM_BALANCE",
+      "line": 30,
+      "records": "Accounts",
+      "figure": "Figure 4.1"
+    },
+    {
+      "rule_id": "BR-007",
+      "object_id": "PROC-.SP_CHECK_MINIMUM_BALANCE",
+      "line": 31,
+      "records": "Accounts",
+      "figure": "Figure 4.1"
+    },
+    {
+      "rule_id": "BR-004",
+      "object_id": "PROC-.SP_CHECK_MINIMUM_BALANCE",
+      "line": 32,
+      "records": "Accounts",
+      "figure": "Figure 4.1"
+    },
+    {
+      "rule_id": "BR-003",
+      "object_id": "PROC-.SP_CHECK_MINIMUM_BALANCE",
+      "line": 33,
+      "records": "Accounts",
+      "figure": "Figure 4.1"
+    },
+    {
+      "rule_id": "BR-026",
+      "object_id": "PROC-.SP_CHECK_MINIMUM_BALANCE",
+      "line": 34,
+      "records": "Accounts",
+      "figure": "Figure 4.1"
+    },
+    {
+      "rule_id": "BR-025",
+      "object_id": "PROC-.SP_CHECK_MINIMUM_BALANCE",
+      "line": 37,
+      "records": "Accounts",
+      "figure": "Figure 4.1"
+    },
+    {
+      "rule_id": "BR-036",
+      "object_id": "PROC-.SP_CHECK_MINIMUM_BALANCE",
+      "line": 42,
+      "records": "Accounts",
+      "figure": "Figure 4.1"
+    },
+    {
+      "rule_id": "BR-010",
+      "object_id": "PROC-.SP_CHECK_MINIMUM_BALANCE",
+      "line": 50,
+      "records": "Accounts",
+      "figure": "Figure 4.1"
+    },
+    {
+      "rule_id": "BR-015",
+      "object_id": "PROC-.SP_PROCESS_MONTHLY_INTEREST_CREDIT",
+      "line": 17,
+      "records": "Accounts, Batch Error Log, Transaction Ledger",
+      "figure": "Figure 4.2"
+    },
+    {
+      "rule_id": "BR-041",
+      "object_id": "PROC-.SP_PROCESS_MONTHLY_INTEREST_CREDIT",
+      "line": 38,
+      "records": "Accounts, Batch Error Log, Transaction Ledger",
+      "figure": "Figure 4.2"
+    },
+    {
+      "rule_id": "BR-039",
+      "object_id": "PROC-.SP_PROCESS_MONTHLY_INTEREST_CREDIT",
+      "line": 41,
+      "records": "Accounts, Batch Error Log, Transaction Ledger",
+      "figure": "Figure 4.2"
+    },
+    {
+      "rule_id": "BR-040",
+      "object_id": "PROC-.SP_PROCESS_MONTHLY_INTEREST_CREDIT",
+      "line": 43,
+      "records": "Accounts, Batch Error Log, Transaction Ledger",
+      "figure": "Figure 4.2"
+    },
+    {
+      "rule_id": "BR-035",
+      "object_id": "PROC-.SP_PROCESS_MONTHLY_INTEREST_CREDIT",
+      "line": 45,
+      "records": "Accounts, Batch Error Log, Transaction Ledger",
+      "figure": "Figure 4.2"
+    },
+    {
+      "rule_id": "BR-032",
+      "object_id": "PROC-.SP_PROCESS_MONTHLY_INTEREST_CREDIT",
+      "line": 54,
+      "records": "Accounts, Batch Error Log, Transaction Ledger",
+      "figure": "Figure 4.2"
+    },
+    {
+      "rule_id": "BR-008",
+      "object_id": "PROC-.SP_PROCESS_MONTHLY_INTEREST_CREDIT",
+      "line": 76,
+      "records": "Accounts, Batch Error Log, Transaction Ledger",
+      "figure": "Figure 4.2"
+    },
+    {
+      "rule_id": "BR-011",
+      "object_id": "PROC-.SP_PROCESS_MONTHLY_INTEREST_CREDIT",
+      "line": 92,
+      "records": "Accounts, Batch Error Log, Transaction Ledger",
+      "figure": "Figure 4.2"
+    },
+    {
+      "rule_id": "BR-016",
+      "object_id": "PROC-.SP_TRANSFER_FUNDS",
+      "line": 36,
+      "records": "Accounts, Transaction Ledger",
+      "figure": "Figure 4.3"
+    },
+    {
+      "rule_id": "BR-031",
+      "object_id": "PROC-.SP_TRANSFER_FUNDS",
+      "line": 39,
+      "records": "Accounts, Transaction Ledger",
+      "figure": "Figure 4.3"
+    },
+    {
+      "rule_id": "BR-012",
+      "object_id": "PROC-.SP_TRANSFER_FUNDS",
+      "line": 56,
+      "records": "Accounts, Transaction Ledger",
+      "figure": "Figure 4.3"
+    },
+    {
+      "rule_id": "BR-017",
+      "object_id": "PROC-.SP_TRANSFER_FUNDS",
+      "line": 60,
+      "records": "Accounts, Transaction Ledger",
+      "figure": "Figure 4.3"
+    },
+    {
+      "rule_id": "BR-013",
+      "object_id": "PROC-.SP_TRANSFER_FUNDS",
+      "line": 71,
+      "records": "Accounts, Transaction Ledger",
+      "figure": "Figure 4.3"
+    },
+    {
+      "rule_id": "BR-018",
+      "object_id": "PROC-.SP_TRANSFER_FUNDS",
+      "line": 75,
+      "records": "Accounts, Transaction Ledger",
+      "figure": "Figure 4.3"
+    },
+    {
+      "rule_id": "BR-002",
+      "object_id": "PROC-.SP_TRANSFER_FUNDS",
+      "line": 79,
+      "records": "Accounts, Transaction Ledger",
+      "figure": "Figure 4.3"
+    },
+    {
+      "rule_id": "BR-001",
+      "object_id": "PROC-.SP_TRANSFER_FUNDS",
+      "line": 91,
+      "records": "Accounts, Transaction Ledger",
+      "figure": "Figure 4.3"
+    },
+    {
+      "rule_id": "BR-021",
+      "object_id": "FUNC-.FN_CALCULATE_SIMPLE_INTEREST",
+      "line": 39,
+      "records": "—",
+      "figure": "Figure 4.4"
+    },
+    {
+      "rule_id": "BR-020",
+      "object_id": "PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS",
+      "line": 25,
+      "records": "Accounts",
+      "figure": "Figure 4.5"
+    },
+    {
+      "rule_id": "BR-023",
+      "object_id": "PROC-.SP_CHECK_MINIMUM_BALANCE",
+      "line": 45,
+      "records": "Accounts",
+      "figure": "Figure 4.1"
+    },
+    {
+      "rule_id": "BR-019",
+      "object_id": "PROC-.SP_PROCESS_MONTHLY_INTEREST_CREDIT",
+      "line": 32,
+      "records": "Accounts, Batch Error Log, Transaction Ledger",
+      "figure": "Figure 4.2"
+    },
+    {
+      "rule_id": "BR-022",
+      "object_id": "PROC-.SP_PROCESS_MONTHLY_INTEREST_CREDIT",
+      "line": 49,
+      "records": "Accounts, Batch Error Log, Transaction Ledger",
+      "figure": "Figure 4.2"
+    },
+    {
+      "rule_id": "BR-024",
+      "object_id": "PROC-.SP_TRANSFER_FUNDS",
+      "line": 83,
+      "records": "Accounts, Transaction Ledger",
+      "figure": "Figure 4.3"
+    }
+  ]
+}

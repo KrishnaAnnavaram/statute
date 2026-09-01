@@ -1,0 +1,2 @@
+from_label,from_key,to_label,to_key,properties
+BusinessRule,BR-014,Table,ACCOUNTS,

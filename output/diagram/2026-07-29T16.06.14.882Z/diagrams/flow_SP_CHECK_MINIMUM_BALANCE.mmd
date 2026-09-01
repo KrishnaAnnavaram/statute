@@ -1,0 +1,43 @@
+flowchart TD
+    START(["SP_CHECK_MINIMUM_BALANCE"])
+    N1[("Look up ACCOUNTS")]:::dataNode
+    N2["Set Min Balance Req to CASE v_account_type WHEN 'SAVINGS_REGULAR'..."]
+    N3{"current_balance >= min_balance_req?"}
+    N4["Set Shortfall Amount to 0"]
+    N5["Set Penalty Amount to 0"]
+    N6["Set Message to 'BALANCE_OK'"]
+    N7["Set Shortfall Amount to v_min_balance_req - v_current_balance"]
+    N8["Set Penalty Amount to LEAST(500, GREATEST(50, ROUND(p_shortfall_a..."]
+    N9["Set Message to 'BELOW_MINIMUM_BALANCE'"]
+    N10["On error: NO_DATA_FOUND"]:::errorNode
+    N11["Set Message to 'ACCOUNT_NOT_FOUND'"]
+    N12["Set Penalty Amount to NULL"]
+    N13["Set Shortfall Amount to NULL"]
+    N14["On error: OTHERS"]:::errorNode
+    N15["Set Message to 'ERROR: ' || SQLERRM"]
+    N16["Raise error"]:::errorNode
+    N17["Any statement fails"]:::errorNode
+    START --> N1
+    N1 --> N2
+    N2 --> N3
+    N3 --> N10
+    N10 --> N14
+    N4 --> N5
+    N5 --> N6
+    N6 --> N7
+    N7 --> N8
+    N8 --> N9
+    N11 --> N12
+    N12 --> N13
+    N15 --> N16
+    N3 -->|"BR-025 · set Shortfall Amount to 0 and set Penalty Amou..."| N4
+    N3 -->|"BR-036 · set Shortfall Amount to v_min_balance_req - v_..."| N7
+    N10 -.->|"NO_DATA_FOUND"| N11
+    N14 -.->|"OTHERS"| N15
+    N17 -.->|"NO_DATA_FOUND"| N10
+    N17 -.->|"OTHERS"| N14
+    classDef warning fill:#fff4e5,stroke:#d97706,stroke-width:2px
+    classDef external fill:#f5f5f5,stroke:#999,stroke-dasharray: 4 2
+    classDef inferred fill:#f5f5f5,stroke:#999,stroke-dasharray: 4 2
+    classDef errorNode fill:#fdecea,stroke:#c0392b
+    classDef dataNode fill:#eaf3fb,stroke:#2c6fad

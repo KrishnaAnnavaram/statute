@@ -1,0 +1,5 @@
+rule_set_id,name
+RS-001,Calculation rules
+RS-002,Error Handling rules
+RS-003,Limit Check rules
+RS-004,Validation rules

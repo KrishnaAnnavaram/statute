@@ -1,0 +1,35 @@
+{
+  "stage": "3_data",
+  "run_version": "2026-07-29T16.05.52.383Z",
+  "status": "success",
+  "generated_at": "2026-07-29T16:05:57.983978+00:00",
+  "upstream": {
+    "inventory_run_version": "2026-07-29T16.05.30.018Z",
+    "parser_run_version": "2026-07-29T16.05.37.101Z"
+  },
+  "stats_summary": {
+    "ddl_files_parsed": 2,
+    "parse_errors": 0,
+    "tables_found": 15,
+    "temporary_tables": 0,
+    "partitioned_tables": 0,
+    "views_found": 0,
+    "indexes_found": 1,
+    "unique_indexes": 0,
+    "synonyms_found": 0,
+    "sequences_found": 3,
+    "columns_total": 105,
+    "virtual_columns": 0,
+    "identity_columns": 0,
+    "declared_foreign_keys": 7,
+    "inferred_foreign_keys": 1,
+    "cascade_deletes": 0,
+    "check_constraints": 1,
+    "disabled_constraints": 0,
+    "unvalidated_constraints": 0,
+    "candidate_rules_from_ddl": 1,
+    "comment_only_enums": 6,
+    "table_comments": 0,
+    "column_comments": 0
+  }
+}

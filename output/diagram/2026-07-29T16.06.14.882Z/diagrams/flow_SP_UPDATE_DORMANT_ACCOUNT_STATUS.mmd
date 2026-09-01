@@ -1,0 +1,42 @@
+flowchart TD
+    START(["SP_UPDATE_DORMANT_ACCOUNT_STATUS"])
+    N1[("Look up ACCOUNTS")]:::dataNode
+    N2["Set Days Inactive to p_as_of_date - NVL(v_last_txn_date, p_as_of..."]
+    N3{"days_inactive > 365 AND current_status = 'ACTIVE'?"}
+    N4[("Update ACCOUNTS")]:::dataNode
+    N5["Set Result to 'ACCOUNT_MARKED_DORMANT'"]
+    N6[("Update ACCOUNTS")]:::dataNode
+    N7["Set Result to 'ACCOUNT_REACTIVATED'"]
+    N8["Set Result to 'NO_STATUS_CHANGE_REQUIRED'"]
+    N9(["Commit"])
+    N10["On error: NO_DATA_FOUND"]:::errorNode
+    N11["Set Result to 'ACCOUNT_NOT_FOUND'"]
+    N12["On error: OTHERS"]:::errorNode
+    N13(["Rollback"])
+    N14["Set Result to 'ERROR: ' || SQLERRM"]
+    N15["Raise error"]:::errorNode
+    N16["Any statement fails"]:::errorNode
+    START --> N1
+    N1 --> N2
+    N2 --> N3
+    N3 --> N9
+    N9 --> N10
+    N10 --> N12
+    N4 --> N5
+    N5 --> N6
+    N6 --> N7
+    N7 --> N8
+    N13 --> N14
+    N14 --> N15
+    N3 -->|"BR-028 · update accounts and set Result to 'ACCOUNT_MAR..."| N4
+    N3 -->|"BR-029 · update accounts and set Result to 'ACCOUNT_REA..."| N6
+    N3 -->|"BR-037 · set Result to 'NO_STATUS_CHANGE_REQUIRED'"| N8
+    N10 -.->|"NO_DATA_FOUND"| N11
+    N12 -.->|"OTHERS"| N13
+    N16 -.->|"NO_DATA_FOUND"| N10
+    N16 -.->|"OTHERS"| N12
+    classDef warning fill:#fff4e5,stroke:#d97706,stroke-width:2px
+    classDef external fill:#f5f5f5,stroke:#999,stroke-dasharray: 4 2
+    classDef inferred fill:#f5f5f5,stroke:#999,stroke-dasharray: 4 2
+    classDef errorNode fill:#fdecea,stroke:#c0392b
+    classDef dataNode fill:#eaf3fb,stroke:#2c6fad

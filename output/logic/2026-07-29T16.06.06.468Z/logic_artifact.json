@@ -1,0 +1,76 @@
+{
+  "pipeline_stage": "4_logic",
+  "schema_version": "2.0",
+  "generated_at": "2026-07-29T16:06:06.482348+00:00",
+  "upstream": {
+    "parser_run_version": "2026-07-29T16.05.37.101Z",
+    "inventory_run_version": "2026-07-29T16.05.30.018Z"
+  },
+  "design_references": [
+    {
+      "claim": "Cyclomatic complexity = decision points + 1; measures testability, not understandability.",
+      "source": "Thomas J. McCabe, 'A Complexity Measure', IEEE TSE SE-2(4), 1976. Recommended module threshold 10 (NIST allows up to 15 with written justification)."
+    },
+    {
+      "claim": "Cognitive Complexity: +1 per flow break, PLUS a nesting increment per level of nesting; else/elsif increment but receive no nesting penalty (the mental cost was paid at the if).",
+      "source": "G. Ann Campbell, 'Cognitive Complexity — a new way of measuring understandability', SonarSource v1.7 (2023), Appendix B specification. Peer-reviewed companion: Campbell, TechDebt 2018, doi 10.1145/3194164.3194186."
+    },
+    {
+      "claim": "Business logic is best understood by slicing around business VARIABLES (what determines this value?), not by listing branch conditions in isolation.",
+      "source": "Weiser, 'Program Slicing' (ICSE 1981); COBREX (ICSME 2022) applies exactly this to legacy business-rule extraction — it collects each business variable's statements plus their controlling context statements via DFS over the CFG."
+    },
+    {
+      "claim": "A COMMIT inside a cursor loop is a recognised Oracle anti-pattern ('incremental commit' / 'fetch across commit') and a first-order migration hazard.",
+      "source": "Oracle practitioner literature on ORA-01555 'snapshot too old': committing inside the loop frees undo that the still-open cursor needs, making the error MORE likely, not less. Apache Spark has no transactional equivalent at all."
+    },
+    {
+      "claim": "The Maintainability Index is deliberately not used.",
+      "source": "van Deursen, 'Think Twice Before Using the Maintainability Index' — Halstead Volume has no consensual definition, the formula is dominated by file length, and averaging complexity erases the power-law outliers that carry the actual risk."
+    }
+  ],
+  "stats": {
+    "objects_processed": 5,
+    "statements_translated": 151,
+    "variable_slices": 25,
+    "loops_classified": 1,
+    "unbounded_loops_without_exit": 0,
+    "objects_exceeding_cyclomatic_threshold": 1,
+    "objects_exceeding_cognitive_threshold": 0,
+    "objects_with_transaction_hazards": 1,
+    "commit_inside_loop": 0,
+    "savepoint_usage": 1,
+    "objects_with_no_internal_callers": 5
+  },
+  "shape_distribution": {
+    "CALCULATION": 1,
+    "SINGLE_RECORD_TRANSACTION": 2,
+    "QUERY_ONLY": 1,
+    "BATCH_PROCESSOR": 1
+  },
+  "crud_matrix": {
+    "FUNC-.FN_CALCULATE_SIMPLE_INTEREST": {},
+    "PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS": {
+      "ACCOUNTS": "RU"
+    },
+    "PROC-.SP_CHECK_MINIMUM_BALANCE": {
+      "ACCOUNTS": "R"
+    },
+    "PROC-.SP_PROCESS_MONTHLY_INTEREST_CREDIT": {
+      "ACCOUNTS": "U",
+      "BATCH_ERROR_LOG": "C",
+      "TRANSACTION_LEDGER": "C"
+    },
+    "PROC-.SP_TRANSFER_FUNDS": {
+      "ACCOUNTS": "CRU",
+      "TRANSACTION_LEDGER": "CR"
+    }
+  },
+  "object_index": {
+    "FUNC-.FN_CALCULATE_SIMPLE_INTEREST": "program_logic/FUNC-.FN_CALCULATE_SIMPLE_INTEREST_logic.json",
+    "PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS": "program_logic/PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS_logic.json",
+    "PROC-.SP_CHECK_MINIMUM_BALANCE": "program_logic/PROC-.SP_CHECK_MINIMUM_BALANCE_logic.json",
+    "PROC-.SP_PROCESS_MONTHLY_INTEREST_CREDIT": "program_logic/PROC-.SP_PROCESS_MONTHLY_INTEREST_CREDIT_logic.json",
+    "PROC-.SP_TRANSFER_FUNDS": "program_logic/PROC-.SP_TRANSFER_FUNDS_logic.json"
+  },
+  "note_on_no_internal_callers": "Informational only, NOT confirmed dead code — PL/SQL objects are routinely invoked by schedulers, other schemas, or application code entirely outside this repository."
+}

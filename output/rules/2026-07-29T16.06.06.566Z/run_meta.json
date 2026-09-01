@@ -1,0 +1,31 @@
+{
+  "stage": "5_rules",
+  "run_version": "2026-07-29T16.06.06.566Z",
+  "status": "success",
+  "generated_at": "2026-07-29T16:06:06.582941+00:00",
+  "upstream": {
+    "parser_run_version": "2026-07-29T16.05.37.101Z",
+    "data_run_version": "2026-07-29T16.05.52.383Z",
+    "inventory_run_version": "2026-07-29T16.05.30.018Z"
+  },
+  "stats_summary": {
+    "branches_examined": 21,
+    "rules_extracted": 41,
+    "duplicates_merged": 5,
+    "requires_sme_review": 3,
+    "by_category": {
+      "ERROR_HANDLING": 4,
+      "LIMIT_CHECK": 12,
+      "COMPLIANCE": 0,
+      "CALCULATION": 6,
+      "ROUTING": 0,
+      "VALIDATION": 19
+    },
+    "by_confidence": {
+      "confirmed": 18,
+      "high": 16,
+      "medium": 4,
+      "low": 3
+    }
+  }
+}

@@ -1,0 +1,8 @@
+from_label,from_key,to_label,to_key,properties
+Table,ACCOUNTS,Table,CUSTOMERS,"{""constraint"": ""FK_ACCOUNTS_CUSTOMER"", ""enforced"": true}"
+Table,TRANSACTION_LEDGER,Table,ACCOUNTS,"{""constraint"": ""FK_TXN_ACCOUNT"", ""enforced"": true}"
+Table,LOAN_MASTER,Table,CUSTOMERS,"{""constraint"": ""FK_LOAN_CUSTOMER"", ""enforced"": true}"
+Table,LOAN_RATE_RESET_HISTORY,Table,LOAN_MASTER,"{""constraint"": ""FK_RATE_RESET_LOAN"", ""enforced"": true}"
+Table,LOAN_AMORTIZATION_SCHEDULE,Table,LOAN_MASTER,"{""constraint"": ""FK_AMORT_SCHED_LOAN"", ""enforced"": true}"
+Table,INTEREST_ACCRUAL_LEDGER,Table,ACCOUNTS,"{""constraint"": ""FK_ACCRUAL_ACCOUNT"", ""enforced"": true}"
+Table,LOAN_REPAYMENT_TRACKER,Table,LOAN_MASTER,"{""constraint"": ""FK_REPAY_TRACKER_LOAN"", ""enforced"": true}"

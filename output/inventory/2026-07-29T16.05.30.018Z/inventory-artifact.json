@@ -1,0 +1,258 @@
+{
+  "pipeline_stage": "01_inventory",
+  "schema_version": "2.0",
+  "generated_at": "2026-07-29T16:05:30.018037+00:00",
+  "source_dir": "E:\\Virtusa Projects\\plsql_to_brd\\src",
+  "cli_args": {
+    "encoding": "utf-8",
+    "exclude_patterns": [
+      "*.bak",
+      "*.tmp",
+      "*_backup.*",
+      "*_old.*",
+      ".git/*",
+      "node_modules/*",
+      "__pycache__/*"
+    ],
+    "content_hints": true
+  },
+  "summary": {
+    "total_files_found": 7,
+    "total_files_included": 7,
+    "total_files_excluded": 0,
+    "total_files_ok": 7,
+    "total_files_empty": 0,
+    "total_files_unreadable": 0,
+    "total_lines": 940,
+    "total_code_lines": 603,
+    "files_by_role": {
+      "schema_ddl": 1,
+      "seed_data": 1,
+      "function": 1,
+      "procedure": 4
+    },
+    "files_by_complexity": {
+      "medium": 7
+    },
+    "codebase_features": {
+      "has_create_table": 1,
+      "has_drop": 1,
+      "has_create_index": 1,
+      "has_create_sequence": 1,
+      "has_commit": 5,
+      "has_select": 6,
+      "has_insert": 3,
+      "has_plsql_blocks": 5,
+      "has_function": 1,
+      "has_dbms_calls": 4,
+      "has_exception_handling": 5,
+      "has_procedure": 4,
+      "has_update": 3,
+      "has_rollback": 3,
+      "has_cursors": 1
+    },
+    "high_complexity_files": [],
+    "files_with_warnings": [],
+    "unreadable_files": [],
+    "stage2_enrich_hint": {
+      "estimated_blocks": 21,
+      "recommended_batch_size": 25,
+      "estimated_batches": 1
+    }
+  },
+  "file_index": {
+    "00_DDL_CREATE_SCHEMA__CF266E14": "00_ddl_create_schema.sql",
+    "00_DML_LOAD_SAMPLE_SCHEMA__00A4B4AC": "00_dml_load_sample_schema.sql",
+    "01_SIMPLE_CALCULATE_SIMPLE_INTEREST__4CCD8A69": "01_simple_calculate_simple_interest.sql",
+    "02_SIMPLE_UPDATE_DORMANT_ACCOUNT_STATUS__D2070F06": "02_simple_update_dormant_account_status.sql",
+    "03_SIMPLE_CHECK_MINIMUM_BALANCE__C83B3807": "03_simple_check_minimum_balance.sql",
+    "04_MEDIUM_PROCESS_MONTHLY_INTEREST_CREDIT__B115DB87": "04_medium_process_monthly_interest_credit.sql",
+    "05_MEDIUM_FUND_TRANSFER_WITH_VALIDATION__5E3A3BBB": "05_medium_fund_transfer_with_validation.sql"
+  },
+  "file_metadata": {
+    "00_DDL_CREATE_SCHEMA__CF266E14": {
+      "file": "00_ddl_create_schema.sql",
+      "abs_path": "E:\\Virtusa Projects\\plsql_to_brd\\src\\00_ddl_create_schema.sql",
+      "size_bytes": 14392,
+      "sha256": "2298abb8a6e90eb4a3c11eacc9a1a86a3672ca3fd56b4fd4d571fc25717fc5a3",
+      "last_modified": "2026-07-24T18:24:08.533756+00:00",
+      "status": "ok",
+      "line_counts": {
+        "total_lines": 268,
+        "code_lines": 171,
+        "comment_lines": 78,
+        "blank_lines": 19
+      },
+      "file_role": "schema_ddl",
+      "complexity": "medium",
+      "encoding_used": "utf-8",
+      "warnings": [],
+      "content_hints": {
+        "has_create_table": true,
+        "has_drop": true,
+        "has_create_index": true,
+        "has_create_sequence": true,
+        "has_commit": true
+      }
+    },
+    "00_DML_LOAD_SAMPLE_SCHEMA__00A4B4AC": {
+      "file": "00_dml_load_sample_schema.sql",
+      "abs_path": "E:\\Virtusa Projects\\plsql_to_brd\\src\\00_dml_load_sample_schema.sql",
+      "size_bytes": 21613,
+      "sha256": "3141d1027434c24955b957d04e098c94b37617d1bf9db3c1badd0d29e7c5978b",
+      "last_modified": "2026-07-24T18:24:08.533756+00:00",
+      "status": "ok",
+      "line_counts": {
+        "total_lines": 226,
+        "code_lines": 131,
+        "comment_lines": 79,
+        "blank_lines": 16
+      },
+      "file_role": "seed_data",
+      "complexity": "medium",
+      "encoding_used": "utf-8",
+      "warnings": [],
+      "content_hints": {
+        "has_select": true,
+        "has_insert": true,
+        "has_commit": true
+      }
+    },
+    "01_SIMPLE_CALCULATE_SIMPLE_INTEREST__4CCD8A69": {
+      "file": "01_simple_calculate_simple_interest.sql",
+      "abs_path": "E:\\Virtusa Projects\\plsql_to_brd\\src\\01_simple_calculate_simple_interest.sql",
+      "size_bytes": 1898,
+      "sha256": "c6c338dd1262c0a77ff858263ce377e8da3aad8fa84d0dd1c5b5098dc1150fb7",
+      "last_modified": "2026-07-24T18:24:08.533756+00:00",
+      "status": "ok",
+      "line_counts": {
+        "total_lines": 52,
+        "code_lines": 33,
+        "comment_lines": 11,
+        "blank_lines": 8
+      },
+      "file_role": "function",
+      "complexity": "medium",
+      "encoding_used": "utf-8",
+      "warnings": [],
+      "content_hints": {
+        "has_plsql_blocks": true,
+        "has_function": true,
+        "has_select": true,
+        "has_dbms_calls": true,
+        "has_exception_handling": true
+      }
+    },
+    "02_SIMPLE_UPDATE_DORMANT_ACCOUNT_STATUS__D2070F06": {
+      "file": "02_simple_update_dormant_account_status.sql",
+      "abs_path": "E:\\Virtusa Projects\\plsql_to_brd\\src\\02_simple_update_dormant_account_status.sql",
+      "size_bytes": 2344,
+      "sha256": "d95ee21991363b8ce910544e671d125ae9b31852dd7811e8cf6f909473c3da42",
+      "last_modified": "2026-07-24T18:24:08.533756+00:00",
+      "status": "ok",
+      "line_counts": {
+        "total_lines": 71,
+        "code_lines": 42,
+        "comment_lines": 17,
+        "blank_lines": 12
+      },
+      "file_role": "procedure",
+      "complexity": "medium",
+      "encoding_used": "utf-8",
+      "warnings": [],
+      "content_hints": {
+        "has_plsql_blocks": true,
+        "has_procedure": true,
+        "has_select": true,
+        "has_update": true,
+        "has_commit": true,
+        "has_rollback": true,
+        "has_dbms_calls": true,
+        "has_exception_handling": true
+      }
+    },
+    "03_SIMPLE_CHECK_MINIMUM_BALANCE__C83B3807": {
+      "file": "03_simple_check_minimum_balance.sql",
+      "abs_path": "E:\\Virtusa Projects\\plsql_to_brd\\src\\03_simple_check_minimum_balance.sql",
+      "size_bytes": 2442,
+      "sha256": "bc6d1a76dbfdd5441ec1369a0c0f227017aa6b0713eabbfc5ad5b803984ed957",
+      "last_modified": "2026-07-24T18:24:08.533756+00:00",
+      "status": "ok",
+      "line_counts": {
+        "total_lines": 69,
+        "code_lines": 43,
+        "comment_lines": 20,
+        "blank_lines": 6
+      },
+      "file_role": "procedure",
+      "complexity": "medium",
+      "encoding_used": "utf-8",
+      "warnings": [],
+      "content_hints": {
+        "has_plsql_blocks": true,
+        "has_procedure": true,
+        "has_select": true,
+        "has_dbms_calls": true,
+        "has_exception_handling": true
+      }
+    },
+    "04_MEDIUM_PROCESS_MONTHLY_INTEREST_CREDIT__B115DB87": {
+      "file": "04_medium_process_monthly_interest_credit.sql",
+      "abs_path": "E:\\Virtusa Projects\\plsql_to_brd\\src\\04_medium_process_monthly_interest_credit.sql",
+      "size_bytes": 3904,
+      "sha256": "2c77dc2cbf6d74e33d8d20715282e37663f0f7a86dbe8646297891e260680faf",
+      "last_modified": "2026-07-24T18:24:08.533756+00:00",
+      "status": "ok",
+      "line_counts": {
+        "total_lines": 107,
+        "code_lines": 69,
+        "comment_lines": 21,
+        "blank_lines": 17
+      },
+      "file_role": "procedure",
+      "complexity": "medium",
+      "encoding_used": "utf-8",
+      "warnings": [],
+      "content_hints": {
+        "has_plsql_blocks": true,
+        "has_procedure": true,
+        "has_select": true,
+        "has_insert": true,
+        "has_update": true,
+        "has_commit": true,
+        "has_rollback": true,
+        "has_dbms_calls": true,
+        "has_cursors": true,
+        "has_exception_handling": true
+      }
+    },
+    "05_MEDIUM_FUND_TRANSFER_WITH_VALIDATION__5E3A3BBB": {
+      "file": "05_medium_fund_transfer_with_validation.sql",
+      "abs_path": "E:\\Virtusa Projects\\plsql_to_brd\\src\\05_medium_fund_transfer_with_validation.sql",
+      "size_bytes": 5092,
+      "sha256": "ae5020c50585171ef496be3daa1be95266c9ed7c9d10a395abff94940fc24e4d",
+      "last_modified": "2026-07-24T18:24:08.533756+00:00",
+      "status": "ok",
+      "line_counts": {
+        "total_lines": 147,
+        "code_lines": 114,
+        "comment_lines": 14,
+        "blank_lines": 19
+      },
+      "file_role": "procedure",
+      "complexity": "medium",
+      "encoding_used": "utf-8",
+      "warnings": [],
+      "content_hints": {
+        "has_plsql_blocks": true,
+        "has_procedure": true,
+        "has_select": true,
+        "has_insert": true,
+        "has_update": true,
+        "has_commit": true,
+        "has_rollback": true,
+        "has_exception_handling": true
+      }
+    }
+  }
+}

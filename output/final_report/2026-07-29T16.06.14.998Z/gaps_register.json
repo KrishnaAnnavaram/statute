@@ -1,0 +1,235 @@
+{
+  "gaps": [
+    {
+      "gap_id": "GAP-001",
+      "gap_type": "UNDOCUMENTED_ENUM",
+      "severity": "medium",
+      "title": "Permitted values not enforced: Accounts — Account Type",
+      "description": "Valid values appear only in a source comment, not as a database rule: SAVINGS_REGULAR, SAVINGS_PREMIUM, SAVINGS_ZERO_BAL, CURRENT_REGULAR, CURRENT_PREMIUM, TERM_DEPOSIT, OVERDRAFT. Data may already violate them.",
+      "detected_in": [
+        "data"
+      ]
+    },
+    {
+      "gap_id": "GAP-002",
+      "gap_type": "UNDOCUMENTED_ENUM",
+      "severity": "medium",
+      "title": "Permitted values not enforced: Transaction Ledger — Transaction Type",
+      "description": "Valid values appear only in a source comment, not as a database rule: TRANSFER_IN, TRANSFER_OUT, INT_CREDIT, DEPOSIT, WITHDRAWAL, FEE, CHARGE, EMI_DEBIT, SALARY_CREDIT. Data may already violate them.",
+      "detected_in": [
+        "data"
+      ]
+    },
+    {
+      "gap_id": "GAP-003",
+      "gap_type": "UNDOCUMENTED_ENUM",
+      "severity": "medium",
+      "title": "Permitted values not enforced: Loan Master — Loan Type",
+      "description": "Valid values appear only in a source comment, not as a database rule: HOME_LOAN, AUTO_LOAN, PERSONAL_LOAN, EDUCATION_LOAN, MORTGAGE. Data may already violate them.",
+      "detected_in": [
+        "data"
+      ]
+    },
+    {
+      "gap_id": "GAP-004",
+      "gap_type": "UNDOCUMENTED_ENUM",
+      "severity": "medium",
+      "title": "Permitted values not enforced: Holiday Calendar — Calendar Type",
+      "description": "Valid values appear only in a source comment, not as a database rule: NATIONAL, REGIONAL. Data may already violate them.",
+      "detected_in": [
+        "data"
+      ]
+    },
+    {
+      "gap_id": "GAP-005",
+      "gap_type": "UNDOCUMENTED_ENUM",
+      "severity": "medium",
+      "title": "Permitted values not enforced: Non-Performing Asset Classification History — Classification",
+      "description": "Valid values appear only in a source comment, not as a database rule: STANDARD, SPECIAL_MENTION, SUBSTANDARD, DOUBTFUL, LOSS. Data may already violate them.",
+      "detected_in": [
+        "data"
+      ]
+    },
+    {
+      "gap_id": "GAP-006",
+      "gap_type": "UNDOCUMENTED_ENUM",
+      "severity": "medium",
+      "title": "Permitted values not enforced: Non-Performing Asset Classification History — Movement Type",
+      "description": "Valid values appear only in a source comment, not as a database rule: NEW, UNCHANGED, UPGRADED, DOWNGRADED. Data may already violate them.",
+      "detected_in": [
+        "data"
+      ]
+    },
+    {
+      "gap_id": "GAP-007",
+      "gap_type": "MEDIUM_CONFIDENCE_RULE",
+      "severity": "low",
+      "title": "Worth confirming: Apply default Day Count Basis handling (BR-038)",
+      "description": "This rule is likely correct but was inferred rather than stated outright.",
+      "detected_in": [
+        "rules"
+      ],
+      "related_rule_ids": [
+        "BR-038"
+      ]
+    },
+    {
+      "gap_id": "GAP-008",
+      "gap_type": "MEDIUM_CONFIDENCE_RULE",
+      "severity": "low",
+      "title": "Worth confirming: Apply default Current Status handling (BR-037)",
+      "description": "This rule is likely correct but was inferred rather than stated outright.",
+      "detected_in": [
+        "rules"
+      ],
+      "related_rule_ids": [
+        "BR-037"
+      ]
+    },
+    {
+      "gap_id": "GAP-009",
+      "gap_type": "MEDIUM_CONFIDENCE_RULE",
+      "severity": "low",
+      "title": "Worth confirming: Apply default Current Balance handling (BR-036)",
+      "description": "This rule is likely correct but was inferred rather than stated outright.",
+      "detected_in": [
+        "rules"
+      ],
+      "related_rule_ids": [
+        "BR-036"
+      ]
+    },
+    {
+      "gap_id": "GAP-010",
+      "gap_type": "SME_REVIEW_REQUIRED",
+      "severity": "high",
+      "title": "Needs business confirmation: Enforce Balance below 100,000 (BR-041)",
+      "description": "When rec.balance < 100000, the system applies the corresponding handling. Implemented in PROC-.SP_PROCESS_MONTHLY_INTEREST_CREDIT, line 38.",
+      "detected_in": [
+        "rules"
+      ],
+      "related_rule_ids": [
+        "BR-041"
+      ]
+    },
+    {
+      "gap_id": "GAP-011",
+      "gap_type": "SME_REVIEW_REQUIRED",
+      "severity": "high",
+      "title": "Needs business confirmation: Enforce Balance below 1,000,000 (BR-039)",
+      "description": "When rec.balance < 1000000, the system applies the corresponding handling (ELSIF branch 1). Implemented in PROC-.SP_PROCESS_MONTHLY_INTEREST_CREDIT, line 41.",
+      "detected_in": [
+        "rules"
+      ],
+      "related_rule_ids": [
+        "BR-039"
+      ]
+    },
+    {
+      "gap_id": "GAP-012",
+      "gap_type": "SME_REVIEW_REQUIRED",
+      "severity": "high",
+      "title": "Needs business confirmation: Enforce Balance below 10,000,000 (BR-040)",
+      "description": "When rec.balance < 10000000, the system applies the corresponding handling (ELSIF branch 2). Implemented in PROC-.SP_PROCESS_MONTHLY_INTEREST_CREDIT, line 43.",
+      "detected_in": [
+        "rules"
+      ],
+      "related_rule_ids": [
+        "BR-040"
+      ]
+    },
+    {
+      "gap_id": "GAP-013",
+      "gap_type": "MEDIUM_CONFIDENCE_RULE",
+      "severity": "low",
+      "title": "Worth confirming: Apply default Balance handling (BR-035)",
+      "description": "This rule is likely correct but was inferred rather than stated outright.",
+      "detected_in": [
+        "rules"
+      ],
+      "related_rule_ids": [
+        "BR-035"
+      ]
+    },
+    {
+      "gap_id": "GAP-014",
+      "gap_type": "TRANSACTION_HAZARD",
+      "severity": "low",
+      "title": "Transaction behaviour to preserve in Calculate Simple Interest: No Transaction Control",
+      "description": "This object issues no COMMIT or ROLLBACK — the transaction boundary is owned by its caller. Confirm the caller's boundary before migrating.",
+      "detected_in": [
+        "logic"
+      ]
+    },
+    {
+      "gap_id": "GAP-015",
+      "gap_type": "TRANSACTION_HAZARD",
+      "severity": "low",
+      "title": "Transaction behaviour to preserve in Check Minimum Balance: No Transaction Control",
+      "description": "This object issues no COMMIT or ROLLBACK — the transaction boundary is owned by its caller. Confirm the caller's boundary before migrating.",
+      "detected_in": [
+        "logic"
+      ]
+    },
+    {
+      "gap_id": "GAP-016",
+      "gap_type": "TRANSACTION_HAZARD",
+      "severity": "high",
+      "title": "Transaction behaviour to preserve in Transfer Funds: Savepoint Partial Rollback",
+      "description": "SAVEPOINT enables partial rollback within a transaction. Spark has no equivalent; the compensating logic must be made explicit in the rewrite.",
+      "detected_in": [
+        "logic"
+      ]
+    },
+    {
+      "gap_id": "GAP-017",
+      "gap_type": "HIGH_COMPLEXITY",
+      "severity": "medium",
+      "title": "Unusually complex process: Transfer Funds",
+      "description": "This process has 16 independent decision paths against a threshold of 10. It is harder to test exhaustively and is a candidate for being split up when rebuilt.",
+      "detected_in": [
+        "logic"
+      ]
+    },
+    {
+      "gap_id": "GAP-018",
+      "gap_type": "DIAGRAM_NOTE",
+      "severity": "low",
+      "title": "Observation from state_ACCOUNTS",
+      "description": "State CLOSED: Permitted by CK_ACCOUNTS_STATUS but no code in this repository transitions into it.",
+      "detected_in": [
+        "diagram"
+      ]
+    },
+    {
+      "gap_id": "GAP-019",
+      "gap_type": "DIAGRAM_NOTE",
+      "severity": "low",
+      "title": "Observation from flow_SP_TRANSFER_FUNDS",
+      "description": "This procedure needs 45 nodes to show its decisions and error paths, above the 40-node readability budget. Nothing was dropped; consider reviewing it in sections.",
+      "detected_in": [
+        "diagram"
+      ]
+    },
+    {
+      "gap_id": "GAP-020",
+      "gap_type": "DIAGRAM_DETAIL_COLLAPSED",
+      "severity": "low",
+      "title": "Diagram detail merged: flow_SP_TRANSFER_FUNDS",
+      "description": "2 statements collapsed (lines 40-41); 2 statements collapsed (lines 45-57); 6 statements collapsed (lines 95-124); 2 statements collapsed (lines 129-129); 2 statements collapsed (lines 132-132); 2 statements collapsed (lines 135-135); 2 statements collapsed (lines 138-138); 2 statements collapsed (lines 141-141); 2 statements collapsed (lines 144-144). Straight-line steps were merged for readability; decisions, loops and error paths are shown in full.",
+      "detected_in": [
+        "diagram"
+      ]
+    },
+    {
+      "gap_id": "GAP-021",
+      "gap_type": "DIAGRAM_OVERSIZE",
+      "severity": "medium",
+      "title": "Process too large to diagram comfortably: Transfer Funds",
+      "description": "45 nodes exceeds the 40-node readability budget. Every decision and error path is still shown — nothing was dropped — but this is a candidate for decomposition.",
+      "detected_in": [
+        "diagram"
+      ]
+    }
+  ]
+}

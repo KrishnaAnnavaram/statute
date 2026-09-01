@@ -1,0 +1,367 @@
+{
+  "object_id": "PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS",
+  "type": "PROCEDURE",
+  "file_id": "02_SIMPLE_UPDATE_DORMANT_ACCOUNT_STATUS__D2070F06",
+  "owner": "",
+  "name": "SP_UPDATE_DORMANT_ACCOUNT_STATUS",
+  "parent_object_id": null,
+  "start_line": 9,
+  "end_line": 61,
+  "parse_status": "success",
+  "parameters": [
+    {
+      "name": "p_account_number",
+      "mode": "IN",
+      "type": "VARCHAR2"
+    },
+    {
+      "name": "p_as_of_date",
+      "mode": "IN",
+      "type": "DATE"
+    },
+    {
+      "name": "p_result",
+      "mode": "OUT",
+      "type": "VARCHAR2"
+    }
+  ],
+  "parse_issues": [],
+  "declarations": [
+    {
+      "name": "v_last_txn_date",
+      "type": "DATE",
+      "line": 15
+    },
+    {
+      "name": "v_current_status",
+      "type": "VARCHAR2(20)",
+      "line": 16
+    },
+    {
+      "name": "v_days_inactive",
+      "type": "NUMBER",
+      "line": 17
+    }
+  ],
+  "cursors": [],
+  "statements": {
+    "02_SIMPLE_UPDATE_DORMANT_ACCOUNT_STATUS__D2070F06__PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS__STMT_0001": {
+      "statement_id": "02_SIMPLE_UPDATE_DORMANT_ACCOUNT_STATUS__D2070F06__PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS__STMT_0001",
+      "parent_id": null,
+      "statement_type": "SELECT_INTO",
+      "start_line": 20,
+      "end_line": 23,
+      "scope_path": [],
+      "nesting_depth": 1,
+      "tables": [
+        "accounts"
+      ],
+      "reads": [
+        "account_number",
+        "account_status",
+        "last_transaction_date",
+        "p_account_number"
+      ]
+    },
+    "02_SIMPLE_UPDATE_DORMANT_ACCOUNT_STATUS__D2070F06__PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS__STMT_0002": {
+      "statement_id": "02_SIMPLE_UPDATE_DORMANT_ACCOUNT_STATUS__D2070F06__PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS__STMT_0002",
+      "parent_id": null,
+      "statement_type": "ASSIGNMENT",
+      "start_line": 25,
+      "end_line": 25,
+      "scope_path": [],
+      "nesting_depth": 1
+    },
+    "02_SIMPLE_UPDATE_DORMANT_ACCOUNT_STATUS__D2070F06__PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS__STMT_0003": {
+      "statement_id": "02_SIMPLE_UPDATE_DORMANT_ACCOUNT_STATUS__D2070F06__PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS__STMT_0003",
+      "parent_id": null,
+      "statement_type": "IF",
+      "start_line": 27,
+      "end_line": 50,
+      "scope_path": [],
+      "nesting_depth": 1
+    },
+    "02_SIMPLE_UPDATE_DORMANT_ACCOUNT_STATUS__D2070F06__PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS__STMT_0004": {
+      "statement_id": "02_SIMPLE_UPDATE_DORMANT_ACCOUNT_STATUS__D2070F06__PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS__STMT_0004",
+      "parent_id": "02_SIMPLE_UPDATE_DORMANT_ACCOUNT_STATUS__D2070F06__PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS__STMT_0003",
+      "statement_type": "UPDATE",
+      "start_line": 29,
+      "end_line": 33,
+      "scope_path": [
+        "IF#3.THEN"
+      ],
+      "nesting_depth": 2,
+      "tables": [
+        "accounts"
+      ],
+      "writes": [
+        "account_status",
+        "last_modified_by",
+        "status_change_date"
+      ],
+      "predicate_reads": [
+        "account_number",
+        "p_account_number"
+      ]
+    },
+    "02_SIMPLE_UPDATE_DORMANT_ACCOUNT_STATUS__D2070F06__PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS__STMT_0005": {
+      "statement_id": "02_SIMPLE_UPDATE_DORMANT_ACCOUNT_STATUS__D2070F06__PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS__STMT_0005",
+      "parent_id": "02_SIMPLE_UPDATE_DORMANT_ACCOUNT_STATUS__D2070F06__PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS__STMT_0003",
+      "statement_type": "ASSIGNMENT",
+      "start_line": 35,
+      "end_line": 35,
+      "scope_path": [
+        "IF#3.THEN"
+      ],
+      "nesting_depth": 2
+    },
+    "02_SIMPLE_UPDATE_DORMANT_ACCOUNT_STATUS__D2070F06__PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS__STMT_0006": {
+      "statement_id": "02_SIMPLE_UPDATE_DORMANT_ACCOUNT_STATUS__D2070F06__PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS__STMT_0006",
+      "parent_id": "02_SIMPLE_UPDATE_DORMANT_ACCOUNT_STATUS__D2070F06__PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS__STMT_0003",
+      "statement_type": "UPDATE",
+      "start_line": 40,
+      "end_line": 44,
+      "scope_path": [
+        "IF#3.ELSIF1"
+      ],
+      "nesting_depth": 2,
+      "tables": [
+        "accounts"
+      ],
+      "writes": [
+        "account_status",
+        "last_modified_by",
+        "status_change_date"
+      ],
+      "predicate_reads": [
+        "account_number",
+        "p_account_number"
+      ]
+    },
+    "02_SIMPLE_UPDATE_DORMANT_ACCOUNT_STATUS__D2070F06__PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS__STMT_0007": {
+      "statement_id": "02_SIMPLE_UPDATE_DORMANT_ACCOUNT_STATUS__D2070F06__PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS__STMT_0007",
+      "parent_id": "02_SIMPLE_UPDATE_DORMANT_ACCOUNT_STATUS__D2070F06__PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS__STMT_0003",
+      "statement_type": "ASSIGNMENT",
+      "start_line": 46,
+      "end_line": 46,
+      "scope_path": [
+        "IF#3.ELSIF1"
+      ],
+      "nesting_depth": 2
+    },
+    "02_SIMPLE_UPDATE_DORMANT_ACCOUNT_STATUS__D2070F06__PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS__STMT_0008": {
+      "statement_id": "02_SIMPLE_UPDATE_DORMANT_ACCOUNT_STATUS__D2070F06__PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS__STMT_0008",
+      "parent_id": "02_SIMPLE_UPDATE_DORMANT_ACCOUNT_STATUS__D2070F06__PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS__STMT_0003",
+      "statement_type": "ASSIGNMENT",
+      "start_line": 49,
+      "end_line": 49,
+      "scope_path": [
+        "IF#3.ELSE"
+      ],
+      "nesting_depth": 2
+    },
+    "02_SIMPLE_UPDATE_DORMANT_ACCOUNT_STATUS__D2070F06__PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS__STMT_0009": {
+      "statement_id": "02_SIMPLE_UPDATE_DORMANT_ACCOUNT_STATUS__D2070F06__PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS__STMT_0009",
+      "parent_id": null,
+      "statement_type": "COMMIT",
+      "start_line": 52,
+      "end_line": 52,
+      "scope_path": [],
+      "nesting_depth": 1
+    },
+    "02_SIMPLE_UPDATE_DORMANT_ACCOUNT_STATUS__D2070F06__PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS__STMT_0010": {
+      "statement_id": "02_SIMPLE_UPDATE_DORMANT_ACCOUNT_STATUS__D2070F06__PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS__STMT_0010",
+      "parent_id": null,
+      "statement_type": "EXCEPTION_HANDLER",
+      "handler_for": [
+        "NO_DATA_FOUND"
+      ],
+      "start_line": 55,
+      "end_line": 56,
+      "scope_path": [
+        "EXCEPTION"
+      ],
+      "nesting_depth": 1
+    },
+    "02_SIMPLE_UPDATE_DORMANT_ACCOUNT_STATUS__D2070F06__PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS__STMT_0011": {
+      "statement_id": "02_SIMPLE_UPDATE_DORMANT_ACCOUNT_STATUS__D2070F06__PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS__STMT_0011",
+      "parent_id": "02_SIMPLE_UPDATE_DORMANT_ACCOUNT_STATUS__D2070F06__PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS__STMT_0010",
+      "statement_type": "ASSIGNMENT",
+      "start_line": 56,
+      "end_line": 56,
+      "scope_path": [
+        "EXCEPTION",
+        "WHEN(NO_DATA_FOUND)"
+      ],
+      "nesting_depth": 2
+    },
+    "02_SIMPLE_UPDATE_DORMANT_ACCOUNT_STATUS__D2070F06__PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS__STMT_0012": {
+      "statement_id": "02_SIMPLE_UPDATE_DORMANT_ACCOUNT_STATUS__D2070F06__PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS__STMT_0012",
+      "parent_id": null,
+      "statement_type": "EXCEPTION_HANDLER",
+      "handler_for": [
+        "OTHERS"
+      ],
+      "start_line": 57,
+      "end_line": 60,
+      "scope_path": [
+        "EXCEPTION"
+      ],
+      "nesting_depth": 1
+    },
+    "02_SIMPLE_UPDATE_DORMANT_ACCOUNT_STATUS__D2070F06__PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS__STMT_0013": {
+      "statement_id": "02_SIMPLE_UPDATE_DORMANT_ACCOUNT_STATUS__D2070F06__PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS__STMT_0013",
+      "parent_id": "02_SIMPLE_UPDATE_DORMANT_ACCOUNT_STATUS__D2070F06__PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS__STMT_0012",
+      "statement_type": "ROLLBACK",
+      "start_line": 58,
+      "end_line": 58,
+      "scope_path": [
+        "EXCEPTION",
+        "WHEN(OTHERS)"
+      ],
+      "nesting_depth": 2
+    },
+    "02_SIMPLE_UPDATE_DORMANT_ACCOUNT_STATUS__D2070F06__PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS__STMT_0014": {
+      "statement_id": "02_SIMPLE_UPDATE_DORMANT_ACCOUNT_STATUS__D2070F06__PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS__STMT_0014",
+      "parent_id": "02_SIMPLE_UPDATE_DORMANT_ACCOUNT_STATUS__D2070F06__PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS__STMT_0012",
+      "statement_type": "ASSIGNMENT",
+      "start_line": 59,
+      "end_line": 59,
+      "scope_path": [
+        "EXCEPTION",
+        "WHEN(OTHERS)"
+      ],
+      "nesting_depth": 2
+    },
+    "02_SIMPLE_UPDATE_DORMANT_ACCOUNT_STATUS__D2070F06__PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS__STMT_0015": {
+      "statement_id": "02_SIMPLE_UPDATE_DORMANT_ACCOUNT_STATUS__D2070F06__PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS__STMT_0015",
+      "parent_id": "02_SIMPLE_UPDATE_DORMANT_ACCOUNT_STATUS__D2070F06__PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS__STMT_0012",
+      "statement_type": "RAISE",
+      "start_line": 60,
+      "end_line": 60,
+      "scope_path": [
+        "EXCEPTION",
+        "WHEN(OTHERS)"
+      ],
+      "nesting_depth": 2
+    }
+  },
+  "control_flow_graph": {
+    "nodes": [
+      "02_SIMPLE_UPDATE_DORMANT_ACCOUNT_STATUS__D2070F06__PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS__STMT_0001",
+      "02_SIMPLE_UPDATE_DORMANT_ACCOUNT_STATUS__D2070F06__PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS__STMT_0002",
+      "02_SIMPLE_UPDATE_DORMANT_ACCOUNT_STATUS__D2070F06__PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS__STMT_0003",
+      "02_SIMPLE_UPDATE_DORMANT_ACCOUNT_STATUS__D2070F06__PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS__STMT_0004",
+      "02_SIMPLE_UPDATE_DORMANT_ACCOUNT_STATUS__D2070F06__PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS__STMT_0005",
+      "02_SIMPLE_UPDATE_DORMANT_ACCOUNT_STATUS__D2070F06__PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS__STMT_0006",
+      "02_SIMPLE_UPDATE_DORMANT_ACCOUNT_STATUS__D2070F06__PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS__STMT_0007",
+      "02_SIMPLE_UPDATE_DORMANT_ACCOUNT_STATUS__D2070F06__PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS__STMT_0008",
+      "02_SIMPLE_UPDATE_DORMANT_ACCOUNT_STATUS__D2070F06__PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS__STMT_0009",
+      "02_SIMPLE_UPDATE_DORMANT_ACCOUNT_STATUS__D2070F06__PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS__STMT_0010",
+      "02_SIMPLE_UPDATE_DORMANT_ACCOUNT_STATUS__D2070F06__PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS__STMT_0011",
+      "02_SIMPLE_UPDATE_DORMANT_ACCOUNT_STATUS__D2070F06__PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS__STMT_0012",
+      "02_SIMPLE_UPDATE_DORMANT_ACCOUNT_STATUS__D2070F06__PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS__STMT_0013",
+      "02_SIMPLE_UPDATE_DORMANT_ACCOUNT_STATUS__D2070F06__PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS__STMT_0014",
+      "02_SIMPLE_UPDATE_DORMANT_ACCOUNT_STATUS__D2070F06__PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS__STMT_0015"
+    ],
+    "edges": [
+      {
+        "from": "02_SIMPLE_UPDATE_DORMANT_ACCOUNT_STATUS__D2070F06__PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS__STMT_0001",
+        "to": "02_SIMPLE_UPDATE_DORMANT_ACCOUNT_STATUS__D2070F06__PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS__STMT_0002",
+        "type": "SEQUENCE"
+      },
+      {
+        "from": "02_SIMPLE_UPDATE_DORMANT_ACCOUNT_STATUS__D2070F06__PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS__STMT_0002",
+        "to": "02_SIMPLE_UPDATE_DORMANT_ACCOUNT_STATUS__D2070F06__PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS__STMT_0003",
+        "type": "SEQUENCE"
+      },
+      {
+        "from": "02_SIMPLE_UPDATE_DORMANT_ACCOUNT_STATUS__D2070F06__PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS__STMT_0003",
+        "to": "02_SIMPLE_UPDATE_DORMANT_ACCOUNT_STATUS__D2070F06__PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS__STMT_0009",
+        "type": "SEQUENCE"
+      },
+      {
+        "from": "02_SIMPLE_UPDATE_DORMANT_ACCOUNT_STATUS__D2070F06__PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS__STMT_0009",
+        "to": "02_SIMPLE_UPDATE_DORMANT_ACCOUNT_STATUS__D2070F06__PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS__STMT_0010",
+        "type": "SEQUENCE"
+      },
+      {
+        "from": "02_SIMPLE_UPDATE_DORMANT_ACCOUNT_STATUS__D2070F06__PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS__STMT_0010",
+        "to": "02_SIMPLE_UPDATE_DORMANT_ACCOUNT_STATUS__D2070F06__PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS__STMT_0012",
+        "type": "SEQUENCE"
+      },
+      {
+        "from": "02_SIMPLE_UPDATE_DORMANT_ACCOUNT_STATUS__D2070F06__PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS__STMT_0004",
+        "to": "02_SIMPLE_UPDATE_DORMANT_ACCOUNT_STATUS__D2070F06__PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS__STMT_0005",
+        "type": "SEQUENCE"
+      },
+      {
+        "from": "02_SIMPLE_UPDATE_DORMANT_ACCOUNT_STATUS__D2070F06__PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS__STMT_0005",
+        "to": "02_SIMPLE_UPDATE_DORMANT_ACCOUNT_STATUS__D2070F06__PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS__STMT_0006",
+        "type": "SEQUENCE"
+      },
+      {
+        "from": "02_SIMPLE_UPDATE_DORMANT_ACCOUNT_STATUS__D2070F06__PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS__STMT_0006",
+        "to": "02_SIMPLE_UPDATE_DORMANT_ACCOUNT_STATUS__D2070F06__PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS__STMT_0007",
+        "type": "SEQUENCE"
+      },
+      {
+        "from": "02_SIMPLE_UPDATE_DORMANT_ACCOUNT_STATUS__D2070F06__PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS__STMT_0007",
+        "to": "02_SIMPLE_UPDATE_DORMANT_ACCOUNT_STATUS__D2070F06__PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS__STMT_0008",
+        "type": "SEQUENCE"
+      },
+      {
+        "from": "02_SIMPLE_UPDATE_DORMANT_ACCOUNT_STATUS__D2070F06__PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS__STMT_0013",
+        "to": "02_SIMPLE_UPDATE_DORMANT_ACCOUNT_STATUS__D2070F06__PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS__STMT_0014",
+        "type": "SEQUENCE"
+      },
+      {
+        "from": "02_SIMPLE_UPDATE_DORMANT_ACCOUNT_STATUS__D2070F06__PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS__STMT_0014",
+        "to": "02_SIMPLE_UPDATE_DORMANT_ACCOUNT_STATUS__D2070F06__PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS__STMT_0015",
+        "type": "SEQUENCE"
+      },
+      {
+        "from": "02_SIMPLE_UPDATE_DORMANT_ACCOUNT_STATUS__D2070F06__PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS__STMT_0003",
+        "to": "02_SIMPLE_UPDATE_DORMANT_ACCOUNT_STATUS__D2070F06__PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS__STMT_0004",
+        "type": "BRANCH_ENTRY",
+        "branch": "true"
+      },
+      {
+        "from": "02_SIMPLE_UPDATE_DORMANT_ACCOUNT_STATUS__D2070F06__PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS__STMT_0003",
+        "to": "02_SIMPLE_UPDATE_DORMANT_ACCOUNT_STATUS__D2070F06__PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS__STMT_0006",
+        "type": "BRANCH_ENTRY",
+        "branch": "elsif"
+      },
+      {
+        "from": "02_SIMPLE_UPDATE_DORMANT_ACCOUNT_STATUS__D2070F06__PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS__STMT_0003",
+        "to": "02_SIMPLE_UPDATE_DORMANT_ACCOUNT_STATUS__D2070F06__PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS__STMT_0008",
+        "type": "BRANCH_ENTRY",
+        "branch": "false"
+      },
+      {
+        "from": "02_SIMPLE_UPDATE_DORMANT_ACCOUNT_STATUS__D2070F06__PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS__STMT_0010",
+        "to": "02_SIMPLE_UPDATE_DORMANT_ACCOUNT_STATUS__D2070F06__PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS__STMT_0011",
+        "type": "BRANCH_ENTRY",
+        "branch": "WHEN(NO_DATA_FOUND)"
+      },
+      {
+        "from": "02_SIMPLE_UPDATE_DORMANT_ACCOUNT_STATUS__D2070F06__PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS__STMT_0012",
+        "to": "02_SIMPLE_UPDATE_DORMANT_ACCOUNT_STATUS__D2070F06__PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS__STMT_0013",
+        "type": "BRANCH_ENTRY",
+        "branch": "WHEN(OTHERS)"
+      },
+      {
+        "from": "*",
+        "to": "02_SIMPLE_UPDATE_DORMANT_ACCOUNT_STATUS__D2070F06__PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS__STMT_0010",
+        "type": "EXCEPTION_EDGE",
+        "on": "NO_DATA_FOUND"
+      },
+      {
+        "from": "*",
+        "to": "02_SIMPLE_UPDATE_DORMANT_ACCOUNT_STATUS__D2070F06__PROC-.SP_UPDATE_DORMANT_ACCOUNT_STATUS__STMT_0012",
+        "type": "EXCEPTION_EDGE",
+        "on": "OTHERS"
+      }
+    ]
+  }
+}

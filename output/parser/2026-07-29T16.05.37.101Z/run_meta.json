@@ -1,0 +1,17 @@
+{
+  "stage": "2_parser",
+  "run_version": "2026-07-29T16.05.37.101Z",
+  "status": "success",
+  "generated_at": "2026-07-29T16:05:51.683185+00:00",
+  "upstream": {
+    "inventory_run_version": "2026-07-29T16.05.30.018Z"
+  },
+  "stats_summary": {
+    "objects_parsed": 5,
+    "package_members": 0,
+    "statements_extracted": 124,
+    "dynamic_sql_blocks": 0,
+    "parse_errors": 0,
+    "unresolved_calls": 0
+  }
+}

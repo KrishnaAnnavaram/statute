@@ -1,0 +1,144 @@
+erDiagram
+    ACCOUNTS {
+        string ACCOUNT_NUMBER PK
+        string CUSTOMER_ID
+        string ACCOUNT_TYPE
+        decimal BALANCE
+        string ACCOUNT_STATUS
+        decimal DAILY_TRANSFER_LIMIT
+        date LAST_TRANSACTION_DATE
+        date STATUS_CHANGE_DATE
+        string LAST_MODIFIED_BY
+        date ACCOUNT_OPEN_DATE
+    }
+    BATCH_CONTROL_LOG {
+        decimal BATCH_RUN_ID PK
+        string BATCH_NAME
+        date BUSINESS_DATE
+        timestamp START_TIME
+        timestamp END_TIME
+        string STATUS
+        decimal RECORDS_PROCESSED
+        decimal RECORDS_FAILED
+        decimal CONTROL_TOTAL
+        string ERROR_MESSAGE
+    }
+    BATCH_ERROR_LOG {
+        decimal LOG_ID PK
+        string BATCH_NAME
+        string ENTITY_KEY
+        string ERROR_MESSAGE
+        date LOG_DATE
+    }
+    CUSTOMERS {
+        string CUSTOMER_ID PK
+        string CUSTOMER_NAME
+        date DATE_OF_BIRTH
+        string REGISTERED_COUNTRY
+        string KYC_STATUS
+        date CUSTOMER_SINCE_DATE
+    }
+    FRAUD_SCORE_RESULTS {
+        decimal TXN_ID PK
+        string ACCOUNT_NUMBER
+        decimal TXN_AMOUNT
+        integer RISK_SCORE
+        string RISK_REASONS
+        timestamp SCORED_DATE
+    }
+    HOLIDAY_CALENDAR {
+        date HOLIDAY_DATE PK
+        string CALENDAR_TYPE PK
+        string DESCRIPTION
+    }
+    INTEREST_ACCRUAL_LEDGER {
+        string ACCOUNT_NUMBER PK
+        date ACCRUAL_DATE PK
+        decimal ACCRUED_AMOUNT
+        decimal APPLIED_RATE
+        string POSTED_FLAG
+        timestamp LAST_UPDATED
+    }
+    INTEREST_RATE_MASTER {
+        string PRODUCT_CODE PK
+        decimal MIN_BALANCE PK
+        decimal MAX_BALANCE
+        decimal ANNUAL_RATE
+        date EFFECTIVE_DATE PK
+    }
+    LOAN_AMORTIZATION_SCHEDULE {
+        string LOAN_ACCOUNT_NUMBER PK
+        decimal INSTALLMENT_NO PK
+        date DUE_DATE
+        decimal OPENING_BALANCE
+        decimal EMI_AMOUNT
+        decimal INTEREST_COMPONENT
+        decimal PRINCIPAL_COMPONENT
+        decimal CLOSING_BALANCE
+    }
+    LOAN_MASTER {
+        string LOAN_ACCOUNT_NUMBER PK
+        string CUSTOMER_ID
+        string LOAN_TYPE
+        decimal PRINCIPAL_AMOUNT
+        decimal OUTSTANDING_PRINCIPAL
+        decimal ANNUAL_INTEREST_RATE
+        decimal TENURE_MONTHS
+        date DISBURSEMENT_DATE
+        decimal RATE_RESET_FREQUENCY_MONTHS
+        decimal COLLATERAL_VALUE
+        string IS_RESTRUCTURED
+        date RESTRUCTURE_DATE
+        string LOAN_STATUS
+    }
+    LOAN_RATE_RESET_HISTORY {
+        string LOAN_ACCOUNT_NUMBER PK
+        decimal EFFECTIVE_INSTALLMENT_NO PK
+        decimal REVISED_ANNUAL_RATE
+        date RESET_DATE
+    }
+    LOAN_REPAYMENT_TRACKER {
+        string LOAN_ACCOUNT_NUMBER PK
+        date AS_OF_DATE PK
+        decimal DAYS_PAST_DUE
+        date LAST_PAYMENT_DATE
+        decimal LAST_PAYMENT_AMOUNT
+    }
+    NPA_CLASSIFICATION_HISTORY {
+        string LOAN_ACCOUNT_NUMBER PK
+        date CLASSIFICATION_DATE PK
+        string CLASSIFICATION
+        decimal DAYS_PAST_DUE
+        decimal OUTSTANDING_PRINCIPAL
+        decimal COLLATERAL_COVER_PCT
+        decimal PROVISIONING_AMOUNT
+        string PRIOR_CLASSIFICATION
+        string MOVEMENT_TYPE
+    }
+    NPA_PROVISIONING_SUMMARY {
+        date QUARTER_END_DATE PK
+        decimal TOTAL_ACCOUNTS
+        decimal TOTAL_PROVISIONING_AMOUNT
+        timestamp RUN_TIMESTAMP
+    }
+    TRANSACTION_LEDGER {
+        decimal TXN_ID PK
+        string ACCOUNT_NUMBER
+        date TXN_DATE
+        string TXN_TYPE
+        decimal TXN_AMOUNT
+        decimal RUNNING_BALANCE
+        string REFERENCE_NUMBER
+        string NARRATION
+        string ORIGIN_COUNTRY
+        string BENEFICIARY_ID
+        string HOLD_FLAG
+    }
+    CUSTOMERS ||--o{ ACCOUNTS : "CUSTOMER_ID"
+    ACCOUNTS ||--o{ INTEREST_ACCRUAL_LEDGER : "ACCOUNT_NUMBER"
+    LOAN_MASTER ||--o{ LOAN_AMORTIZATION_SCHEDULE : "LOAN_ACCOUNT_NUMBER"
+    CUSTOMERS ||--o{ LOAN_MASTER : "CUSTOMER_ID"
+    LOAN_MASTER ||--o{ LOAN_RATE_RESET_HISTORY : "LOAN_ACCOUNT_NUMBER"
+    LOAN_MASTER ||--o{ LOAN_REPAYMENT_TRACKER : "LOAN_ACCOUNT_NUMBER"
+    ACCOUNTS ||--o{ TRANSACTION_LEDGER : "ACCOUNT_NUMBER"
+    ACCOUNTS }o..o{ FRAUD_SCORE_RESULTS : "ACCOUNT_NUMBER (inferred)"

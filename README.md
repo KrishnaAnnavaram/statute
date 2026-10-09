@@ -84,7 +84,7 @@ Each claim in this README comes from a repository file or function, or from a co
    - 2.6 [Repository layout](#26-repository-layout)
 3. 🛡️ [Design rules](#3-design-rules)
 4. 🔄 [The end-to-end workflow](#4-the-end-to-end-workflow)
-   - 4.1 [Full flow](#41-full-flow) · 4.2 [Data flow and lineage](#42-data-flow-and-lineage) · 4.3 [Control flow and state](#43-control-flow-and-state) · 4.4 [Errors and recovery](#44-errors-and-recovery)
+   - 4.1 [Full flow](#41-full-flow) · 4.2 [Data flow and lineage](#42-data-flow-and-lineage) · 4.3 [Control flow and state](#43-control-flow-and-state) · 4.4 [Errors and recovery](#44-errors-and-recovery) · 4.5 [Who does which step](#45-who-does-which-step)
 5. 🗃️ [Agent 1 — Inventory](#5-agent-1--inventory)
 6. 🔵 [Agent 2 — Parser](#6-agent-2--parser)
 7. 🧱 [Agent 3 — Data](#7-agent-3--data)
@@ -533,6 +533,50 @@ flowchart TD
 
 **No agent retries.** There is no backoff, because there is no external service. **All agents are idempotent**, except for the timestamp and the run directory.
 
+### 4.5 Who does which step
+
+The operator starts each agent. The agents communicate only through `output/<stage>/latest.json` and the run directories.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor OP as Operator
+    participant A1 as 01_inventory.py
+    participant A2 as 02_parser.py
+    participant A35 as 03_data.py to 05_rules.py
+    participant A6 as 06_diagram.py
+    participant A7 as 07_synthesis.py
+    participant A8 as 08_graph.py
+    participant FS as output/ on disk
+    participant ANN as brd_annotations.json
+    OP->>A1: python 01_inventory.py src
+    A1->>FS: inventory run directory, then latest.json
+    A1-->>OP: summary and the next command
+    OP->>A2: python 02_parser.py
+    A2->>FS: read inventory latest.json
+    A2->>FS: parser_artifact.json and raw_structure, then latest.json
+    OP->>A35: run Agents 3, 4 and 5 in sequence
+    A35->>FS: read upstream latest.json files
+    A35->>FS: data, logic and rules artifacts, then latest.json
+    OP->>A6: python 06_diagram.py
+    A6->>FS: read parser, data, logic, rules, inventory
+    alt validate_spec finds a problem
+        A6-->>OP: problem list on stderr, exit 1
+    else validation passed
+        A6->>FS: diagrams_artifact.json and diagrams, then latest.json
+    end
+    OP->>A7: python 07_synthesis.py
+    A7->>FS: read all six upstream artifacts
+    A7->>ANN: read only, if present
+    A7->>FS: brd.md, brd_index.json, gaps_register.json
+    opt knowledge graph
+        OP->>A8: python 08_graph.py, or --ask a question
+        A8->>FS: read seven artifacts
+        A8->>FS: import.cypher, nodes and rels CSV files
+        A8-->>OP: answer rows and Cypher, or a refusal with exit 2
+    end
+```
+
 ---
 
 ## 5. Agent 1 — Inventory
@@ -814,11 +858,57 @@ flowchart TD
 | `variable_derivation` | Business formulas from backward slices |
 | `ddl_*` | CHECK, virtual column, unique constraint or view filter |
 
+The diagram shows which function mines each source kind, and how the category is set.
+
+```mermaid
+flowchart LR
+    subgraph ST["mine_from_statements()"]
+        K1["conditional_branch"]
+        K2["case_branch<br/>mine_from_case_expression()"]
+        K3["cursor_eligibility<br/>mine_from_cursors()"]
+        K4["named_exception<br/>_raise_to_obligation()"]
+        K5["predefined_exception"]
+        K6["failure_isolation"]
+        K7["error_contract"]
+        K0["generic_exception"]
+    end
+    K8["variable_derivation<br/>mine_from_variable_slices()"]
+    K9["ddl_check_constraint, ddl_virtual_column,<br/>ddl_unique_*, ddl_view_filter<br/>mine_from_ddl_candidates()"]
+    K1 --> CC["classify_category():<br/>keyword score, CATEGORY_PRIORITY"]
+    K2 --> CC
+    K4 --> CC
+    K9 --> CC
+    K3 --> VAL["VALIDATION"]
+    K5 --> EH["ERROR_HANDLING"]
+    K6 --> EH
+    K7 --> EH
+    K8 --> CALC["CALCULATION"]
+    K0 --> CAT[("error_handling_catalogue,<br/>never a BR-nnn rule")]
+    CC --> RULES["Raw rules"]
+    VAL --> RULES
+    EH --> RULES
+    CALC --> RULES
+```
+
 **Live distribution.** VALIDATION 19 · LIMIT_CHECK 12 · CALCULATION 6 · ERROR_HANDLING 4. The committed run also merged 5 duplicates and marked 3 rules for SME review.
 
 ### Exceptions become obligations (SBVR)
 
 SBVR states: *"there are no exceptions; instead, there are well stated business rules."*
+
+```mermaid
+flowchart TD
+    R[/"RAISE e_x statement"/] --> N{"Exception name is<br/>empty or OTHERS?"}
+    N -- "yes" --> NONE["No obligation"]
+    N -- "no" --> IF{"An IF is a control<br/>ancestor of the RAISE?"}
+    IF -- "yes" --> COND["extract_if_condition():<br/>the violation condition"]
+    COND --> INV["describe_comparison(invert=True):<br/>negate the operator"]
+    INV --> KEY["raw_key = IF::object::line<br/>is_obligation = true"]
+    IF -- "no" --> H{"Inside a NO_DATA_FOUND<br/>handler?"}
+    H -- "yes" --> EXIST["Existence check:<br/>the queried row must exist"]
+    KEY --> DED["deduplicate(): same raw_key<br/>as the IF condition rule"]
+    DED --> WIN[/"One rule, obligation phrasing wins<br/>p_amount &lt;= 0 becomes Validate Amount above 0"/]
+```
 
 Agent 5 merges a guarded `RAISE` with the `IF` that guards it. It states the rule as the condition that must be true.
 The IF condition is the **violation**, so the rule is its negation:
@@ -830,6 +920,23 @@ p_amount <= 0  →  "Validate Amount above 0"
 ### Measured accuracy
 
 `tests/evaluate_rules.py` compares the extracted rules with 4 hand-annotated procedures. It matches on the source-line distance (`LINE_TOLERANCE = 2`), not on the words.
+
+```mermaid
+flowchart TD
+    B["build_pipeline(): run Agents 1 to 5<br/>on src/ in a temporary folder"] --> RA[/"rules_artifact.json"/]
+    GT[/"fixtures/ground_truth/*.json<br/>4 procedures"/] --> EO["evaluate_object()<br/>for each procedure"]
+    RA --> EX["extracted_rules_for(object_id)"]
+    EX --> EO
+    EO --> CL{"Closest unmatched extracted rule<br/>within 2 lines?"}
+    CL -- "yes" --> M["Match.<br/>Record subject agreement separately"]
+    CL -- "no" --> MISS["Missed ground-truth rule"]
+    M --> PRF["P = matched / extracted<br/>R = matched / ground truth<br/>F1 = 2PR / (P + R)"]
+    MISS --> PRF
+    PRF --> MODE{"Option"}
+    MODE -- "none" --> REP[/"Report, with COBREX, COBRAIN<br/>and A-COBREX for reference"/]
+    MODE -- "--baseline" --> BL[("BASELINE.json")]
+    MODE -- "--compare" --> DIFF[/"Change against BASELINE.json"/]
+```
 
 | Measurement | Precision | Recall | F1 |
 |---|---|---|---|
@@ -844,7 +951,25 @@ The harness cites these published baselines for comparison: COBREX F1 0.59 · CO
 
 ### Three guards
 
-1. **`_is_derivation`.** The score is the number of arithmetic operations plus the number of function calls. A score of 2 or more means a business formula. `ROUND(bal*(rate/100)*(days/365),2)` scores 5 ✅. `rec.balance + v_interest_amount` scores 1 ❌. **Only 2 examples support this threshold.**
+```mermaid
+flowchart TD
+    S[/"Statement in a backward slice<br/>of variable v"/] --> T{"Statement type"}
+    T -- "ASSIGNMENT" --> AG{"Aggregate function<br/>on the right side?"}
+    AG -- "yes" --> AS
+    AG -- "no" --> SC{"Arithmetic operators plus<br/>function calls at or above 2?"}
+    SC -- "no" --> D1["Dropped: mechanics, not a formula"]
+    SC -- "yes" --> AS{"_assigns_variable:<br/>target of the assignment is v?"}
+    T -- "SELECT_INTO" --> AGG{"Aggregate function?"}
+    AGG -- "no" --> D1
+    AGG -- "yes" --> AS
+    AS -- "no" --> D2["Dropped: formula belongs<br/>to another variable"]
+    AS -- "yes" --> R[/"variable_derivation rule,<br/>CALCULATION"/]
+    C[/"IF or guard condition"/] --> Z{"_is_zero_guard:<br/>comparison with literal 0?"}
+    Z -- "yes" --> V[/"Category VALIDATION"/]
+    Z -- "no" --> K[/"classify_category():<br/>keyword score"/]
+```
+
+1. **`_is_derivation`.** The score is the number of arithmetic operations plus the number of function calls. A score of 2 or more means a business formula. An assignment with an aggregate function is always a formula. A `SELECT INTO` is a formula only when it has an aggregate function. `ROUND(bal*(rate/100)*(days/365),2)` scores 5 ✅. `rec.balance + v_interest_amount` scores 1 ❌. **Only 2 examples support this threshold.**
 2. **`_assigns_variable`.** The statement that derives the value must *assign* the slice variable. Without this guard, `v_new_balance` took the formula that calculates `v_interest_amount`, and one formula became two rules.
 3. **`_is_zero_guard`.** A comparison with the literal zero is a sanity guard, not a business tier. Without this guard, `v_interest_amount > 0` matched the CALCULATION keywords and gave *"Calculate Interest Amount above 0"*.
 
@@ -953,6 +1078,17 @@ flowchart TD
 
 The BRD shows the machine identifier *together with* the prose. It never replaces the prose with it. The pseudocode and the diagrams stay technical by design.
 
+The diagram shows how `humanise_condition()` in `lib_business_language.py` changes a condition:
+
+```mermaid
+flowchart LR
+    IN[/"v_from_balance &lt; p_amount"/] --> L["Keep quoted literals aside"]
+    L --> ID["For each identifier, humanise():<br/>keep the part after the last dot,<br/>remove P_, V_, L_ and other prefixes,<br/>split on _, expand abbreviations,<br/>title case"]
+    ID --> OP["Then replace the operators with words.<br/>IS NULL becomes is missing,<br/>IS NOT NULL becomes is present"]
+    OP --> RL["Put the literals back"]
+    RL --> OUT[/"From Balance is below Amount"/]
+```
+
 **Two defects that a review of the output found**
 
 1. The table mapped `NO` to `Number`. Thus, *"no preceding condition matched"* became *"Number Preceding Condition Matched"*. **Keep ordinary English words out of the abbreviation table.**
@@ -969,7 +1105,41 @@ The BRD shows the machine identifier *together with* the prose. It never replace
 
 Each audience needs different documentation for its task. One voice for all readers serves no reader.
 
+```mermaid
+flowchart LR
+    BD["build_document()"] --> P1["Part I: Business View"]
+    BD --> P2["Part II: Rules and Behaviour"]
+    BD --> P3["Part III: Build Specification"]
+    BD --> P4["Part IV: Assurance"]
+    P1 --> R1(["Sponsors"])
+    P2 --> R2(["Analysts"])
+    P3 --> R3(["Developers"])
+    P4 --> R4(["Auditors"])
+    RA[/"rules_artifact.json"/] --> P2
+    DA[/"data_artifact.json"/] --> P3
+    DG[/"diagrams_artifact.json"/] --> P1
+    DG --> P2
+    GP["detect_gaps()"] --> P4
+```
+
 ### Each rule in three forms, with SBVR modality
+
+```mermaid
+flowchart TD
+    R[/"One business rule"/] --> F1["Exact condition in code:<br/>condition_text in a code span"]
+    R --> F2["In plain terms:<br/>humanise_condition()"]
+    R --> K{"source.kind in _DDL_KINDS?"}
+    K -- "yes" --> E{"is_enforced is False?"}
+    E -- "yes" --> DIS["Formal statement: INTENDED,<br/>DISABLED, NOT enforced<br/>Verify: Inspection, DISABLED"]
+    E -- "no" --> ALE["alethic: It is necessary that...<br/>Verify: Inspection of the schema"]
+    K -- "no" --> DEO["deontic: It is obligatory that...<br/>Verify: Test of the code path"]
+    DIS --> F3["Formal statement"]
+    ALE --> F3
+    DEO --> F3
+    F1 --> BLK[/"Rule block in brd.md,<br/>Owner and Priority from annotations"/]
+    F2 --> BLK
+    F3 --> BLK
+```
 
 ```
 BR-002 — Enforce From Balance at or above Amount
@@ -1031,6 +1201,33 @@ flowchart TD
 
 ### Schema: 353 nodes, 769 relationships
 
+The diagram shows the relationship types that `lib_graph_model.build_graph()` makes. `CALLS`, `POPULATES`, `CONSTRAINS` and `ON_ERROR_REACHES` exist in the code but have no instance in the committed run. `BlindSpot` nodes have no relationships.
+
+```mermaid
+erDiagram
+    File ||--o{ Object : "CONTAINS"
+    Object ||--o{ Parameter : "HAS_PARAMETER"
+    Object ||--o{ Statement : "CONTAINS_STATEMENT"
+    Statement }o--o{ Statement : "FOLLOWS, BRANCHES_TO, LOOPS_BACK_TO, ON_ERROR_REACHES"
+    Statement }o--o{ Object : "DETERMINES"
+    Object }o--o{ Object : "CALLS"
+    Table ||--o{ Column : "HAS_COLUMN"
+    Table }o--o{ Table : "REFERENCES"
+    Table }o--o{ Column : "FOREIGN_KEY_ON"
+    Index }o--o{ Column : "COVERS"
+    Sequence }o--o{ Column : "POPULATES"
+    Object }o--o{ Table : "TOUCHES, READS, WRITES"
+    Object }o--o{ Column : "READS_COLUMN, WRITES_COLUMN"
+    Statement }o--o{ Column : "READS_COLUMN, WRITES_COLUMN"
+    BusinessRule }o--|| RuleSet : "BELONGS_TO"
+    BusinessRule }o--o{ Object : "ENFORCED_IN"
+    BusinessRule }o--o{ Statement : "IMPLEMENTED_AT"
+    BusinessRule }o--o{ Table : "CONSTRAINS_TABLE"
+    BusinessRule }o--o{ Column : "CONSTRAINS"
+    Column ||--o{ State : "HAS_STATE"
+    Gap }o--o{ BusinessRule : "AFFECTS"
+```
+
 | Node label | Count | | Relationship | Count | | Relationship | Count |
 |---|---:|---|---|---:|---|---|---:|
 | Statement | 124 | | CONTAINS_STATEMENT | 124 | | HAS_PARAMETER | 20 |
@@ -1061,6 +1258,24 @@ The module docstring states:
 
 Agent 8 uses **12 named intents** in place of a model. Each intent has trigger patterns, a resolver and the equivalent Cypher. Agent 8 refuses a question with no match and shows the supported list.
 
+The diagram shows `ask()` in `lib_graph_language.py`:
+
+```mermaid
+flowchart TD
+    Q[/"Question in plain English"/] --> E{"Empty?"}
+    E -- "yes" --> RF1[/"Refusal: empty question,<br/>suggestions"/]
+    E -- "no" --> RE["resolve_entity(): BR-nnn, then TABLE.COLUMN,<br/>then an exact name or title,<br/>then a bare column name"]
+    RE --> MT["Intents whose trigger patterns match,<br/>the entity type that was found first"]
+    MT --> NE{"Intent needs an entity<br/>of a different type?"}
+    NE -- "yes" --> NEXT["Try the next intent"]
+    NEXT --> NE
+    NE -- "no" --> ANS{"Resolver gives<br/>an answer?"}
+    ANS -- "yes" --> OK[/"Rows, subject and<br/>the equivalent Cypher"/]
+    ANS -- "no" --> NEXT
+    MT -- "match, but no entity found" --> RF2[/"Refusal: name it exactly,<br/>for example ACCOUNTS.BALANCE"/]
+    MT -- "no match" --> RF3[/"Refusal: no supported question,<br/>suggestions"/]
+```
+
 **Total precision, imperfect recall.** This is the correct trade, because a wrong impact answer is worse than no answer. **The negative tests are the most important tests** in the suite.
 
 A review of the output added an invariant: *each advertised question, asked word for word, must have a match.* The cause: the list showed *"Which columns are used most widely?"*, but Agent 8 refused it. A pattern expected the word order "most widely used".
@@ -1082,6 +1297,31 @@ A review of the output added an invariant: *each advertised question, asked word
 | 11 | What open questions remain for the business? | `open_gaps` |
 | 12 | What can this graph NOT see? | `blind_spots` |
 
+The diagram shows the graph path that the equivalent Cypher of each intent reads.
+
+```mermaid
+flowchart LR
+    I1["impact_of_column"] --> COL(["Column"])
+    I9["hot_columns"] --> COL
+    COL -- "READS_COLUMN, WRITES_COLUMN" --- OBJ(["Object"])
+    COL -- "CONSTRAINS" --- BR(["BusinessRule"])
+    COL -- "COVERS" --- IDX(["Index"])
+    I2["rules_of"] --> BR
+    I3["where_is_rule"] --> BR
+    I6["needs_review"] --> BR
+    I7["unenforced"] --> BR
+    BR -- "ENFORCED_IN" --- OBJ
+    BR -- "IMPLEMENTED_AT" --- STM(["Statement"])
+    I4["who_touches_table"] --> TAB(["Table"])
+    I10["orphan_tables"] --> TAB
+    TAB -- "READS, WRITES" --- OBJ
+    I5["interface_of"] --> OBJ
+    I8["most_complex"] --> OBJ
+    OBJ -- "HAS_PARAMETER" --- PAR(["Parameter"])
+    I11["open_gaps"] --> GAP(["Gap"])
+    I12["blind_spots"] --> BSP(["BlindSpot"])
+```
+
 **Give the exact entity names:** `ACCOUNTS.BALANCE`, `SP_TRANSFER_FUNDS`, `BR-014`.
 
 **Tests.** 68 checks (before: 13).
@@ -1099,6 +1339,38 @@ A review of the output added an invariant: *each advertised question, asked word
 | `_DERIVATION_COMPLEXITY_THRESHOLD` | 2 | `05_rules.py:603` | Business formula or mechanics |
 | `DEFAULT_NODE_BUDGET` | 40 | `06_diagram.py:99` | Diagram readability budget |
 | `LINE_TOLERANCE` | 2 | `tests/evaluate_rules.py:45` | Match window for the ground truth |
+
+The diagram shows where each threshold and formula acts in the pipeline.
+
+```mermaid
+flowchart LR
+    A1["Agent 1<br/>file_id = SLUG + SHA256 of the path"] --> A4["Agent 4<br/>M = D + 1, warning above 10<br/>cognitive, warning above 15"]
+    A4 --> A5["Agent 5<br/>derivation score 2 or more<br/>clause score for rule names"]
+    A5 --> A6["Agent 6<br/>DEFAULT_NODE_BUDGET 40<br/>tier1_pct, traceability"]
+    A6 --> A7["Agent 7<br/>SBVR modality:<br/>alethic or deontic"]
+    A5 --> EV["tests/evaluate_rules.py<br/>LINE_TOLERANCE 2<br/>P, R, F1"]
+    A6 --> OV{"Over the node budget<br/>after collapse?"}
+    OV -- "yes" --> GAP[/"OVERSIZE in the gaps register"/]
+```
+
+**How the clause score names a rule** (`describe_comparison()` in `05_rules.py`):
+
+```mermaid
+flowchart TD
+    C[/"Condition text"/] --> F{"Comparison clauses found?"}
+    F -- "no" --> FB["Subject from guess_subject(),<br/>no qualifier"]
+    F -- "yes" --> S["Score each clause: +2 for = with a literal,<br/>+1 for a known field on the left"]
+    S --> MX["Keep the clause with the highest score"]
+    MX --> INV{"Obligation from a guard?"}
+    INV -- "yes" --> NEG["Invert the operator"]
+    INV -- "no" --> PH["Operator phrase"]
+    NEG --> PH
+    PH --> CMP{"AND or OR in the condition,<br/>and the operator is not =?"}
+    CMP -- "yes" --> NQ["Subject only, no qualifier"]
+    CMP -- "no" --> LEN{"Qualifier longer than<br/>40 characters?"}
+    LEN -- "yes" --> NQ
+    LEN -- "no" --> NM[/"Verb + subject + qualifier,<br/>for example Enforce Balance at or above Amount"/]
+```
 
 **Stable file identity** (Agent 1)
 
@@ -1137,6 +1409,33 @@ $$\text{tier1\_pct} = \tfrac{|\text{decisions with tier-1 label}|}{|\text{decisi
 Static analysis can prove that a 365-day threshold exists. It can never find that a **regulation sets** the threshold.
 This is the concept assignment problem (Biggerstaff et al., 1993). The annotation layer exists for this problem.
 
+```mermaid
+flowchart TD
+    P{{"A person writes<br/>brd_annotations.json"}} --> F[/"--annotations path,<br/>default brd_annotations.json"/]
+    F --> EX{"File exists and<br/>is valid JSON?"}
+    EX -- "no" --> EMP["Empty dict"]
+    EX -- "yes" --> AN["The annotations block,<br/>or the full object"]
+    AN --> K{"Stable ID key"}
+    K -- "BR-nnn" --> R["Rule block: note,<br/>Owner, Priority"]
+    K -- "table:NAME" --> T["Data model table note"]
+    K -- "term:TABLE.COLUMN" --> G["Glossary term note"]
+    K -- "object:ID" --> O["Program unit note"]
+    K -- "param:ID:NAME" --> PA["Parameter note"]
+    K -- "executive_summary" --> E["Executive summary note"]
+    EMP --> PH["Visible placeholders:<br/>to be assigned, to be supplied"]
+    R --> BRD[/"brd.md"/]
+    T --> BRD
+    G --> BRD
+    O --> BRD
+    PA --> BRD
+    E --> BRD
+    PH --> BRD
+    R --> IDX[/"brd_index.json:<br/>owner, priority"/]
+
+    classDef human fill:#fff3cd,stroke:#b8901f,color:#3d2f00,font-weight:bold
+    class P human
+```
+
 **Procedure**
 
 1. Make a file with the name `brd_annotations.json` (the default of `--annotations`).
@@ -1174,6 +1473,26 @@ This is the concept assignment problem (Biggerstaff et al., 1993). The annotatio
 
 ### 15.1 Verified controls
 
+```mermaid
+flowchart LR
+    subgraph IN["Inputs, read only"]
+        SQL[/"src/*.sql"/]
+        ANN[/"brd_annotations.json"/]
+    end
+    subgraph WS["One workstation"]
+        S["8 pipeline scripts<br/>no environment variables, no network,<br/>no subprocess, os.system, eval or exec,<br/>no model"]
+    end
+    subgraph OUT["output/ on the local file system"]
+        ART[("Versioned artifacts<br/>with upstream provenance")]
+        BRD[("brd.md, import.cypher,<br/>CSV files")]
+    end
+    SQL --> S
+    ANN --> S
+    S --> ART
+    S --> BRD
+    BRD -. "a person copies or imports" .-> EXT["Readers or Neo4j"]
+```
+
 | Control | Status |
 |---|---|
 | Secrets, credentials, tokens | **None in the pipeline.** No environment variables, confirmed by grep |
@@ -1183,6 +1502,18 @@ This is the concept assignment problem (Biggerstaff et al., 1993). The annotatio
 | Auditability | Run versions, and `upstream` provenance in each artifact |
 
 ### 15.2 Risks
+
+The diagram shows where each risk enters the flow.
+
+```mermaid
+flowchart LR
+    DEP[/"antlr4-python3-runtime, sqlglot"/] -- "Unpinned dependencies:<br/>no manifest, no lockfile" --> S["Pipeline scripts"]
+    ANN[/"brd_annotations.json"/] -- "Annotation injection:<br/>inserted word for word" --> S
+    SQL[/"src/*.sql"/] --> S
+    S --> ART[("Artifacts<br/>abs_path leakage")]
+    S --> BRD[("brd.md and graph export<br/>sensitive output, no redaction")]
+    ART -. "No output schema validation,<br/>only the tests check the shape" .-> NEXT["Next agent"]
+```
 
 | Risk | Detail |
 |---|---|

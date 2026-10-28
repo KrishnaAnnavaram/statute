@@ -33,6 +33,8 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
+import lib_runlog as runlog  # run lifecycle witnesses (run_status.json, events.jsonl)
+
 DESIGN_REFERENCES = [
     {"claim": "Six rule categories (Validation/Calculation/Routing/Limit-check/Error-handling/Compliance) "
               "and their keyword signals.",
@@ -68,6 +70,7 @@ def source_lines(abs_path: str) -> list[str]:
             _SOURCE_CACHE[abs_path] = Path(abs_path).read_text(encoding="utf-8").splitlines()
         except OSError:
             _SOURCE_CACHE[abs_path] = []
+            runlog.note_unreadable_source(abs_path)
     return _SOURCE_CACHE[abs_path]
 
 
@@ -1113,10 +1116,14 @@ def main() -> None:
     ap.add_argument("--output-root", default="output/rules")
     ap.add_argument("--output", default=None)
     args = ap.parse_args()
+    rl = runlog.begin("05_rules", output_root=args.output_root, enabled=args.output is None)
 
     parser_artifact, parser_run_version = load_run(args.parser_root, args.parser_run, "parser_artifact.json")
+    rl.input("02_parser", parser_run_version, requested=args.parser_run)
     data_artifact, data_run_version = load_run(args.data_root, args.data_run, "data_artifact.json")
+    rl.input("03_data", data_run_version, requested=args.data_run)
     inventory, inv_run_version = load_run(args.inventory_root, args.inventory_run, "inventory-artifact.json")
+    rl.input("01_inventory", inv_run_version, requested=args.inventory_run)
     parser_root = Path(args.parser_root) / parser_run_version
     file_abs_paths = {fid: meta["abs_path"] for fid, meta in inventory["file_metadata"].items()}
 
@@ -1128,11 +1135,13 @@ def main() -> None:
         logic_dir = Path(args.logic_root) / logic_run_version
     except (FileNotFoundError, KeyError):
         logic_artifact, logic_run_version, logic_dir = {"object_index": {}}, None, Path(".")
+    rl.input("04_logic", logic_run_version, requested=args.logic_run, optional=True)
 
     versioned_run = args.output is None
     run_version = generate_run_version()
     run_dir = Path(args.output_root) / run_version if versioned_run else Path(args.output)
     run_dir.mkdir(parents=True, exist_ok=True)
+    rl.attach(run_dir, run_version)
 
     raw_mined = mine_from_ddl_candidates(data_artifact) + \
         mine_from_statements(parser_root, parser_artifact["object_index"], file_abs_paths) + \
@@ -1177,11 +1186,15 @@ def main() -> None:
     if versioned_run:
         (run_dir / "run_meta.json").write_text(json.dumps(
             {"stage": "5_rules", "run_version": run_version, "status": "success",
-             "generated_at": rules_artifact["generated_at"], "upstream": rules_artifact["upstream"],
+             "generated_at": rules_artifact["generated_at"],
+             # run_meta also records the logic run consumed (None = degraded run);
+             # the artifact's own upstream block is unchanged.
+             "upstream": {**rules_artifact["upstream"], "logic_run_version": logic_run_version},
              "stats_summary": stats}, indent=2), encoding="utf-8")
         (Path(args.output_root) / "latest.json").write_text(json.dumps(
             {"run_version": run_version, "path": f"{run_version}/rules_artifact.json",
              "updated_at": rules_artifact["generated_at"]}, indent=2), encoding="utf-8")
+        rl.succeed(published=True)
 
     print("=== Rules Agent Complete ===")
     print(f"Branches examined      : {stats['branches_examined']}")

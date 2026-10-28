@@ -35,6 +35,8 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
+import lib_runlog as runlog  # run lifecycle witnesses (run_status.json, events.jsonl)
+
 _VENDOR_DIR = Path(__file__).parent / "vendor" / "plsql_grammar"
 sys.path.insert(0, str(_VENDOR_DIR))
 
@@ -738,8 +740,10 @@ def main() -> None:
     ap.add_argument("--output", default=None, help="Exact output dir override (disables versioning; for tests)")
     ap.add_argument("--verbose", "-v", action="store_true")
     args = ap.parse_args()
+    rl = runlog.begin("02_parser", output_root=args.output_root, enabled=args.output is None)
 
     artifact, inv_run_version, inv_path = load_inventory(args.inventory_root, args.inventory_run)
+    rl.input("01_inventory", inv_run_version, requested=args.inventory_run)
     parse_worthy, passthrough, skipped = route_files(artifact)
 
     versioned_run = args.output is None
@@ -747,6 +751,7 @@ def main() -> None:
     run_dir = Path(args.output_root) / run_version if versioned_run else Path(args.output)
     raw_dir = run_dir / "raw_structure"
     raw_dir.mkdir(parents=True, exist_ok=True)
+    rl.attach(run_dir, run_version)
 
     objects_index: dict[str, str] = {}
     stats = {"objects_parsed": 0, "package_members": 0, "statements_extracted": 0,
@@ -757,8 +762,10 @@ def main() -> None:
     # run before extracting any statement bodies, so cross-object (and
     # cross-package-member) call resolution has the complete picture.
     all_objects: list[dict] = []
+    rl.total(len(parse_worthy), "files discovered")
     for file_rec in parse_worthy:
         file_id = file_rec["file_id"]
+        rl.item("file", file_rec["path"], "started")
         if args.verbose:
             print(f"  [discovering] {file_rec['path']}", file=sys.stderr)
 
@@ -771,6 +778,7 @@ def main() -> None:
                 "file": file_rec["path"], "object_id": wrapped_obj["object_id"],
                 "message": "Object body is WRAPPED (obfuscated) — header recorded, body not parsed.",
             })
+            rl.item("file", file_rec["path"], "skipped", message="wrapped (obfuscated) object")
             continue
 
         tree, syntax_errors, _ = parse_source(file_rec["abs_path"])
@@ -779,13 +787,18 @@ def main() -> None:
             for e in syntax_errors:
                 all_issues.append({"severity": "error", "type": "syntax_error", "file": file_rec["path"], **e})
         all_objects.extend(discover_objects(tree, file_id))
+        rl.item("file", file_rec["path"], "succeeded",
+                message=f"{len(syntax_errors)} syntax error(s)" if syntax_errors else None,
+                severity="warning" if syntax_errors else None)
 
     known, siblings = build_call_registry(all_objects)
 
     # Pass B — extract statement structure per object and resolve calls
     # against the now-complete registry.
+    rl.total(len(all_objects), "objects parsed")
     for obj in all_objects:
         file_id = obj["file_id"]
+        rl.item("object", obj["object_id"], "started")
         if args.verbose:
             print(f"  [parsing] {obj['object_id']}", file=sys.stderr)
         try:
@@ -809,6 +822,9 @@ def main() -> None:
         out_name = result["object_id"].replace("::", "__").replace("/", "_") + ".json"
         (raw_dir / out_name).write_text(json.dumps(result, indent=2, ensure_ascii=False), encoding="utf-8")
         objects_index[result["object_id"]] = f"raw_structure/{out_name}"
+        rl.item("object", result["object_id"],
+                {"failed": "failed", "skipped_wrapped": "skipped"}.get(result.get("parse_status"), "succeeded"),
+                message=result.get("error"))
 
         stats["objects_parsed"] += 1
         if obj["parent_object_id"]:
@@ -842,6 +858,7 @@ def main() -> None:
         latest_pointer = {"run_version": run_version, "path": f"{run_version}/parser_artifact.json",
                            "updated_at": manifest["generated_at"]}
         (Path(args.output_root) / "latest.json").write_text(json.dumps(latest_pointer, indent=2, ensure_ascii=False), encoding="utf-8")
+        rl.succeed(published=True)
 
     print("=== PL/SQL Parser Agent Complete ===")
     print(f"Objects parsed        : {stats['objects_parsed']}")

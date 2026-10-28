@@ -79,6 +79,8 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
+import lib_runlog as runlog  # run lifecycle witnesses (run_status.json, events.jsonl)
+
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from lib_business_language import humanise, object_title, entity_title  # noqa: E402
 from lib_graph_model import build_graph  # noqa: E402
@@ -105,13 +107,19 @@ def generate_run_version() -> str:
     return now.strftime("%Y-%m-%dT%H.%M.%S.") + f"{now.microsecond // 1000:03d}Z"
 
 
+# Run versions actually consumed, by upstream root — recorded in run_meta.
+_RESOLVED: dict[str, str] = {}
+
+
 def load_run(root: str, run: str, filename: str):
     root_path = Path(root)
     if run == "latest":
         rv = json.loads((root_path / "latest.json").read_text(encoding="utf-8"))["run_version"]
     else:
         rv = run
-    return json.loads((root_path / rv / filename).read_text(encoding="utf-8")), root_path / rv
+    payload = json.loads((root_path / rv / filename).read_text(encoding="utf-8"))
+    _RESOLVED[str(root)] = rv
+    return payload, root_path / rv
 
 
 def optional(root, run, filename):
@@ -362,7 +370,15 @@ def main() -> None:
         print("\nName entities exactly, e.g. ACCOUNTS.BALANCE, SP_TRANSFER_FUNDS, BR-014.")
         return
 
+    rl = runlog.begin("08_graph", output_root=args.output_root,
+                      enabled=args.output is None and not args.ask)
     graph = build_graph(collect_artifacts(args), humanise, object_title, entity_title)
+    consumed = [("01_inventory", "inventory", args.inventory_root), ("02_parser", "parser", args.parser_root),
+                ("03_data", "data", args.data_root), ("04_logic", "logic", args.logic_root),
+                ("05_rules", "rules", args.rules_root), ("06_diagram", "diagram", args.diagram_root),
+                ("07_synthesis", "report", args.report_root)]
+    for stage_key, _, root in consumed:
+        rl.input(stage_key, _RESOLVED.get(str(root)), requested=args.run, optional=stage_key != "02_parser")
 
     if args.ask:
         res = ask(graph, args.ask)
@@ -373,6 +389,7 @@ def main() -> None:
     run_version = generate_run_version()
     run_dir = Path(args.output_root) / run_version if versioned else Path(args.output)
     run_dir.mkdir(parents=True, exist_ok=True)
+    rl.attach(run_dir, run_version)
 
     stats = write_export(graph, run_dir)
     upstream = {"run_selector": args.run}
@@ -395,11 +412,15 @@ def main() -> None:
     if versioned:
         (run_dir / "run_meta.json").write_text(json.dumps(
             {"stage": "8_graph", "run_version": run_version, "status": "success",
-             "generated_at": artifact["generated_at"], "stats": stats}, indent=2),
+             "generated_at": artifact["generated_at"],
+             # concrete versions consumed (None = not available); the artifact keeps run_selector
+             "upstream": {f"{name}_run_version": _RESOLVED.get(str(root)) for _, name, root in consumed},
+             "stats": stats}, indent=2),
             encoding="utf-8")
         (Path(args.output_root) / "latest.json").write_text(json.dumps(
             {"run_version": run_version, "path": f"{run_version}/graph_artifact.json",
              "updated_at": artifact["generated_at"]}, indent=2), encoding="utf-8")
+        rl.succeed(published=True)
 
     print("=== Knowledge Graph Complete ===")
     print(f"Nodes         : {sum(stats['nodes'].values())} across {len(stats['nodes'])} labels")

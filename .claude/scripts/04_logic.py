@@ -42,6 +42,8 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
+import lib_runlog as runlog  # run lifecycle witnesses (run_status.json, events.jsonl)
+
 DESIGN_REFERENCES = [
     {"claim": "Cyclomatic complexity = decision points + 1; measures testability, not understandability.",
      "source": "Thomas J. McCabe, 'A Complexity Measure', IEEE TSE SE-2(4), 1976. Recommended module "
@@ -101,6 +103,7 @@ def source_lines(abs_path: str) -> list[str]:
             _SOURCE_CACHE[abs_path] = Path(abs_path).read_text(encoding="utf-8").splitlines()
         except OSError:
             _SOURCE_CACHE[abs_path] = []
+            runlog.note_unreadable_source(abs_path)
     return _SOURCE_CACHE[abs_path]
 
 
@@ -810,9 +813,12 @@ def main() -> None:
     ap.add_argument("--output", default=None)
     ap.add_argument("--verbose", "-v", action="store_true")
     args = ap.parse_args()
+    rl = runlog.begin("04_logic", output_root=args.output_root, enabled=args.output is None)
 
     parser_artifact, parser_rv = load_run(args.parser_root, args.parser_run, "parser_artifact.json")
+    rl.input("02_parser", parser_rv, requested=args.parser_run)
     inventory, inv_rv = load_run(args.inventory_root, args.inventory_run, "inventory-artifact.json")
+    rl.input("01_inventory", inv_rv, requested=args.inventory_run)
     parser_root = Path(args.parser_root) / parser_rv
     file_abs_paths = {fid: m["abs_path"] for fid, m in inventory["file_metadata"].items() if m.get("abs_path")}
 
@@ -821,6 +827,8 @@ def main() -> None:
     run_dir = Path(args.output_root) / run_version if versioned else Path(args.output)
     logic_dir = run_dir / "program_logic"
     logic_dir.mkdir(parents=True, exist_ok=True)
+    rl.attach(run_dir, run_version)
+    rl.total(len(parser_artifact["object_index"]), "objects analysed")
 
     object_index: dict[str, str] = {}
     call_targets: set[str] = set()
@@ -835,13 +843,17 @@ def main() -> None:
     for object_id, rel_path in parser_artifact["object_index"].items():
         p = parser_root / rel_path
         if not p.exists():
+            rl.item("object", object_id, "skipped", message="parser object file missing")
             continue
         obj = json.loads(p.read_text(encoding="utf-8"))
         if obj.get("parse_status") != "success":
+            rl.item("object", object_id, "skipped", message=f"parse_status {obj.get('parse_status')}")
             continue
         abs_path = file_abs_paths.get(obj.get("file_id"))
         if not abs_path:
+            rl.item("object", object_id, "skipped", message="no source path in inventory")
             continue
+        rl.item("object", object_id, "started")
         if args.verbose:
             print(f"  [analysing] {object_id}", file=sys.stderr)
 
@@ -849,6 +861,7 @@ def main() -> None:
         out_name = object_id.replace("::", "__").replace("/", "_") + "_logic.json"
         (logic_dir / out_name).write_text(json.dumps(rec, indent=2, ensure_ascii=False), encoding="utf-8")
         object_index[object_id] = f"program_logic/{out_name}"
+        rl.item("object", object_id, "succeeded")
 
         stats["objects_processed"] += 1
         stats["statements_translated"] += len(rec["pseudocode"])
@@ -896,6 +909,7 @@ def main() -> None:
         (Path(args.output_root) / "latest.json").write_text(json.dumps(
             {"run_version": run_version, "path": f"{run_version}/logic_artifact.json",
              "updated_at": logic_artifact["generated_at"]}, indent=2), encoding="utf-8")
+        rl.succeed(published=True)
 
     print("=== Logic Agent Complete ===")
     print(f"Objects analysed            : {stats['objects_processed']}")

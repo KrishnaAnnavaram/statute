@@ -74,6 +74,8 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
 
+import lib_runlog as runlog  # run lifecycle witnesses (run_status.json, events.jsonl)
+
 DESIGN_REFERENCES = [
     {"work": "Moody, D.L. (2009) The 'Physics' of Notations, IEEE TSE 35(6):756-779",
      "applied": "Semantic transparency (business text on nodes), dual coding "
@@ -197,6 +199,7 @@ def source_lines(abs_path: str) -> list:
             _SOURCE_CACHE[abs_path] = Path(abs_path).read_text(encoding="utf-8").splitlines()
         except OSError:
             _SOURCE_CACHE[abs_path] = []
+            runlog.note_unreadable_source(abs_path)
     return _SOURCE_CACHE[abs_path]
 
 
@@ -1065,19 +1068,25 @@ def main() -> None:
     ap.add_argument("--max-nodes", type=int, default=DEFAULT_NODE_BUDGET,
                     help="Hard node budget per process-flow diagram.")
     args = ap.parse_args()
+    rl = runlog.begin("06_diagram", output_root=args.output_root, enabled=args.output is None)
 
     parser_artifact, parser_run_version = load_run(args.parser_root, args.parser_run,
                                                    "parser_artifact.json")
+    rl.input("02_parser", parser_run_version, requested=args.parser_run)
     parser_root = Path(args.parser_root) / parser_run_version
 
     degraded = []
 
+    stage_keys = {"inventory": "01_inventory", "data": "03_data", "logic": "04_logic", "rules": "05_rules"}
+
     def optional(root, run, fname, label):
         try:
             payload, version = load_run(root, run, fname)
+            rl.input(stage_keys[label], version, requested=run, optional=True)
             return payload, version, Path(root) / version
         except (FileNotFoundError, KeyError):
             degraded.append(label)
+            rl.input(stage_keys[label], None, requested=run, optional=True)
             return {}, None, Path(".")
 
     inventory, inv_version, _ = optional(args.inventory_root, args.inventory_run,
@@ -1098,6 +1107,7 @@ def main() -> None:
     run_dir = Path(args.output_root) / run_version if versioned_run else Path(args.output)
     diagrams_dir = run_dir / "diagrams"
     diagrams_dir.mkdir(parents=True, exist_ok=True)
+    rl.attach(run_dir, run_version)
 
     # ---- MODEL -----------------------------------------------------------
     specs = [build_dataflow_spec(indexes, parser_root, args.max_nodes)]
@@ -1114,7 +1124,9 @@ def main() -> None:
     # ---- VALIDATE + RENDER + WRITE ---------------------------------------
     renderer = MermaidRenderer()
     problems, diagram_index, warnings = [], {}, []
+    rl.total(len(specs), "diagrams rendered")
     for spec in specs:
+        rl.item("diagram", spec.diagram_id, "started")
         problems.extend(validate_spec(spec, args.max_nodes))
         text = renderer.render(spec)
         problems.extend(validate_mermaid(text, spec.diagram_id))
@@ -1131,6 +1143,9 @@ def main() -> None:
         if spec.entity:
             entry["entity"] = spec.entity
         diagram_index[fname] = entry
+        rl.item("diagram", spec.diagram_id, "succeeded",
+                message="over the node budget" if spec.budget_report.get("oversize") else None,
+                severity="warning" if spec.budget_report.get("oversize") else None)
         for note in spec.notes:
             warnings.append({"kind": "DIAGRAM_NOTE", "diagram": spec.diagram_id, "detail": note})
         if spec.budget_report.get("collapsed"):
@@ -1146,6 +1161,8 @@ def main() -> None:
         print("=== Diagram Agent FAILED validation ===", file=sys.stderr)
         for p in problems:
             print("  " + p, file=sys.stderr)
+        rl.fail("DiagramValidationError", f"{len(problems)} validation problem(s): " + "; ".join(problems[:10]),
+                "06_diagram.py")
         sys.exit(1)
 
     crud_md, crud_raw = build_crud_markdown(indexes)
@@ -1187,6 +1204,7 @@ def main() -> None:
         (Path(args.output_root) / "latest.json").write_text(json.dumps(
             {"run_version": run_version, "path": f"{run_version}/diagrams_artifact.json",
              "updated_at": diagrams_artifact["generated_at"]}, indent=2), encoding="utf-8")
+        rl.succeed(published=True)
 
     print("=== Diagram Agent Complete ===")
     print(f"Data-flow map          : {diagrams_artifact['stats']['dataflow']}")

@@ -35,6 +35,8 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
+import lib_runlog as runlog  # run lifecycle witnesses (run_status.json, events.jsonl)
+
 
 # ---------------------------------------------------------------------------
 # Content-hint patterns
@@ -586,12 +588,15 @@ Examples:
     )
     args = parser.parse_args()
 
+    rl = runlog.begin("01_inventory", output_root=args.output_root, enabled=args.output is None)
     sql_dir = Path(args.sql_dir).resolve()
     if not sql_dir.exists():
         print(f"ERROR: directory not found: {sql_dir}", file=sys.stderr)
+        rl.fail("SourceNotFound", "source directory not found", "01_inventory.py")
         sys.exit(1)
     if not sql_dir.is_dir():
         print(f"ERROR: not a directory: {sql_dir}", file=sys.stderr)
+        rl.fail("SourceNotADirectory", "source path is not a directory", "01_inventory.py")
         sys.exit(1)
 
     exclude_patterns = [] if args.no_default_excludes else list(DEFAULT_EXCLUDE_PATTERNS)
@@ -616,6 +621,7 @@ Examples:
         output_path = Path(args.output)
         run_dir = output_path.parent
     run_dir.mkdir(parents=True, exist_ok=True)
+    rl.attach(run_dir, run_version)
 
     # ---- Run discovery ----
     run_ts = datetime.now(timezone.utc).isoformat()
@@ -690,6 +696,9 @@ Examples:
         }
         latest_path = Path(args.output_root) / "latest.json"
         latest_path.write_text(json.dumps(latest_pointer, indent=2, ensure_ascii=False), encoding="utf-8")
+        if not file_entries:
+            rl.degrade("source", "no .sql files found in the source directory")
+        rl.succeed(published=True)
 
     # ---- Stdout report (consumed by Claude Code / orchestrator) ----
     ok   = summary["total_files_ok"]

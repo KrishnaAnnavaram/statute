@@ -50,6 +50,8 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
+import lib_runlog as runlog  # run lifecycle witnesses (run_status.json, events.jsonl)
+
 _VENDOR_DIR = Path(__file__).parent / "vendor" / "plsql_grammar"
 sys.path.insert(0, str(_VENDOR_DIR))
 
@@ -266,6 +268,7 @@ def source_lines(abs_path: str) -> list[str]:
             _SOURCE_LINE_CACHE[abs_path] = Path(abs_path).read_text(encoding="utf-8").splitlines()
         except OSError:
             _SOURCE_LINE_CACHE[abs_path] = []
+            runlog.note_unreadable_source(abs_path)
     return _SOURCE_LINE_CACHE[abs_path]
 
 
@@ -1231,9 +1234,12 @@ def main() -> None:
     ap.add_argument("--output", default=None)
     ap.add_argument("--verbose", "-v", action="store_true")
     args = ap.parse_args()
+    rl = runlog.begin("03_data", output_root=args.output_root, enabled=args.output is None)
 
     inventory, inv_run_version = load_run(args.inventory_root, args.inventory_run, "inventory-artifact.json")
+    rl.input("01_inventory", inv_run_version, requested=args.inventory_run)
     parser_artifact, parser_run_version = load_run(args.parser_root, args.parser_run, "parser_artifact.json")
+    rl.input("02_parser", parser_run_version, requested=args.parser_run)
     parser_root = Path(args.parser_root) / parser_run_version
     parser_objects = load_parser_objects(parser_root, parser_artifact["object_index"])
 
@@ -1241,6 +1247,7 @@ def main() -> None:
     run_version = generate_run_version()
     run_dir = Path(args.output_root) / run_version if versioned_run else Path(args.output)
     run_dir.mkdir(parents=True, exist_ok=True)
+    rl.attach(run_dir, run_version)
 
     issues: list[dict] = []
     tables: dict[str, dict] = {}
@@ -1264,9 +1271,12 @@ def main() -> None:
              "comment_only_enums": 0, "table_comments": 0, "column_comments": 0}
 
     # ---- Parse every DDL file ----
-    for file_rec in route_ddl_files(inventory):
+    ddl_files = route_ddl_files(inventory)
+    rl.total(len(ddl_files), "DDL files parsed")
+    for file_rec in ddl_files:
         if args.verbose:
             print(f"  [parsing DDL] {file_rec['path']}", file=sys.stderr)
+        rl.item("ddl_file", file_rec["path"], "started")
         tree, errors = parse_source(file_rec["abs_path"])
         stats["ddl_files_parsed"] += 1
         if errors:
@@ -1318,6 +1328,9 @@ def main() -> None:
                 for c in tbl["columns"]:
                     if c["name"] == col_name:
                         c["comment"] = comment
+        rl.item("ddl_file", file_rec["path"], "succeeded",
+                message=f"{len(errors)} syntax error(s)" if errors else None,
+                severity="warning" if errors else None)
 
     # ---- Roll up structural stats ----
     for t in tables.values():
@@ -1400,6 +1413,7 @@ def main() -> None:
         (Path(args.output_root) / "latest.json").write_text(json.dumps({
             "run_version": run_version, "path": f"{run_version}/data_artifact.json",
             "updated_at": data_artifact["generated_at"]}, indent=2, ensure_ascii=False), encoding="utf-8")
+        rl.succeed(published=True)
 
     print("=== Data Agent Complete ===")
     print(f"DDL files parsed        : {stats['ddl_files_parsed']}")

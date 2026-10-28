@@ -81,6 +81,8 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
+import lib_runlog as runlog  # run lifecycle witnesses (run_status.json, events.jsonl)
+
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from lib_business_language import (  # noqa: E402
     humanise, object_title, entity_title, object_kind_phrase, shape_phrase,
@@ -1244,13 +1246,20 @@ def main() -> None:
     ap.add_argument("--annotations", default="brd_annotations.json",
                     help="Human annotations merged in at synthesis time; never written to.")
     args = ap.parse_args()
+    rl = runlog.begin("07_synthesis", output_root=args.output_root, enabled=args.output is None)
 
     inventory, inv_rv = load_run(args.inventory_root, args.run, "inventory-artifact.json")
+    rl.input("01_inventory", inv_rv, requested=args.run)
     parser_artifact, parser_rv = load_run(args.parser_root, args.run, "parser_artifact.json")
+    rl.input("02_parser", parser_rv, requested=args.run)
     data_artifact, data_rv = load_run(args.data_root, args.run, "data_artifact.json")
+    rl.input("03_data", data_rv, requested=args.run)
     logic_artifact, logic_rv = load_run(args.logic_root, args.run, "logic_artifact.json")
+    rl.input("04_logic", logic_rv, requested=args.run)
     rules_artifact, rules_rv = load_run(args.rules_root, args.run, "rules_artifact.json")
+    rl.input("05_rules", rules_rv, requested=args.run)
     diagrams_artifact, diagram_rv = load_run(args.diagram_root, args.run, "diagrams_artifact.json")
+    rl.input("06_diagram", diagram_rv, requested=args.run)
 
     artifacts = {
         "payloads": (inventory, parser_artifact, data_artifact, logic_artifact,
@@ -1272,6 +1281,7 @@ def main() -> None:
     run_version = generate_run_version()
     run_dir = Path(args.output_root) / run_version if versioned else Path(args.output)
     run_dir.mkdir(parents=True, exist_ok=True)
+    rl.attach(run_dir, run_version)
 
     (run_dir / "brd.md").write_text(document, encoding="utf-8")
     (run_dir / "brd_index.json").write_text(json.dumps(index, indent=2, ensure_ascii=False),
@@ -1290,6 +1300,7 @@ def main() -> None:
         (Path(args.output_root) / "latest.json").write_text(json.dumps(
             {"run_version": run_version, "path": f"{run_version}/brd.md",
              "updated_at": ctx["generated_at"]}, indent=2), encoding="utf-8")
+        rl.succeed(published=True)
 
     by_sev = {s: sum(1 for g in ctx["gaps"] if g["severity"] == s) for s in SEVERITY_ORDER}
     print("=== BRD Synthesis Complete ===")
